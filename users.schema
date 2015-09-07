@@ -1,0 +1,34 @@
+users
+    user_id
+    user_name
+    user_email
+    user_identity
+    user_identity_provider
+
+games
+    game_id
+    user_id
+    game_timestamp
+    game_parent
+    game_source
+    game_title
+
+votes
+    vote_id
+    game_id
+    user_id
+    vote_score
+    vote_timestamp
+
+comment
+    comment_id
+    user_id
+    comment_timestamp
+
+
+events
+    event_id
+    event_timestamp
+    event_type
+    user_id
+    game_id
