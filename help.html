@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>8x8x8</title>
+        <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+        <link rel="stylesheet" href="style.css">
+        <script src="ga.js" defer></script>
+    </head>
+    <body>
+        <div id='main'>
+            <div class='container-fluid'>
+                <div class='row'>
+                    <div class='col-md-8'>
+                        <span><h2>8x8x8 - Documentation</h2></span>
+                        <div class='pull-right'>
+                            <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target=".bs-example-modal-sm">Sign in/Register</button>
+                        </div>
+                    </div>
+                    <div class='col-md-4'>
+                        &nbsp;
+                    </div>
+                </div>
+                <div class='row'>
+                        &nbsp;
+                </div>
+                <div class='row'>
+                    <div class='col-md-1'>set(x, y, color)</div>
+                    <div class='col-md-11'>Set the pixel at x,y to color. Coordinates are (0,0) = top left, (7,7) = bottom right. Colors are: 0 = black, 1 = red, 2 = green, 3 = yellow, 4 = blue, 5 = magenta, 6 = cyan, 7 = white</div>
+                </div>
+                <div class='row'>
+                    <div class='col-md-1'>clear(color)</div>
+                    <div class='col-md-11'>Set all the pixels to color.</div>
+                </div>
+                <div class='row'>
+                    <div class='col-md-1'>pressed(key)</div>
+                    <div class='col-md-11'>Check if key was just pressed. Keys are 'left', 'right', 'up', 'down', 'space'.</div>
+                </div>
+                <div class='row'>
+                    <div class='col-md-1'>released(key)</div>
+                    <div class='col-md-11'>Check if key was just released. Keys are 'left', 'right', 'up', 'down', 'space'.</div>
+                </div>
+                <div class='row'>
+                    <div class='col-md-1'>held(key)</div>
+                    <div class='col-md-11'>Check if key is currently held down. Keys are 'left', 'right', 'up', 'down', 'space'.</div>
+                </div>
+                <div class='row'>
+                    <div class='col-md-1'>update(frame)</div>
+                    <div class='col-md-11'>You provide this function, it will be called every frame in a loop. Parameter 'frame' increases by 1 each time the function is called.</div>
+                </div>
+            </div>
+        </div>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    </body>
+</html>

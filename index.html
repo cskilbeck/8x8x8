@@ -21,23 +21,25 @@
                         <h4 class="modal-title" id="myModalLabel">Sign in</h4>
                     </div>
                     <div class="modal-body">
-                        <div class='well'>
-                            <div class='form-group'>
-                                <label for='usernameInput'>Username</label>
-                                <input type='text' class='form-control' id='username' />
-                            <div class='form-group'>
-                            </div>
-                                <label for='passwordInput'>Password</label>
-                                <input type='password' class='form-control' id='passwordInput' />
-                            </div>
-                        </div>
-                        <div class='form-group '>
-                            <div class='row'>
-                                <div class='pull-right col-md-5'>
-                                    New user? <button type="button" class="btn btn-sm btn-success">Register</button>
+                        <form id="loginForm" method="post">
+                            <div class='well'>
+                                <div class='form-group'>
+                                    <label for='usernameInput'>Username</label>
+                                    <input type='text' class='form-control' id='username' />
+                                <div class='form-group'>
+                                </div>
+                                    <label for='passwordInput'>Password</label>
+                                    <input type='password' class='form-control' id='passwordInput' />
                                 </div>
                             </div>
-                        </div>
+                            <div class='form-group '>
+                                <div class='row'>
+                                    <div class='pull-right col-md-5'>
+                                        New user? <button type="button" class="btn btn-sm btn-success">Register</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-sm btn-default" data-dismiss="modal">Cancel</button>
@@ -52,7 +54,10 @@
                     <div class='col-md-8'>
                         <button class='btn btn-sm btn-primary' onclick='runit();'>Run (ctrl-r)</button>
                         <button class='btn btn-sm btn-primary' onclick='saveit();'>Save (ctrl-s)</button>
-                        <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target=".bs-example-modal-sm">Sign in/Register</button>
+                        <div class='pull-right'>
+                            <a href="help.html" target="_blank" class="btn btn-sm btn-default">Help</a>
+                            <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target=".bs-example-modal-sm">Sign in/Register</button>
+                        </div>
                     </div>
                     <div class='col-md-4'>
                         &nbsp;

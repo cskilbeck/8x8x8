@@ -2,8 +2,11 @@ users
     user_id
     user_name
     user_email
+    user_firstname
+    user_lastname
     user_identity
     user_identity_provider
+    user_created
 
 games
     game_id
@@ -24,7 +27,6 @@ comment
     comment_id
     user_id
     comment_timestamp
-
 
 events
     event_id

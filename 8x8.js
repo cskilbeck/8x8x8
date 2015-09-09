@@ -44,6 +44,7 @@
         exception = false,
         keyCount = 0,
         lastkey,
+        frame = 0,
         colors = [
             "#000",
             "#F00",
@@ -198,7 +199,7 @@
         var i;
         if(typeof update === 'function' && !exception) {
             try {
-                update();
+                update(frame++);
             }
             catch(e) {
                 exception = true;
@@ -219,7 +220,7 @@
     CH = canvas.height;
     window.set = function(x, y, c) { return doSet(x, y, c); };
     window.get = function(x, y) { return doGet(x, y); };
-    window.clear = function(c) { return doClear(); };
+    window.clear = function(c) { return doClear(c); };
     window.held = function(k) { return doHeld(k); };
     window.pressed = function(k) { return doPressed(k); };
     window.released = function(k) { return doReleased(k); };
