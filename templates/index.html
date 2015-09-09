@@ -47,20 +47,32 @@
             <div class='container-fluid'>
                 <div class='row first-row'>
                     <div class='col-md-8'>
-                        <button class='btn btn-sm btn-primary' onclick='runit();'>Run (ctrl-r)</button>
-                        <button class='btn btn-sm btn-primary' onclick='saveit();'>Save (ctrl-s)</button>
                         <div class='pull-right'>
-                            <a href="help.html" target="_blank" class="btn btn-sm btn-default">Help</a>
+                            <a href="/static/help.html" target="_blank" class="btn btn-sm btn-default">Help</a>
                             <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target=".bs-example-modal-sm">Sign in/Register</button>
                         </div>
                     </div>
-                    <div class='col-md-4'>
-                        &nbsp;
-                    </div>
                 </div>
-                <div class='row second-row' id='editorPane'>
+                <div class='row' id='editorPane'>
                     <div class='col-md-8 higher'>
-                        <div id='editor' tabindex='1'></div>
+                        <div class='row'>
+                            <div class="col-md-4 titlebar">
+                                <input id='gameName' type='text' class='form-control input-sm' value='Snake' maxlength="32" />
+                            </div>
+                            <div class="col-md-6 titlebar">
+                                <button title='Ctrl-R' class='btn btn-sm btn-success' onclick='runit();'>Run &nbsp;<i class='glyphicon glyphicon-play'></i></button>
+                                <button title='Ctrl-S' class='btn btn-sm btn-primary' onclick='saveit();'>Save &nbsp;<i class='glyphicon glyphicon-floppy-disk'></i></button>
+                                <button class='btn btn-sm btn-danger pull-right' onclick='closeit();'>Close &nbsp;<i class='glyphicon glyphicon-remove'></i></button>
+                            </div>
+                            <div class="col-md-2 pull-right">
+                            </div>
+                        </div>
+                        <div class='row' id='gap'>
+                            &nbsp;
+                        </div>
+                        <div id='editor' tabindex='1'>
+                            
+                        </div>
                     </div>
                     <div class='col-md-4' id='game'>
                         <iframe id='gameFrame' sandbox='allow-scripts allow-same-origin' src='/static/frame.html'>

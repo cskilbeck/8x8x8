@@ -112,6 +112,18 @@ $(document).ready(function() {
     editor.setShowPrintMargin(false);
     editor.setShowFoldWidgets(false);
     editor.getSession().setMode("ace/mode/javascript");
+    editor.setOptions({
+        enableBasicAutocompletion: true
+    });
+
+    $('#gameName').bind('keypress', function (event) {
+        var regex = new RegExp("^[\'\:\;\! \?\.\,a-zA-Z0-9]+$");
+        var key = String.fromCharCode(!event.charCode ? event.which : event.charCode);
+        if (!regex.test(key)) {
+           event.preventDefault();
+           return false;
+        }
+    });
 
     editor.commands.addCommand({
         name:'save',
@@ -124,10 +136,10 @@ $(document).ready(function() {
         });
 
     editor.commands.addCommand({
-        name:'execute',
+        name:'run',
         bindKey: {
-            win: 'Ctrl-X',
-            mac: 'Command-X',
+            win: 'Ctrl-R',
+            mac: 'Command-R',
             sender: 'editor|cli'
         },
         exec: execute
