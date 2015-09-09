@@ -5,14 +5,16 @@
 // - voting
 // - telemetry/analytics
 // - feedback on save/execute
-// - login form validation
+// - form validation (jquery.validate) + bootstrap popover: http://jsfiddle.net/3qYpM/609/
 //
 // + save current source in LocalStorage
 //
 //
+// when the email changes, and it's a valid email, ajax it to the server
+// when the result comes back, if it's a known user, then the hash will accompany and can be checked against the password
+// if it's not a known user, change button text to 'Register' and send username + password to server for hashing
 //
-//
-//
+// 23456789abcdfghjklmnpqrstvwxz
 //
 //////////////////////////////////////////////////////////////////////
 // function: set(x, y, c) - set pixel at x,y to color c
@@ -29,10 +31,13 @@
 //      keys: ['up', 'down', 'left', 'right', 'space']
 //
 // function update() will be called each frame
+
 $(document).ready(function() {
     "option strict";
 
     var editor,
+        gotPassword,
+        gotUsername,
         source;
 
     clearError = function(e) {
@@ -81,7 +86,7 @@ $(document).ready(function() {
         var iframe = document.getElementById('gameFrame');
         clearError();
         GameSource = editor.getValue();
-        iframe.src = 'frame.html';
+        iframe.src = '/static/frame.html';
         iframe.contentWindow.focus();
     }
 
@@ -105,8 +110,6 @@ $(document).ready(function() {
     }
     editor.setValue(source, -1);
     editor.setShowPrintMargin(false);
-    editor.setDisplayIndentGuides(false);
-    editor.renderer.setShowGutter(false);
     editor.setShowFoldWidgets(false);
     editor.getSession().setMode("ace/mode/javascript");
 
@@ -129,6 +132,8 @@ $(document).ready(function() {
         },
         exec: execute
     });
+
+    $("#loginForm").validate();
 
     FocusEditor();
 
