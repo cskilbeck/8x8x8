@@ -1,3 +1,7 @@
+body {
+    background: #EEE;
+}
+
 #gameFrame {
     border: none;
     height: 140px;
@@ -15,7 +19,9 @@
 
 #editor {
     height: 80vh;
-    border: 1px solid #555;
+    margin: 0;
+    padding: 0;
+    border: 1px solid #CCC;
 }
 
 #game {
@@ -32,6 +38,10 @@
     height: 80vh;
 }
 
+#gap {
+    line-height: 0.5em;
+}
+
 #console {
     color: red;
     font-weight: bolder;
@@ -40,4 +50,12 @@
 
 body .modal .modal-dialog {
   width: 25%; /* desired relative width */
+}
+
+.titlebar {
+}
+
+.closefile {
+    background: red;
+    color: white;
 }
