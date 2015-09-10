@@ -2,16 +2,13 @@ DROP DATABASE IF EXISTS `G8`;
 CREATE DATABASE `G8`;
 USE `G8`;
 
-CREATE TABLE users(
+CREATE TABLE `users`(
     user_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    user_name VARCHAR(200) NOT NULL,
-    user_email VARCHAR(272) NOT NULL,
+    user_email VARCHAR(255) UNIQUE NOT NULL,
     user_password VARCHAR(100) NOT NULL,
-    user_firstname VARCHAR(200) NOT NULL,
-    user_lastname VARCHAR(200) NOT NULL,
     user_created DATETIME);
 
-CREATE TABLE games(
+CREATE TABLE `games`(
     game_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     game_timestamp DATETIME NOT NULL,
@@ -19,17 +16,13 @@ CREATE TABLE games(
     game_source LONGBLOB,
     game_title VARCHAR(32));
 
-INSERT INTO users(
-        user_name,
+INSERT INTO `users`(
         user_email,
         user_password,
-        user_firstname,
-        user_lastname,
         user_created)
     VALUES(
-        'chs',
         'chs@chs.chs',
         'password',
-        'Charlie',
-        'Skilbeck',
         NOW());
+
+SELECT * FROM `users`;

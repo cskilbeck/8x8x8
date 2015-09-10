@@ -1,5 +1,4 @@
 //////////////////////////////////////////////////////////////////////
-//
 // - user registration/login/forgot password
 // - web service
 // - voting
@@ -36,8 +35,7 @@ $(document).ready(function() {
     "option strict";
 
     var editor,
-        gotPassword,
-        gotUsername,
+        user_id,
         source;
 
     clearError = function(e) {
@@ -52,6 +50,42 @@ $(document).ready(function() {
     reportError = function(e) {
         $("#console").html(e);
         FocusEditor();
+    };
+
+    handleLogin = function(e) {
+        var req;
+
+        if(user_id === 0) {
+            req = $.post('/login', {
+                email: $('#emailInput').val(),
+                password: $("#passwordInput").val()
+            });
+
+            req.done(function(result) {
+                console.log(result);
+                user_id = result.user_id;
+                $("#loginModal").modal('hide');
+                $("#loginButton").text("Logout");
+            });
+
+            req.fail(function(xhr) {
+                console.log(xhr.status + ": " + xhr.statusText);
+                if(xhr.status === 401) {
+                    $("#loginMessage").show();
+                }
+            });
+        }
+        return false;
+    };
+
+    showLogin = function() {
+        if(user_id === 0) {
+            $("#loginModal").modal('show');
+        }
+        else {
+            user_id = 0;
+            $("#loginButton").text("Sign in/Register");
+        }
     };
 
     function createCookie(name, value, days) {
@@ -113,7 +147,7 @@ $(document).ready(function() {
     editor.setShowFoldWidgets(false);
     editor.getSession().setMode("ace/mode/javascript");
     editor.setOptions({
-        enableBasicAutocompletion: true
+        enableLiveAutocompletion: true
     });
 
     $('#gameName').bind('keypress', function (event) {
@@ -144,6 +178,8 @@ $(document).ready(function() {
         },
         exec: execute
     });
+
+    user_id = 0;
 
     $("#loginForm").validate();
 
