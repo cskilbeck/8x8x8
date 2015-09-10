@@ -8,6 +8,7 @@
         <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
         <link rel="stylesheet" href="/static/style.css">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/ace.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/ext-language_tools.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
         <script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.11.0/jquery.validate.min.js"></script>
         <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
@@ -15,24 +16,27 @@
         <script src="/static/game.js" defer></script>
     </head>
     <body>
-        <div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+        <div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" id='loginModal'>
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                         <h4 class="modal-title" id="myModalLabel">Sign in or register</h4>
                     </div>
-                    <form id="loginForm" name="loginForm" method="post" action='login.php'>
+                    <form id="loginForm" name="loginForm" onSubmit='return handleLogin()' method='none'>
                         <div class="modal-body">
                             <div class='well'>
                                 <div class='form-group'>
-                                    <label for='emailInput'>Email</label>
-                                    <input type='email' name="emailInput" class='form-control' id='usernameInput' required />
+                                    <label for='email'>Email</label>
+                                    <input type='email' name="email" class='form-control' id='emailInput' required />
                                 <div class='form-group'>
                                 </div>
                                     <label for='passwordInput'>Password</label>
-                                    <input type='password' class='form-control' id='passwordInput' minlength='6' required />
+                                    <input type='password' name='password' class='form-control' id='passwordInput' minlength='6' required />
                                 </div>
+                            </div>
+                            <div id='loginMessage' hidden='hidden'>
+                                Incorrect password. Forgotten it? <button type='button' class='btn btn-xs btn-primary'>Reset it</button>
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -49,7 +53,7 @@
                     <div class='col-md-8'>
                         <div class='pull-right'>
                             <a href="/static/help.html" target="_blank" class="btn btn-sm btn-default">Help</a>
-                            <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target=".bs-example-modal-sm">Sign in/Register</button>
+                            <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" onClick="showLogin()" id="loginButton">Sign in/Register</button>
                         </div>
                     </div>
                 </div>
@@ -61,7 +65,7 @@
                             </div>
                             <div class="col-md-6 titlebar">
                                 <button title='Ctrl-R' class='btn btn-sm btn-success' onclick='runit();'>Run &nbsp;<i class='glyphicon glyphicon-play'></i></button>
-                                <button title='Ctrl-S' class='btn btn-sm btn-primary' onclick='saveit();'>Save &nbsp;<i class='glyphicon glyphicon-floppy-disk'></i></button>
+                                <button title='Ctrl-S' class='btn btn-sm btn-primary' onclick='saveit();' id="buttonActivity">Save &nbsp;<i class='glyphicon glyphicon-floppy-disk'></i></button>
                                 <button class='btn btn-sm btn-danger pull-right' onclick='closeit();'>Close &nbsp;<i class='glyphicon glyphicon-remove'></i></button>
                             </div>
                             <div class="col-md-2 pull-right">
@@ -71,7 +75,7 @@
                             &nbsp;
                         </div>
                         <div id='editor' tabindex='1'>
-                            
+
                         </div>
                     </div>
                     <div class='col-md-4' id='game'>
