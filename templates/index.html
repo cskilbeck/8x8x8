@@ -16,6 +16,7 @@
         <script src="/static/game.js" defer></script>
     </head>
     <body>
+        <!-- LOGIN MODAL DIALOG -->
         <div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" id='loginModal'>
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
@@ -47,45 +48,61 @@
                 </div>
             </div>
         </div>
-        <div id='main'>
-            <div class='container-fluid'>
-                <div class='row first-row'>
-                    <div class='col-md-8'>
-                        <div class='pull-right'>
-                            <a href="/static/help.html" target="_blank" class="btn btn-sm btn-default">Help</a>
-                            <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" onClick="showLogin()" id="loginButton">Sign in/Register</button>
-                        </div>
+        <div class="content">
+            <!-- TOP ROW (HELP/SIGN IN etc) -->
+            <div class="top_block banner">
+                <div class="content">
+                    <a href="#" onClick="showPane('helpPane')" class="btn btn-sm btn-default">Help</a>
+                    <div class='pull-right'>
+                        <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" onClick="showLogin()" id="loginButton">Sign in/Register</button>
                     </div>
                 </div>
-                <div class='row' id='editorPane'>
-                    <div class='col-md-8 higher'>
-                        <div class='row'>
-                            <div class="col-md-4 titlebar">
+            </div>
+            <div class="background leftPane">
+            </div>
+            <div class="left_block leftPane">
+                <div class="content" id='mainPane'>
+                    <div class="top_block titleBar">
+                        <div class="content">
+                            <div id='titleBar'>
+                                &nbsp;<span id="paneTitle">Editor</span>
+                                <button class='close closeButton' id="closeButton" onclick='popPane();'><span aria-hidden='true'>&times;</span>&nbsp;</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="top_block toolBar">
+                        <div class="content">
+                            <div class='col-xs-4'>
                                 <input id='gameName' type='text' class='form-control input-sm' value='Snake' maxlength="32" />
                             </div>
-                            <div class="col-md-6 titlebar">
+                            <div class='col-xs-4'>
                                 <button title='Ctrl-R' class='btn btn-sm btn-success' onclick='runit();'>Run &nbsp;<i class='glyphicon glyphicon-play'></i></button>
-                                <button title='Ctrl-S' class='btn btn-sm btn-primary' onclick='saveit();' id="buttonActivity">Save &nbsp;<i class='glyphicon glyphicon-floppy-disk'></i></button>
-                                <button class='btn btn-sm btn-danger pull-right' onclick='closeit();'>Close &nbsp;<i class='glyphicon glyphicon-remove'></i></button>
+                                <button title='Ctrl-S' class='btn btn-sm btn-primary' onclick='saveit();' id="saveButton">Save &nbsp;<i class='glyphicon glyphicon-floppy-disk'></i></button>
                             </div>
-                            <div class="col-md-2 pull-right">
-                            </div>
-                        </div>
-                        <div class='row' id='gap'>
-                            &nbsp;
-                        </div>
-                        <div id='editor' tabindex='1'>
-
                         </div>
                     </div>
-                    <div class='col-md-4' id='game'>
-                        <iframe id='gameFrame' sandbox='allow-scripts allow-same-origin' src='/static/frame.html'>
-                        </iframe>
+                    <div class='masked content' id='helpPane' >
+                        HELP!?
+                    </div>
+
+                    <div class='masked content' id='gameList' >
+                        CAN U SEE THIS?
+                    </div>
+
+                    <div class='content' id='editorPane'>
+                        <div id='editor' tabindex='1'></div>
                     </div>
                 </div>
-                <div class='row third-row'>
-                    <div class='col-md-8' id='console'>
-                    </div>
+            </div>
+            <div class="background rightPane">
+                <div class="content centered">
+                    <iframe id='gameFrame' sandbox='allow-scripts allow-same-origin' src='/static/frame.html'>
+                    </iframe>
+                </div>
+            </div>
+            <div class="bottom_block statusBar">
+                <div class="content" id="statusBar">
+                    This is the console
                 </div>
             </div>
         </div>

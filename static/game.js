@@ -36,10 +36,41 @@ $(document).ready(function() {
 
     var editor,
         user_id,
+        panes = [ 'gameList', 'editorPane', 'helpPane' ],
+        paneNames = [ 'Games', 'Editor', 'Help' ],
+        panestack = [],
         source;
 
+    showPane = function(name, push) {
+        var i, p;
+        for(i in panes) {
+            p = $('#' + panes[i]);
+            if(name === panes[i]) {
+                if(p.hasClass('masked') && push !== false) {
+                    panestack.push(i);
+                }
+                p.removeClass('masked');
+                $("#closeButton").removeClass('masked');
+                $("#paneTitle").text(paneNames[i]);
+            }
+            else {
+                p.addClass('masked');
+            }
+        }
+    };
+
+    popPane = function() {
+        if(panestack.length > 1) {
+            panestack.pop();
+            showPane(panestack[panestack.length - 1], false);
+            if(panestack.length === 1) {
+                $("#closeButton").addClass('masked');
+            }
+        }
+    };
+
     clearError = function(e) {
-        $("#console").html("&nbsp;");
+        $("#statusBar").html("&nbsp;");
     };
 
     FocusEditor = function() {
@@ -48,33 +79,26 @@ $(document).ready(function() {
     };
 
     reportError = function(e) {
-        $("#console").html(e);
+        $("#statusBar").html(e);
         FocusEditor();
     };
 
     handleLogin = function(e) {
-        var req;
-
-        if(user_id === 0) {
-            req = $.post('/login', {
+        $.post('/login', {
                 email: $('#emailInput').val(),
                 password: $("#passwordInput").val()
-            });
-
-            req.done(function(result) {
-                console.log(result);
-                user_id = result.user_id;
-                $("#loginModal").modal('hide');
-                $("#loginButton").text("Logout");
-            });
-
-            req.fail(function(xhr) {
-                console.log(xhr.status + ": " + xhr.statusText);
-                if(xhr.status === 401) {
-                    $("#loginMessage").show();
-                }
-            });
-        }
+            })
+        .done(function(result) {
+            console.log(result);
+            user_id = result.user_id;
+            $("#loginModal").modal('hide');
+            $("#loginButton").text("Logout");
+        })
+        .fail(function(xhr) {
+            if(xhr.status === 401) {
+                $("#loginMessage").show();
+            }
+        });
         return false;
     };
 
@@ -90,7 +114,6 @@ $(document).ready(function() {
 
     function createCookie(name, value, days) {
         var expires;
-
         if (days) {
             var date = new Date();
             date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
@@ -129,7 +152,24 @@ $(document).ready(function() {
     };
 
     saveit = function() {
-        window.localStorage.setItem('source', editor.getValue());
+        var source = editor.getValue(),
+            data =  { user_id: user_id, source: source, name: $("#gameName").val() };
+        window.localStorage.setItem('source', source);
+        if(user_id !== 0) {
+            console.log(data);
+            $.post('/save', data)
+            .done(function(result) {
+                console.log("Saved OK\n");
+            })
+            .fail(function(xhr) {
+                console.log("Error saving: " + xhr.status + " " + xhr.statusText);
+            });
+        }
+        else {
+            $("#loginModal").modal('show');
+        }
+        editor.session.getUndoManager().reset();
+        $('#saveButton').attr('disabled');
     };
 
     $('#editor').click(function() {
@@ -149,6 +189,8 @@ $(document).ready(function() {
     editor.setOptions({
         enableLiveAutocompletion: true
     });
+    editor.session.getUndoManager().reset();
+    $('#saveButton').attr('disabled');
 
     $('#gameName').bind('keypress', function (event) {
         var regex = new RegExp("^[\'\:\;\! \?\.\,a-zA-Z0-9]+$");
@@ -158,6 +200,17 @@ $(document).ready(function() {
            return false;
         }
     });
+
+    // editor.on('input', function() {
+    //     if(editor.session.getUndoManager().hasUndo()) {
+    //         console.log("Disabling");
+    //         $('#saveButton').removeAttr('disabled');
+    //     }
+    //     else {
+    //         $('#saveButton').attr('disabled');
+    //         console.log("Enabling");
+    //     }
+    // });
 
     editor.commands.addCommand({
         name:'save',
@@ -182,6 +235,11 @@ $(document).ready(function() {
     user_id = 0;
 
     $("#loginForm").validate();
+
+    panestack.push('editorPane');
+    showPane('editorPane');
+    
+    editor.resize(true);
 
     FocusEditor();
 
