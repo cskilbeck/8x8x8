@@ -11,10 +11,11 @@ CREATE TABLE `users`(
 CREATE TABLE `games`(
     game_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    game_timestamp DATETIME NOT NULL,
-    game_parent INT,
+    game_created DATETIME NOT NULL,
+    game_lastsaved DATETIME NOT NULL,
     game_source LONGBLOB,
-    game_title VARCHAR(32));
+    game_title VARCHAR(32),
+    UNIQUE KEY game_name (game_title, user_id));
 
 INSERT INTO `users`(
         user_email,
