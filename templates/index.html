@@ -62,16 +62,18 @@
             </div>
             <div class="left_block leftPane">
                 <div class="content" id='mainPane'>
+                    <!-- TITLEBAR -->
                     <div class="top_block titleBar">
                         <div class="content">
                             <div id='titleBar'>
                                 &nbsp;<span id="paneTitle">Editor</span>
-                                <button class='close closeButton' id="closeButton" onclick='popPane();'><span aria-hidden='true'>&times;</span>&nbsp;</button>
+                                <button class='masked close closeButton' id="closeButton" onclick='popPane();'><span aria-hidden='true'>&times;</span>&nbsp;</button>
                             </div>
                         </div>
                     </div>
-                    <div class="top_block toolBar">
-                        <div class="content">
+                    <!-- EDITOR -->
+                    <div class="masked content" id='editorPane'>
+                        <div class="top_block toolBar">
                             <div class='col-xs-4'>
                                 <input id='gameName' type='text' class='form-control input-sm' value='Snake' maxlength="32" />
                             </div>
@@ -80,17 +82,33 @@
                                 <button title='Ctrl-S' class='btn btn-sm btn-primary' onclick='saveit();' id="saveButton">Save &nbsp;<i class='glyphicon glyphicon-floppy-disk'></i></button>
                             </div>
                         </div>
+                        <div id='editor' tabindex='1'></div>
                     </div>
+                    <!-- HELP -->
                     <div class='masked content' id='helpPane' >
                         HELP!?
                     </div>
-
-                    <div class='masked content' id='gameList' >
-                        CAN U SEE THIS?
-                    </div>
-
-                    <div class='content' id='editorPane'>
-                        <div id='editor' tabindex='1'></div>
+                    <!-- GAME LIST -->
+                    <div class='content' id='gameList' >
+                        <div class="top_block toolBar">
+                            <div class='col-xs-4'>
+                                <input id='gameSearch' type='text' class='form-control input-sm' placeholder='Search' maxlength="32" />
+                            </div>
+                            <div class='col-xs-4'>
+                                <button title='Ctrl-R' class='btn btn-sm btn-success' onclick='editIt();'>Edit &nbsp;<i class='glyphicon glyphicon-edit'></i></button>
+                            </div>
+                        </div>
+                        <div id='gameList' class='well'>
+                            <div id='games'>
+                                <table class="table outer">
+                                    <thead>
+                                        <tr><th>Title</th></tr>
+                                    </thead>
+                                    <tbody id="gameListResults">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

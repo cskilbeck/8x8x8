@@ -25,7 +25,6 @@ html, body {
 }
 
 #mainPane {
-    background: red;
 }
 
 body .modal .modal-dialog {
@@ -155,4 +154,108 @@ body .modal .modal-dialog {
     width: auto;
     height: auto;
     padding-bottom: 0px;
+}
+
+
+table.table {
+    table-layout: fixed;
+}
+
+.clickable {
+    cursor: pointer;
+    background-color: #F5F5F5;
+    overflow: hidden;
+}
+
+.clickable:hover {
+    background-color: #E8E8E8;
+    overflow: hidden;
+    -webkit-transition: none;
+    -moz-transition: none;
+    -o-transition: none;
+    transition: none;
+}
+
+.clickable.expanding,
+.clickable.contracting,
+.clickable.expanding:hover,
+.clickable.contracting:hover,
+.clickable.expanding[aria-expanded="true"]:hover,
+.clickable.contracting[aria-expanded="true"]:hover {
+    -webkit-transition: background-color 0.35s ease;
+    -moz-transition: background-color 0.35s ease;
+    -o-transition: background-color 0.35s ease;
+    transition: background-color 0.35s ease;
+}
+
+.clickable[aria-expanded="true"] {
+    background-color: #dff0d8;
+    overflow: hidden;
+}
+
+.clickable[aria-expanded="true"]:hover {
+    background-color: #d8e8d0;
+}
+
+.table.outer >tbody >tr >td {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border: none;
+    border-left: 1px LightGrey solid;
+    border-right: 1px LightGrey solid;
+    overflow: hidden;
+}
+
+.table.outer >tbody >tr.hid > td {
+    padding: 0;
+}
+
+.table>thead:first-child>tr:first-child>th {
+    border-top: 1px LightGrey solid;
+}
+
+.table.outer >thead >tr >th {
+    border: 1px LightGrey solid;
+}
+
+.table >tbody+tbody {
+    border-top: 1px LightGrey solid;
+}
+
+.table >thead >tr >th,
+.table.outer >tbody:last-child,
+.table.outer >tbody:last-child:first-child {
+    border-bottom: 1px LightGrey solid;
+}
+
+.table.inner >tbody >tr >td {
+    border: none;
+    overflow: hidden;
+    padding-left: 20px;
+    padding-right: 4px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    background-color: #ffffff;
+    font-size: small;
+}
+
+.table.inner >tbody >tr:first-child >td {
+    border-top: 1px LightGrey solid;
+    padding-top: 6px;
+}
+
+.table.inner >tbody >tr:first-child >td.butter {
+    padding: 0px;
+    padding-top: 6px;
+    padding-right: 6px;
+}
+
+.table.inner >tbody >tr:last-child >td {
+    padding-bottom: 8px;
+}
+
+.table {
+    margin-bottom: 0px;
 }

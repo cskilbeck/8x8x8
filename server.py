@@ -29,6 +29,7 @@ def date_handler(obj):
     return obj.isoformat() if hasattr(obj, 'isoformat') else obj
 
 def getJSON(x):
+    web.header('Content-type', 'application/json')
     return json.dumps(x, indent = 4, separators=(',',': '), default = date_handler)
 
 #----------------------------------------------------------------------
@@ -162,7 +163,6 @@ class login:
     def POST(self):
         data = web.input()
         result = {"status": "error"}
-        web.header('Content-type', 'application/json')
         user_id = 0
         if data['email'] is None or data['password'] is None:
             web.ctx.status = '400 Missing parameter'

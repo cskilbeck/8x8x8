@@ -15,6 +15,11 @@
 //
 // 23456789abcdfghjklmnpqrstvwxz
 //
+// GameName | Play | [Copy|Edit]    (depending on whether it's yours or someone elses)
+//
+// Play: load it, run it
+// Copy: load it, save it, edit it
+// Edit: edit it
 //////////////////////////////////////////////////////////////////////
 // function: set(x, y, c) - set pixel at x,y to color c
 // function: get(x, y) - get the color of the pixel at x,y
@@ -48,9 +53,9 @@ $(document).ready(function() {
             if(name === panes[i]) {
                 if(p.hasClass('masked') && push !== false) {
                     panestack.push(i);
+                    $("#closeButton").removeClass('masked');
                 }
                 p.removeClass('masked');
-                $("#closeButton").removeClass('masked');
                 $("#paneTitle").text(paneNames[i]);
             }
             else {
@@ -78,8 +83,12 @@ $(document).ready(function() {
         editor.focus();
     };
 
-    reportError = function(e) {
+    function setStatus(e) {
         $("#statusBar").html(e);
+    }
+
+    reportError = function(e) {
+        setStatus(e);
         FocusEditor();
     };
 
@@ -100,6 +109,39 @@ $(document).ready(function() {
             }
         });
         return false;
+    };
+
+    function row(g) {
+        var isMine = g.user_id === user_id,
+            copyEdit;
+        if(isMine) {
+            copyEdit = "<button class='btn btn-xs btn-default' onclick='editIt(" + g.game_id + ");'>Edit &nbsp;<i class='glyphicon glyphicon-edit'></i></button>";
+        }
+        else {
+            copyEdit = "<button class='btn btn-xs btn-default' onclick='copyIt(" + g.game_id + ");'>Copy &nbsp;<i class='glyphicon glyphicon-duplicate'></i></button>";
+        }
+        return "<tr class='clickable'><td id='game_id" + g.game_id.toString() + "''>" + g.game_title + "</td>" +
+        "<td>" + 
+        "<button class='btn btn-xs btn-default' onclick='viewIt(" + g.game_id + ");'>View &nbsp;<i class='glyphicon glyphicon-info-sign'></i></button>&nbsp;" +
+        "<button class='btn btn-xs btn-default' onclick='playIt(" + g.game_id + ");'>Play &nbsp;<i class='glyphicon glyphicon-play'></i></button>&nbsp;" +
+        copyEdit +
+        "</td></tr>";
+    }
+
+    refreshGameList = function() {
+        var i, games = $("#games"), table = "";
+        $.get('/list', {
+                user_id: 1
+            })
+        .done(function(result) {
+            for(i in result.games) {
+                table += row(result.games[i]);
+            }
+            $("#gameListResults").html(table);
+        })
+        .fail(function(xhr) {
+            setStatus(xhr.statusText);
+        });
     };
 
     showLogin = function() {
@@ -236,11 +278,11 @@ $(document).ready(function() {
 
     $("#loginForm").validate();
 
-    panestack.push('editorPane');
-    showPane('editorPane');
-    
-    editor.resize(true);
+    panestack.push('gameList');
+    showPane('gameList', false);
 
-    FocusEditor();
+    refreshGameList();
+    
+//    FocusEditor();
 
 });
