@@ -18,8 +18,10 @@ render = web.template.render('templates/')
 urls = (
     '/', 'index',
     '/login', 'login',
+    '/register', 'register',
     '/favicon.ico', 'favicon',
     '/save', 'save',
+    '/source', 'source',
     '/count', 'count',
     '/list', 'list')
 
@@ -65,6 +67,15 @@ class favicon:
         raise web.seeother("/static/favicon.ico")
 
 #----------------------------------------------------------------------
+
+def paramcheck(params, argNames):
+    pprint.pprint(params)
+    pprint.pprint(argNames)
+    for i in argNames:
+        if not i in params:
+            raise ValueError
+
+#----------------------------------------------------------------------
 # count
 # GET: (used_id, search)
 
@@ -79,17 +90,43 @@ class count:
             }
             with closing(opendb()) as db:
                 with closing(db.cursor()) as cur:
-                    cur.execute("SELECT COUNT(*) AS count "
-                        "FROM games "
-                        "WHERE user_id = %(user_id)s AND game_title LIKE %(search)s"
-                        , params)
+                    cur.execute("""SELECT COUNT(*) AS count 
+                                    FROM games 
+                                    WHERE user_id = %(user_id)s AND game_title LIKE %(search)s"""
+                                , params)
                     result['count'] = cur.fetchone()['count']
-        except mdb.Error, e:
-            web.ctx.status = '500 Internal server error'
-            result = {"status": "error"}
         except ValueError:
             web.ctx.status = '400 Invalid parameters'
-            result = {"status": "error"}
+            result['status'] = "error"
+        except mdb.Error, e:
+            web.ctx.status = '500 Database problem'
+            result['status'] = "error"
+        return getJSON(result)
+
+#----------------------------------------------------------------------
+# source
+
+class source:
+    def GET(self):
+        data = web.input()
+        result = {"status": "ok"}
+        try:
+            paramcheck(data, ['game_id'])
+            with closing(opendb()) as db:
+                with closing(db.cursor()) as cur:
+                    cur.execute("SELECT game_source FROM GAMES WHERE game_id=%s", (int(data['game_id']),))
+                    if cur.rowcount == 0:
+                        web.ctx.status = '400 game not found'
+                        result = {"status": "error"}
+                    else:
+                        row = cur.fetchone()
+                        result['source'] = row['game_source']
+        except ValueError:
+            web.ctx.status = '400 Invalid parameters'
+            result['status'] = "error"
+        except mdb.Error, e:
+            web.ctx.status = '500 Database problem'
+            result['status'] = "error"
         return getJSON(result)
 
 #----------------------------------------------------------------------
@@ -99,6 +136,7 @@ class count:
 class list:
     def GET(self):
         data = web.input()
+        pprint.pprint(data)
         result = {"status": "ok"}
         params = {
             'user_id': int(data.get('user_id', 0)),
@@ -106,19 +144,21 @@ class list:
             'length': min(100, int(data.get('length', 20))),
             'offset': min(100, int(data.get('offset', 0)))
         }
-        with closing(opendb()) as db:
-            with closing(db.cursor()) as cur:
-                try:
-                    cur.execute("SELECT game_id, user_id, game_title, game_lastsaved, game_created "
-                        "FROM games "
-                        "WHERE user_id = %(user_id)s AND game_title LIKE %(search)s"
-                        "ORDER BY game_lastsaved, game_created DESC "
-                        "LIMIT %(length)s OFFSET %(offset)s"
-                        , params)
+        try:
+            with closing(opendb()) as db:
+                with closing(db.cursor()) as cur:
+                    cur.execute("""SELECT game_id, games.user_id, game_title, game_lastsaved, game_created, user_username
+                                    FROM games
+                                        INNER JOIN users ON users.user_id = games.user_id 
+                                    WHERE games.user_id = %(user_id)s AND game_title LIKE %(search)s
+                                    ORDER BY game_lastsaved, game_created DESC
+                                    LIMIT %(length)s OFFSET %(offset)s"""
+                                , params)
                     result['games'] = cur.fetchall()
-                except mdb.Error, e:
-                    web.ctx.status = '500 Internal server error'
-                    result["status"] = "error"
+        except mdb.Error, e:
+            pprint.pprint(e)
+            web.ctx.status = '500 Database problem'
+            result["status"] = "error"
         return getJSON(result)
 
 #----------------------------------------------------------------------
@@ -129,63 +169,94 @@ class save:
     def POST(self):
         data = web.input()
         result = {"status": "ok"}
-        for i in ['user_id', 'source', 'name']:
-            if not i in data:
-                web.ctx.status = '400 Missing parameter'
-        # TODO (chs): sanitize name: strip invalid chars and limit length
         try:
+            paramcheck(data, ['user_id', 'source', 'name'])
             with closing(opendb()) as db:
                 with closing(db.cursor()) as cur:
                     cur.execute("SELECT * FROM users WHERE user_id =%(user_id)s", data)
                     if cur.fetchone() is None:
                         web.ctx.status = '401 Invalid user_id'
                     else:
-                        cur.execute(
-                            "INSERT INTO games (user_id, game_created, game_lastsaved, game_source, game_title) "
-                            "VALUES(%(user_id)s, NOW(), NOW(), %(source)s, %(name)s) "
-                            "ON DUPLICATE KEY UPDATE game_source = VALUES(game_source), game_lastsaved = VALUES(game_lastsaved)"
-                            , data)
+                        cur.execute("""INSERT INTO games (user_id, game_created, game_lastsaved, game_source, game_title)
+                                        VALUES (%(user_id)s, NOW(), NOW(), %(source)s, %(name)s)
+                                        ON DUPLICATE KEY UPDATE game_source = VALUES(game_source), game_lastsaved = VALUES(game_lastsaved)"""
+                                    , data)
                         result['saved'] = cur.rowcount
         except ValueError:
             web.ctx.status = '404 Invalid parameter'
             result["status"] = "error"
         except mdb.Error, e:
             result["status"] = "error"
-            web.ctx.status = '500 Internal server error'
+            web.ctx.status = '500 Database problem'
         return getJSON(result)
 
 
 #----------------------------------------------------------------------
-# login (or register)
-# POST: { 'email': 'charlie@skilbeck.com,' 'password': 'henry1' }
+# register
+# POST: { 'email': 'charlie@skilbeck.com', 'password': 'henry1', 'username': 'cskilbeck' }
+
+class register:
+    def parameters(self):
+        return ['username', 'email', 'password']
+
+    def POST(self):
+        data = web.input()
+        result = { 'status': 'error' }
+        user_id = 0
+        try:
+            paramcheck(data, ['username', 'email', 'password'])
+            with closing(opendb()) as db:
+                with closing(db.cursor()) as cur:
+                    cur.execute("SELECT COUNT(*) AS count FROM users WHERE user_email=%(email)s", data)
+                    if cur.fetchone()['count'] != 0:
+                        result['message'] = 'Email already taken'
+                    else:
+                        cur.execute("SELECT COUNT(*) AS count FROM users WHERE user_name=%(username)s", data)
+                        if cur.fetchone()['count'] != 0:
+                            result['message'] = 'Username already taken'
+                        else:
+                            cur.execute("INSERT INTO users (user_email, user_password, user_name, user_created) VALUES (%(email)s, %(password)s, %(username)s, NOW())", data)
+                            user_id = cur.lastrowid
+                            session().user_id = user_id
+                            result['status'] = 'ok'
+                            result['user_id'] = user_id
+                            result['user_username'] = data['username']
+        except ValueError:
+            web.ctx.status = '404 Invalid parameter'
+        except mdb.Error, e:
+            web.ctx.status = '500 Database problem'
+        return getJSON(result)
+
+#----------------------------------------------------------------------
+# login
+# POST: { 'email': 'charlie@skilbeck.com', 'password': 'henry1' }
 
 class login:
     def POST(self):
         data = web.input()
         result = {"status": "error"}
         user_id = 0
-        if data['email'] is None or data['password'] is None:
-            web.ctx.status = '400 Missing parameter'
-        else:
+        try:
+            paramcheck(data, ['email', 'password'])
             with closing(opendb()) as db:
                 with closing(db.cursor()) as cur:
-                    try:
-                        cur.execute("SELECT * FROM users WHERE user_email =%(email)s", data)
+                    cur.execute("SELECT * FROM users WHERE user_email =%(email)s", data)
+                    if cur.rowcount > 0:
                         row = cur.fetchone()
-                        if row is None:
-                            cur.execute("INSERT INTO users (user_email, user_password, user_created) VALUES (%(email)s, %(password)s, NOW())", data)
-                            user_id = cur.lastrowid
-                        else:
-                            if row['user_password'] == data['password']:
-                                user_id = row['user_id']
-                            else:
-                                web.ctx.status = '401 Incorrect password'
-                        if user_id != 0:
+                        if row['user_password'] == data['password']:
+                            user_id = row['user_id']
                             session().user_id = user_id
-                            result['user_id'] = user_id
                             result['status'] = "ok"
-                    except mdb.Error, e:
-                        web.ctx.status = '500 Internal server error'
+                            result['user_id'] = user_id
+                            result['user_username'] = row['user_username']
+                        else:
+                            web.ctx.status = '401 Incorrect username or password'
+                    else:
+                        web.ctx.status = '401 Incorrect username or password'
+        except ValueError:
+            web.ctx.status = '404 Invalid parameter'
+        except mdb.Error, e:
+            web.ctx.status = '500 Database problem'
         return getJSON(result)
 
 #----------------------------------------------------------------------

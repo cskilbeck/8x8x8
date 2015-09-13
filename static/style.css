@@ -40,8 +40,6 @@ body .modal .modal-dialog {
 }
 
 #titleBar {
-    background: #36A;
-    color: white;
     padding: 5px;
     margin: 0;
 }
@@ -135,9 +133,13 @@ body .modal .modal-dialog {
 .statusBar {
     width: 80%;
     height: 40px;
-    color: red;
+    color: green;
     font-weight: bolder;
     padding: 8px;
+}
+
+.statusBar.statusError {
+    color: red;
 }
 
 .background.rightPane {
@@ -170,22 +172,6 @@ table.table {
 .clickable:hover {
     background-color: #E8E8E8;
     overflow: hidden;
-    -webkit-transition: none;
-    -moz-transition: none;
-    -o-transition: none;
-    transition: none;
-}
-
-.clickable.expanding,
-.clickable.contracting,
-.clickable.expanding:hover,
-.clickable.contracting:hover,
-.clickable.expanding[aria-expanded="true"]:hover,
-.clickable.contracting[aria-expanded="true"]:hover {
-    -webkit-transition: background-color 0.35s ease;
-    -moz-transition: background-color 0.35s ease;
-    -o-transition: background-color 0.35s ease;
-    transition: background-color 0.35s ease;
 }
 
 .clickable[aria-expanded="true"] {
@@ -212,22 +198,17 @@ table.table {
     padding: 0;
 }
 
-.table>thead:first-child>tr:first-child>th {
-    border-top: 1px LightGrey solid;
-}
-
-.table.outer >thead >tr >th {
-    border: 1px LightGrey solid;
-}
-
-.table >tbody+tbody {
-    border-top: 1px LightGrey solid;
-}
-
-.table >thead >tr >th,
-.table.outer >tbody:last-child,
-.table.outer >tbody:last-child:first-child {
+.table.outer >tbody >tr.clickable:not(:last-child)  {
     border-bottom: 1px LightGrey solid;
+}
+
+.tableContainer {
+    background: white;
+    border-bottom: 1px LightGrey solid;
+}
+
+.table.inner {
+    width: auto;
 }
 
 .table.inner >tbody >tr >td {
@@ -242,14 +223,14 @@ table.table {
 }
 
 .table.inner >tbody >tr:first-child >td {
-    border-top: 1px LightGrey solid;
     padding-top: 6px;
 }
 
 .table.inner >tbody >tr:first-child >td.butter {
-    padding: 0px;
+    padding-left: 20px;
     padding-top: 6px;
     padding-right: 6px;
+    padding-bottom: 10px;
 }
 
 .table.inner >tbody >tr:last-child >td {
@@ -259,3 +240,21 @@ table.table {
 .table {
     margin-bottom: 0px;
 }
+
+.gly-spin {
+    -webkit-animation:  spin 0.5s infinite linear;
+    -moz-animation:     spin 0.5s infinite linear;
+    -o-animation:       spin 0.5s infinite linear;
+    animation:          spin 0.5s infinite linear;
+}
+@-moz-keyframes     spin {  000% { -moz-transform: rotate(000deg); }
+                            100% { -moz-transform: rotate(359deg); } }
+
+@-webkit-keyframes  spin {  000% { -webkit-transform: rotate(000deg); }
+                            100% { -webkit-transform: rotate(359deg); } }
+
+@-o-keyframes       spin {  000% { -o-transform: rotate(000deg); }
+                            100% { -o-transform: rotate(359deg); } }
+
+@keyframes          spin {  000% { -webkit-transform: rotate(000deg); transform: rotate(000deg); }
+                            100% { -webkit-transform: rotate(359deg); transform: rotate(359deg); } }

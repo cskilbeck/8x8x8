@@ -1,52 +1,94 @@
 //////////////////////////////////////////////////////////////////////
+// - fix game list table (column widths etc)
+// - make main left pane fill available screen space (esp. editor)
+// - proper query for game list (incorporate username)
 // - user registration/login/forgot password
-// - web service
-// - voting
+//      username, verify password etc
+//      Promise from login for what happens after (save, copy)
+// - voting/rating/comments
 // - telemetry/analytics
 // - feedback on save/execute
-// - form validation (jquery.validate) + bootstrap popover: http://jsfiddle.net/3qYpM/609/
+// - finish help pane content
 //
 // + save current source in LocalStorage
-//
-//
-// when the email changes, and it's a valid email, ajax it to the server
-// when the result comes back, if it's a known user, then the hash will accompany and can be checked against the password
-// if it's not a known user, change button text to 'Register' and send username + password to server for hashing
-//
-// 23456789abcdfghjklmnpqrstvwxz
-//
-// GameName | Play | [Copy|Edit]    (depending on whether it's yours or someone elses)
-//
-// Play: load it, run it
-// Copy: load it, save it, edit it
-// Edit: edit it
+// + web service
+// + save to web service
+// + login form validation
+// + game list pane
+// + nice date formatting (momentjs)
+// + pane history
 //////////////////////////////////////////////////////////////////////
-// function: set(x, y, c) - set pixel at x,y to color c
-// function: get(x, y) - get the color of the pixel at x,y
-// function: clear(c) - set the whole screen to color c (default: 0)
-//
-//      coordinates: 0,0 is top left, 7,7 is bottom right
-//      colors: {0: black, 1: red, 2: green, 3: yellow, 4: blue, 5: magenta, 6: cyan, 7: white}
-//
-// function: held(k) - get whether key k is currently held down
-// function: pressed(k) - get whether key k was just pressed
-// function: released(k) - get whether key k was just released
-//
-//      keys: ['up', 'down', 'left', 'right', 'space']
-//
-// function update() will be called each frame
 
 $(document).ready(function() {
-    "option strict";
+    "use strict";
 
     var editor,
         user_id,
         panes = [ 'gameList', 'editorPane', 'helpPane' ],
         paneNames = [ 'Games', 'Editor', 'Help' ],
         panestack = [],
+        loginDefer,
+        choiceDefer,
         source;
 
-    showPane = function(name, push) {
+    var preScript = "function ClientScript(document, window, alert, parent, frames, frameElment, history, fullScreen, innerHeight, innerWidth, length, location, GlobalEventHandlers, WindowEventHandlers, opener, performance, screen) { 'use strict'; ";
+    var postScript = "; this.updateFunction = (typeof update === 'function') ? update : null; };";
+
+    function getFormObj(formId) {
+        var formObj = {};
+        var inputs = $('#'+formId).serializeArray();
+        $.each(inputs, function (i, input) {
+            formObj[input.name] = input.value;
+        });
+        return formObj;
+    }
+
+    window.makeChoice = function(choice) {
+        if(choice) {
+            choiceDefer.resolve();
+        }
+        else {
+            choiceDefer.reject();
+        }
+    };
+
+    window.deleteIt = function(gameID) {
+        getChoice("Delete Game", "Are you sure you want to permanently delete this game?")
+        .then(function() {
+            console.log("Yes!");
+        },
+        function() {
+            console.log("No!");
+        });
+    };
+
+    window.viewIt = function(gameID) {
+
+    };
+
+    window.playIt = function(gameID) {
+        $.get('/source', {game_id: gameID})
+        .done(function(result)
+        {
+            execute(result.source);
+        })
+        .fail(function(xhr)
+        {
+            reportError(xhr.statusText);
+        });
+    };
+
+    function getChoice(banner, text, yesText, noText) {
+        choiceDefer = Q.defer();
+        $("#choiceText").text(text);
+        $("#choiceLabel").text(banner || "");
+        $("#choiceYes").text(yesText || "Yes");
+        $("#choiceNo").text(noText || "No");
+        $("#choiceModal").modal('show');
+        return choiceDefer.promise;
+    }
+
+    window.showPane = function(name, push) {
         var i, p;
         for(i in panes) {
             p = $('#' + panes[i]);
@@ -64,7 +106,7 @@ $(document).ready(function() {
         }
     };
 
-    popPane = function() {
+    window.popPane = function() {
         if(panestack.length > 1) {
             panestack.pop();
             showPane(panestack[panestack.length - 1], false);
@@ -74,77 +116,165 @@ $(document).ready(function() {
         }
     };
 
-    clearError = function(e) {
+    window.clearError = function(e) {
         $("#statusBar").html("&nbsp;");
     };
 
-    FocusEditor = function() {
+    window.focusEditor = function() {
         focus();
         editor.focus();
     };
 
-    function setStatus(e) {
-        $("#statusBar").html(e);
-    }
-
-    reportError = function(e) {
-        setStatus(e);
-        FocusEditor();
+    window.reportStatus = function(e) {
+        var sb = $("#statusBar");
+        sb.html(e);
+        sb.removeClass("statusError");
+        focusEditor();
     };
 
-    handleLogin = function(e) {
-        $.post('/login', {
-                email: $('#emailInput').val(),
-                password: $("#passwordInput").val()
-            })
+    window.reportError = function(e) {
+        var sb = $("#statusBar");
+        sb.html(e);
+        sb.addClass("statusError");
+        focusEditor();
+    };
+
+    function doLogin() {
+        $.post('/login', getFormObj('loginForm'))
         .done(function(result) {
-            console.log(result);
             user_id = result.user_id;
             $("#loginModal").modal('hide');
             $("#loginButton").text("Logout");
+            loginDefer.resolve();
         })
         .fail(function(xhr) {
             if(xhr.status === 401) {
                 $("#loginMessage").show();
             }
+            loginDefer.reject();
+        });
+    }
+
+    function loginAnd() {
+        loginDefer = Q.defer();
+        if(user_id !== 0) {
+            loginDefer.resolve();
+        }
+        else {
+            $("#loginModal").modal("show");
+        }
+        return loginDefer.promise;
+    }
+
+    window.handleLogin = function(e) {
+        doLogin();
+        return false;
+    };
+
+    window.handleRegister = function(e) {
+        var data = getFormObj('registerForm');
+        console.log(data);
+        $.post('/register', data)
+        .done(function(result) {
+            console.log(result);
+            if(result.status !== 'ok') {
+                $("#registerMessage").html(result.message);
+                $("#registerMessage").show();
+            } else {
+                // success - should be a user_id in there
+                user_id = result.user_id;
+            }
+        })
+        .fail(function(xhr) {
+            $("#registerMessage").html(xhr.statusText);
+            $("#registerMessage").show();
         });
         return false;
     };
 
-    function row(g) {
-        var isMine = g.user_id === user_id,
-            copyEdit;
-        if(isMine) {
-            copyEdit = "<button class='btn btn-xs btn-default' onclick='editIt(" + g.game_id + ");'>Edit &nbsp;<i class='glyphicon glyphicon-edit'></i></button>";
-        }
-        else {
-            copyEdit = "<button class='btn btn-xs btn-default' onclick='copyIt(" + g.game_id + ");'>Copy &nbsp;<i class='glyphicon glyphicon-duplicate'></i></button>";
-        }
-        return "<tr class='clickable'><td id='game_id" + g.game_id.toString() + "''>" + g.game_title + "</td>" +
-        "<td>" + 
-        "<button class='btn btn-xs btn-default' onclick='viewIt(" + g.game_id + ");'>View &nbsp;<i class='glyphicon glyphicon-info-sign'></i></button>&nbsp;" +
-        "<button class='btn btn-xs btn-default' onclick='playIt(" + g.game_id + ");'>Play &nbsp;<i class='glyphicon glyphicon-play'></i></button>&nbsp;" +
-        copyEdit +
-        "</td></tr>";
+    function format(str, col) {
+        col = typeof col === 'object' ? col : Array.prototype.slice.call(arguments, 1);
+        return str.replace(/\{\{|\}\}|\{(\w+)\}/g, function (m, n) {
+            if (m == "{{") { return "{"; }
+            if (m == "}}") { return "}"; }
+            return col[n];
+        });
     }
 
-    refreshGameList = function() {
+    function row(index, g) {
+
+        var template =
+            "<tr data-toggle='collapse' data-target='#row{index}' class='clickable' id='headerRow{index}' aria-expandable='true'>" +
+                "<td>" +
+                    "{game_title}" +
+                "</td>" +
+                "<td>" +
+                    "{user}" +
+                "</td>" +
+            "</tr>" +
+            "<tr class='hid'>" +
+                "<td colspan='2'>" +
+                    "<div class='accordion-body collapse tableContainer' id='row{index}' row='#headerRow{index}' collapsible aria-expanded='false' style>" +
+                        "<table class='table inner'>" +
+                            "<tbody>" +
+                                "<tr>" +
+                                    "<td colspan='2' class='butter'>" +
+                                        "<button class='btn btn-xs btn-primary' onclick='viewIt({game_id})'>View &nbsp;<i class='glyphicon glyphicon-info-sign'></i></button>&nbsp;" +
+                                        "<button class='btn btn-xs btn-success' onclick='playIt({game_id})'>Play &nbsp;<i class='glyphicon glyphicon-play'></i></button>&nbsp;" +
+                                        "<button class='btn btn-xs btn-info' onclick='{action}It({game_id})'>{action} &nbsp;<i class='glyphicon glyphicon-edit'></i></button>&nbsp;" +
+                                        "<button class='btn btn-xs btn-danger' onclick='deleteIt({game_id})'>Delete &nbsp;<i class='glyphicon glyphicon-trash'></i></button>" +
+                                    "</td>" +
+                                "</tr>" +
+                                "<tr>" +
+                                    "<td>Last Saved</td>" +
+                                    "<td>{lastsaved}</td>" +
+                                "</tr>" +
+                                "<tr>" +
+                                    "<td>Created</td>" +
+                                    "<td>{created}</td>" +
+                                "</tr>" +
+                            "</tbody>" +
+                        "</table>" +
+                    "</div>" +
+                "</td>" +
+            "</tr>",
+            isMine = g.user_id === user_id,
+            copyEdit,
+            params = {
+                index: index,
+                game_title: g.game_title,
+                game_id: g.game_id,
+                action: isMine ? 'Edit' : 'Copy',
+                lastsaved: moment(g.game_lastsaved).fromNow(),
+                created: moment(g.game_created).fromNow(),
+                user: g.user_id
+            };
+        return format(template, params);
+    }
+
+    window.refreshGameList = function() {
         var i, games = $("#games"), table = "";
         $.get('/list', {
                 user_id: 1
             })
         .done(function(result) {
             for(i in result.games) {
-                table += row(result.games[i]);
+                table += row(i, result.games[i]);
             }
-            $("#gameListResults").html(table);
+            $("#results").html(table);
         })
         .fail(function(xhr) {
             setStatus(xhr.statusText);
         });
     };
 
-    showLogin = function() {
+    window.showRegistration = function() {
+        $("#loginModal").modal('hide');
+        $("#registerModal").modal('show');
+    };
+
+    window.showLogin = function() {
+        loginDefer = Q.defer();
         if(user_id === 0) {
             $("#loginModal").modal('show');
         }
@@ -152,6 +282,7 @@ $(document).ready(function() {
             user_id = 0;
             $("#loginButton").text("Sign in/Register");
         }
+        return loginDefer.promise;
     };
 
     function createCookie(name, value, days) {
@@ -181,41 +312,54 @@ $(document).ready(function() {
         createCookie(name, "", -1);
     }
 
-    function execute(editor, args, request) {
+    function execute(source, args, request) {
         var iframe = document.getElementById('gameFrame');
         clearError();
-        GameSource = editor.getValue();
+        window.GameSource = preScript + source + postScript;
         iframe.src = '/static/frame.html';
         iframe.contentWindow.focus();
     }
 
-    runit = function() {
-        execute(editor);
+    window.runit = function() {
+        execute(editor.getValue());
     };
 
-    saveit = function() {
-        var source = editor.getValue(),
-            data =  { user_id: user_id, source: source, name: $("#gameName").val() };
-        window.localStorage.setItem('source', source);
+    function doSave() {
+        var defer = Q.defer(),
+            data =  { user_id: user_id, source: editor.getValue(), name: $("#gameName").val() };
         if(user_id !== 0) {
             console.log(data);
             $.post('/save', data)
             .done(function(result) {
-                console.log("Saved OK\n");
+                reportStatus("Saved " + data.name + " OK\n");
+                editor.session.getUndoManager().reset();
+                $('#saveButton').attr('disabled');
+                refreshGameList();
+                defer.resolve();
             })
             .fail(function(xhr) {
-                console.log("Error saving: " + xhr.status + " " + xhr.statusText);
+                reportError("Error saving: " + xhr.status + " " + xhr.statusText);
+                defer.reject();
             });
         }
         else {
-            $("#loginModal").modal('show');
+            defer.reject();
         }
-        editor.session.getUndoManager().reset();
-        $('#saveButton').attr('disabled');
+        return defer.promise;
+    }
+
+    window.saveit = function() {
+        var source = editor.getValue();
+        window.localStorage.setItem('source', source);
+        loginAnd().then(doSave);
+    };
+
+    window.createNewGame = function() {
+        showPane('editorPane');
     };
 
     $('#editor').click(function() {
-        FocusEditor();
+        focusEditor();
     });
 
     editor = ace.edit("editor");
@@ -278,11 +422,13 @@ $(document).ready(function() {
 
     $("#loginForm").validate();
 
+//    $("#registerForm").validate();
+
     panestack.push('gameList');
     showPane('gameList', false);
 
     refreshGameList();
     
-//    FocusEditor();
+//    focusEditor();
 
 });

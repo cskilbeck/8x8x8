@@ -1,5 +1,5 @@
 (function() {
-    "option strict";
+    "use strict";
 
     var lastTime = 0,
         vendors = [
@@ -33,7 +33,7 @@
 }());
 
 (function() {
-    "option strict";
+    "use strict";
 
     var W = 8,
         H = 8,
@@ -42,6 +42,7 @@
         context,
         canvas,
         editor,
+        client,
         exception = false,
         keyCount = 0,
         lastkey,
@@ -104,7 +105,7 @@
         }
     }
 
-    function GetKey(str, arr) {
+    function getKey(str, arr) {
         switch(str.toLowerCase()) {
             case ' ': return arr[0];
             case 'space' : return arr[0];
@@ -141,18 +142,18 @@
     }
 
     function doPressed(key) {
-        return GetKey(key, keyPressed);
+        return getKey(key, keyPressed);
     }
 
     function doHeld(key) {
-        return GetKey(key, keyHeld);
+        return getKey(key, keyHeld);
     }
 
     function doReleased(key) {
-        return GetKey(key, keyReleased);
+        return getKey(key, keyReleased);
     }
 
-    function GetKeyCode(key) {
+    function getKeyCode(key) {
         if(key == 32)
         {
             return 0;
@@ -175,7 +176,7 @@
         else
         {
             lastkey = e.keyCode;
-            key = GetKeyCode(e.keyCode);
+            key = getKeyCode(e.keyCode);
             if(key !== null) {
                 keyPressed[key] = true;
                 keyHeld[key] = true;
@@ -188,7 +189,7 @@
     };
 
     document.onkeyup = function(e) {
-        var key = GetKeyCode(e.keyCode);
+        var key = getKeyCode(e.keyCode);
         keyCount = lastkey = 0;
         if(key !== null) {
             keyReleased[key] = true;
@@ -198,9 +199,9 @@
 
     function onFrame() {
         var i;
-        if(typeof update === 'function' && !exception) {
+        if(client && client.updateFunction !== null && !exception) {
             try {
-                update(frame++);
+                client.updateFunction(frame++);
             }
             catch(e) {
                 exception = true;
@@ -238,6 +239,8 @@
         script.innerHTML = parent.GameSource;
         body.appendChild(script);
     }
+
+    client = (typeof ClientScript !== 'undefined') ? new ClientScript() : null;
 
     requestAnimationFrame(onFrame);
 
