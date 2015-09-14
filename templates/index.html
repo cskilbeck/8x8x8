@@ -149,7 +149,51 @@
                     </div>
                     <!-- HELP -->
                     <div class='masked content' id='helpPane' >
-                        HELP!?
+                        <div class='container-fluid'>
+                            <div class='row'>
+                                <div class='col-md-8'>
+                                    <span><h2>8x8x8 - Documentation</h2></span>
+                                </div>
+                                <div class='col-md-4'>
+                                    &nbsp;
+                                </div>
+                            </div>
+                            <div class='well'>
+                                <div class='row'>
+                                        &nbsp;
+                                </div>
+                                <div class='row'>
+                                    <div class='col-md-2'><strong>set(x, y, color)</strong></div>
+                                    <div class='col-md-6'>Set the pixel at x,y to color. Coordinates are (0,0) = top left, (7,7) = bottom right. Colors are: 0 = black, 1 = red, 2 = green, 3 = yellow, 4 = blue, 5 = magenta, 6 = cyan, 7 = white</div>
+                                    <div class='row'><div class='col-md-8'>&nbsp;</div></div>
+                                </div>
+                                <div class='row'>
+                                    <div class='col-md-2'><strong>clear(color)</strong></div>
+                                    <div class='col-md-6'>Set all the pixels to color.</div>
+                                    <div class='row'><div class='col-md-8'>&nbsp;</div></div>
+                                </div>
+                                <div class='row'>
+                                    <div class='col-md-2'><strong>pressed(key)</strong></div>
+                                    <div class='col-md-6'>Check if key was just pressed. Keys are 'left', 'right', 'up', 'down', 'space'.</div>
+                                    <div class='row'><div class='col-md-8'>&nbsp;</div></div>
+                                </div>
+                                <div class='row'>
+                                    <div class='col-md-2'><strong>released(key)</strong></div>
+                                    <div class='col-md-6'>Check if key was just released. Keys are 'left', 'right', 'up', 'down', 'space'.</div>
+                                    <div class='row'><div class='col-md-8'>&nbsp;</div></div>
+                                </div>
+                                <div class='row'>
+                                    <div class='col-md-2'><strong>held(key)</strong></div>
+                                    <div class='col-md-6'>Check if key is currently held down. Keys are 'left', 'right', 'up', 'down', 'space'.</div>
+                                    <div class='row'><div class='col-md-8'>&nbsp;</div></div>
+                                </div>
+                                <div class='row'>
+                                    <div class='col-md-2'><strong>update(frame)</strong></div>
+                                    <div class='col-md-6'>You provide this function, it will be called every frame in a loop. Parameter 'frame' increases by 1 each time the function is called.</div>
+                                    <div class='row'><div class='col-md-8'>&nbsp;</div></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <!-- GAME LIST -->
                     <div class='content' id='gameList' >
@@ -161,7 +205,7 @@
                                 <button title='Ctrl-R' class='btn btn-sm btn-primary' onclick='createNewGame();'>New Game&nbsp;<i class='glyphicon glyphicon-star-empty'></i></button>
                             </div>
                         </div>
-                        <div id='gameList' class='well'>
+                        <div id='gameList'>
                             <div id='games'>
                                 <table class='table outer'>
                                     <thead class='bg-primary'>
