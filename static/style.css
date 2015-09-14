@@ -2,7 +2,7 @@ html, body {
     margin: 0;
     padding: 0;
     width: 100%;
-    height: 100%; 
+    height: 100%;
     min-width: 710px;
 }
 
@@ -58,7 +58,7 @@ body .modal .modal-dialog {
     min-height: 100%;
     position: relative;
     overflow: auto;
-    z-index: 0; 
+    z-index: 0;
 }
 
 .background {
@@ -72,30 +72,30 @@ body .modal .modal-dialog {
 
 .top_block {
     width: 100%;
-    display: block; 
+    display: block;
 }
 
 .bottom_block {
     position: absolute;
     width: 100%;
     display: block;
-    bottom: 0; 
+    bottom: 0;
     border-top: 1px solid black;
 }
 
 .left_block {
     display: block;
-    float: left; 
+    float: left;
 }
 
 .right_block {
     display: block;
-    float: right; 
+    float: right;
 }
 
 .center_block {
     display: block;
-    width: auto; 
+    width: auto;
 }
 
 .banner {
@@ -110,7 +110,7 @@ body .modal .modal-dialog {
     padding-bottom: 0;
     left: 0;
     width: 80%;
-    margin-top: 70px; 
+    margin-top: 70px;
 }
 
 .leftPane {
@@ -148,7 +148,7 @@ body .modal .modal-dialog {
     left: 0;
     right: 0;
     margin-top: 70px;
-    margin-left: 80%; 
+    margin-left: 80%;
     border-left: 1px solid black;
 }
 
@@ -186,11 +186,7 @@ table.table {
 .table.outer >tbody >tr >td {
     padding-top: 2px;
     padding-bottom: 2px;
-    padding-left: 10px;
-    padding-right: 10px;
     border: none;
-    border-left: 1px LightGrey solid;
-    border-right: 1px LightGrey solid;
     overflow: hidden;
 }
 
