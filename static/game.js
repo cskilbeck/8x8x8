@@ -2,6 +2,7 @@
 // - game list
 //      differentiate between my games and others
 //      forking
+//      paging in game list
 // - browser history
 // - make main left pane fill available screen space (esp. editor)
 // - user registration/login/forgot password

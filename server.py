@@ -4,6 +4,7 @@
 # TODO (chs): parameter validation: min, max, minlength, maxlength, prepend, append, replace
 # TODO (chs): autogenerate REST docs from parameter check dictionaries
 # TODO (chs): make delete undoable for N days
+# TODO (chs): make it unicode
 # DONE (chs): parameter validation and conditioning engine
 # DONE (chs): DRY the REST functions
 #----------------------------------------------------------------------
@@ -132,39 +133,25 @@ def checked(paramspec):
                 val = data.get(name, None)
                 if val is not None:
                     val = unicodedata.normalize('NFKD', val).encode('ascii','ignore')
-
-                #! use a tuple for enum !
-
-                # type specified, so it's a required parameter of deftype - ValueError if it's not there int(none)
                 if deftype == type:
                     if val is None:
                         raise ValueError('Missing parameter %s' % (name,))
                     try:
                         val = default(val)
                     except TypeError:
-                        raise ValueError('%s cannot be cast to %s' % (name, type(default).__name__))
-
-                # dictionary {'type': int, 'default': 0, ... }
+                        raise ValueError('%s cannot be cast to %s' % (name, default.__name__))
                 elif deftype == dict:
                     defval = default.get('default', None)
                     deftype = default.get('type', None)
                     if deftype is None:
                         if defval is None:
-                            raise ValueError('Invalid paramspec')   # must specify default or type or both
+                            raise ValueError('Invalid paramspec')
                         deftype = type(defval)
                     val = deftype(defval) if val is None else deftype(val)
-
-                    # TODO (chs): handle min and max for int, str, float and datetime etc
-
-                # default value specified [int|float|str]
                 elif deftype in [int, float, str]:
                     val = default if val is None else deftype(val)
-
-                # default datetime specified
                 elif deftype == datetime.datetime:
                     val = default if val is None else iso8601.parse_date(val)
-
-                # got a val, after all that?
                 if val is None:
                     raise KeyError('Parameter %s is missing (expected: %s)' % (name, default.__name__))
                 else:
@@ -256,7 +243,8 @@ class register(Post):
                 raise web.HTTPError('401 Username already taken')
             else:
                 cur.execute('''INSERT INTO users (user_email, user_password, user_username, user_created)
-                                VALUES (%(email)s, %(password)s, %(username)s, NOW())''', data)
+                                VALUES (%(email)s, %(password)s, %(username)s, NOW())
+                                ON DUPLICATE KEY UPDATE user_email=user_email''', data)
                 if cur.rowcount > 0:
                     user_id = cur.lastrowid
                     session().user_id = user_id
