@@ -64,6 +64,7 @@
 
     function reportError(e) {
         parent.window.reportError(e);
+        parent.window.FocusEditor();
     }
 
     function ellipse(ctx, cx, cy, w, h){

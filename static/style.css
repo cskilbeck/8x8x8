@@ -44,6 +44,14 @@ body .modal .modal-dialog {
     margin: 0;
 }
 
+.whitestar {
+    color: #CCC;
+}
+
+.yellowstar {
+    color: #FC0;
+}
+
 .close.closeButton {
     color: white;
     opacity: 1;

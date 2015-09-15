@@ -1,7 +1,7 @@
 #----------------------------------------------------------------------
 # TODO (chs): proper login/session thing
 # TODO (chs): bcrypt password
-# TODO (chs): parameter validation: min, max, minlength, maxlength, prepend, append, replace
+# TODO (chs): parameter validation: min, max, minlength, maxlength, prepend, append, replace, enums?
 # TODO (chs): autogenerate REST docs from parameter check dictionaries
 # TODO (chs): make delete undoable for N days
 # TODO (chs): make it unicode
@@ -21,21 +21,39 @@ import inspect
 import json
 import iso8601
 import unicodedata
+import struct
+import os
+import time;
 
 #----------------------------------------------------------------------
 
 app = None
 render = web.template.render('templates/')
 urls = (
-    '/', 'index',
-    '/login', 'login',
-    '/register', 'register',
+    '/api/login', 'login',
+    '/api/register', 'register',
+    '/api/save', 'save',
+    '/api/source', 'source',
+    '/api/count', 'count',
+    '/api/delete', 'delete',
+    '/api/list', 'list',
+    '/api/refreshSession', 'refreshSession',
+    '/api/endSession', 'endSession',
+
     '/favicon.ico', 'favicon',
-    '/save', 'save',
-    '/source', 'source',
-    '/count', 'count',
-    '/delete', 'delete',
-    '/list', 'list')
+    '/history', 'history',
+
+    '/(.*)', 'index'
+    )
+
+#----------------------------------------------------------------------
+
+#debug = False
+debug = True
+
+def show(x, m = 'var'):
+     if debug:
+        print m + ": " + pprint.pformat(x)
 
 #----------------------------------------------------------------------
 
@@ -43,15 +61,22 @@ def date_handler(obj):
     return obj.isoformat() if hasattr(obj, 'isoformat') else obj
 
 def getJSON(x):
+    if debug:
+        time.sleep(0.5)  # simulate slow, remote server
     web.header('Content-type', 'application/json')
     return json.dumps(x, indent = 4, separators=(',',': '), default = date_handler)
+
+#----------------------------------------------------------------------
+
+def getRandomInt():
+    return struct.unpack("<L", os.urandom(4))[0]
 
 #----------------------------------------------------------------------
 
 def session():
     global app
     if web.config.get('_session') is None:
-        s = web.session.Session(app, web.session.DiskStore('sessions'), {'count': 0})
+        s = web.session.Session(app, web.session.DiskStore('sessions'), { 'count': 0 })
         web.config._session = s
     else:
         s = web.config._session
@@ -70,13 +95,6 @@ def opendb():
                         charset     = 'utf8')
     conn.autocommit(True)
     return conn
-
-#----------------------------------------------------------------------
-# favicon.ico
-
-class favicon:
-    def GET(self):
-        raise web.seeother('/static/favicon.ico')
 
 #----------------------------------------------------------------------
 
@@ -174,7 +192,7 @@ class list(Get):
         data['search'] = '%' + data['search'].replace('*', '%').replace('.', '_') + '%'
         cur.execute('''SELECT game_id, games.user_id, game_title, game_lastsaved, game_created, user_username
                         FROM games INNER JOIN users ON users.user_id = games.user_id
-                        WHERE games.user_id = %(user_id)s AND game_title LIKE %(search)s
+                        WHERE (%(user_id)s = 0 OR games.user_id = %(user_id)s) AND game_title LIKE %(search)s
                         ORDER BY game_lastsaved, game_created DESC
                         LIMIT %(length)s OFFSET %(offset)s'''
                     , data)
@@ -184,7 +202,10 @@ class list(Get):
 # count
 
 class count(Get):
-    @checked({ 'user_id': int, 'search': '' })
+    @checked({
+        'user_id': int,
+        'search': ''
+        })
     def handleGet(self, db, cur, data):
         data['search'] = '%' + data['search'].replace('*', '%').replace('.', '_') + '%'
         cur.execute('SELECT COUNT(*) AS count FROM games WHERE user_id = %(user_id)s AND game_title LIKE %(search)s', data)
@@ -205,7 +226,11 @@ class source(Get):
 # save
 
 class save(Post):
-    @checked({ 'user_id': int, 'source': str, 'name': str })
+    @checked({
+        'user_id': int,
+        'source': str,
+        'name': str
+        })
     def handlePost(self, db, cur, data):
         cur.execute('SELECT * FROM users WHERE user_id =%(user_id)s', data)
         if cur.fetchone() is None:
@@ -220,7 +245,10 @@ class save(Post):
 # delete
 
 class delete(Post):
-    @checked({ 'user_id': int, 'game_id': int })
+    @checked({
+        'user_id': int,
+        'game_id': int
+        })
     def handlePost(self, db, cur, data):
         cur.execute('DELETE FROM games WHERE game_id = %(game_id)s AND user_id = %(user_id)s', data)
         if cur.rowcount == 0:
@@ -231,7 +259,11 @@ class delete(Post):
 # register
 
 class register(Post):
-    @checked({ 'email': str, 'password': str, 'username': str })
+    @checked({
+        'email': str,
+        'password': str,
+        'username': str
+        })
     def handlePost(self, db, cur, data):
         result = {}
         cur.execute('SELECT COUNT(*) AS count FROM users WHERE user_email=%(email)s', data)
@@ -242,14 +274,19 @@ class register(Post):
             if cur.fetchone()['count'] != 0:
                 raise web.HTTPError('401 Username already taken')
             else:
-                cur.execute('''INSERT INTO users (user_email, user_password, user_username, user_created)
-                                VALUES (%(email)s, %(password)s, %(username)s, NOW())
-                                ON DUPLICATE KEY UPDATE user_email=user_email''', data)
-                if cur.rowcount > 0:
+                data['session'] = getRandomInt()
+                cur.execute('''INSERT INTO users (user_email, user_password, user_username, user_created, user_session)
+                                VALUES (%(email)s, %(password)s, %(username)s, NOW(), %(session)s)
+                                ON DUPLICATE KEY UPDATE user_session = %(session)s, user_id = LAST_INSERT_ID(user_id), dummy = NOT dummy''', data)
+                if cur.rowcount == 1 or cur.rowcount == 2:
                     user_id = cur.lastrowid
-                    session().user_id = user_id
+                    cur.execute('SELECT user_session FROM users WHERE user_email = %(email)s', data)
+                    if cur.rowcount != 1:
+                        raise web.HTTPError('500 Database error 37')
+                    row = cur.fetchone()
                     result['user_id'] = user_id
                     result['user_username'] = data['username']
+                    result['user_session'] = row['user_session']
                 else:
                     raise web.HTTPError("401 Can't create account")
         return result
@@ -258,34 +295,80 @@ class register(Post):
 # login
 
 class login(Post):
-    @checked({ 'email': str, 'password': str })
+    @checked({
+        'email': str,
+        'password': str
+        })
     def handlePost(self, db, cur, data):
         result = {}
-        cur.execute('SELECT * FROM users WHERE user_email =%(email)s', data)
-        if cur.rowcount > 0:
-            row = cur.fetchone()
-            if row['user_password'] == data['password']:
-                user_id = row['user_id']
-                session().user_id = user_id
-                result['user_id'] = user_id
-                result['user_username'] = row['user_username']
-            else:
-                raise web.HTTPError('401 Incorrect username or password')
-        else:
-            raise web.HTTPError('401 Incorrect username or password')
-        return result
+        data['session'] = getRandomInt()
+        cur.execute('''UPDATE users SET user_session = %(session)s WHERE user_email = %(email)s AND user_password=%(password)s''', data)
+        if cur.rowcount != 1:
+            raise web.HTTPError('401 Incorrect email address or password')
+        cur.execute('''SELECT user_id, user_username, user_session FROM users WHERE user_email = %(email)s''', data)
+        if cur.rowcount != 1:
+            raise web.HTTPError('500 Login error')
+        row = cur.fetchone()
+        return row
+
+#----------------------------------------------------------------------
+# refreshSession
+
+class refreshSession(Get):
+    @checked({
+        'user_session': str,
+        'user_id': str,
+        'user_name': str
+        })
+    def handleGet(self, db, cur, data):
+        data['session'] = getRandomInt()
+        cur.execute('''UPDATE users SET user_session = %(session)s WHERE user_id = %(user_id)s AND user_username = %(user_name)s AND user_session = %(user_session)s''', data)
+        if cur.rowcount != 1:
+            raise web.HTTPError('404 Session not found')
+        return {'user_id': data['user_id'],
+                'user_username': data['user_name'],
+                'user_session': data['session']
+                }
+
+#----------------------------------------------------------------------
+# endSession
+
+class endSession(Get):
+    @checked({
+        'user_session': str,
+        'user_id': str,
+        'user_name': str
+        })
+    def handleGet(self, db, cur, data):
+        cur.execute('''UPDATE users SET user_session = NULL WHERE user_id = %(user_id)s AND user_username=%(user_name)s AND user_session = %(user_session)s''', data)
+        if cur.rowcount != 1:
+            raise web.HTTPError('404 Session not found')
+        return { 'status': 'ok' }
+
+#----------------------------------------------------------------------
+# favicon.ico
+
+class favicon:
+    def GET(self):
+        raise web.seeother('/static/favicon.ico')
 
 #----------------------------------------------------------------------
 # index
 
 class index:
-    def GET(self):
-        token = session().get('session')
-        if token is not None:
-            web.setcookie('session', session, 60 * 24 * 30)
-        else:
-            web.setcookie('session', '', -1)
+    def GET(self, path):
         return render.index()
+
+class really:
+    def GET(self, command, param):
+        return render.index()
+
+#----------------------------------------------------------------------
+# history test
+
+class history:
+    def GET(self):
+        return render.history()
 
 #----------------------------------------------------------------------
 

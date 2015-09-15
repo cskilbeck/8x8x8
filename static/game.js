@@ -3,14 +3,21 @@
 //      differentiate between my games and others
 //      forking
 //      paging in game list
+//      refresh game list on logout
+//      make the search text work (timeout on change)
+//      quick search buttons: my games, top games, most played, recently added, recently changed
 // - browser history
 // - make main left pane fill available screen space (esp. editor)
 // - user registration/login/forgot password
 //      username, verify password etc
-//      Promise from login for what happens after (save, copy)
 // - voting/rating/comments
 // - telemetry/analytics
 // - finish help pane content
+// - editor view/edit mode with forking etc
+// - ajax in progress spinner
+// - ask if they want to save when quitting the editor if changes are unsaved
+// - cache current game in editor for fast re-editing
+// - callstack from runtime errors
 //
 // + save current source in LocalStorage
 // + web service
@@ -22,22 +29,30 @@
 // + fix game list table (column widths etc)
 // + proper query for game list (incorporate username)
 // + feedback on save/execute
+// +    Promise from login for what happens after (save, copy)
 //////////////////////////////////////////////////////////////////////
 
 $(document).ready(function() {
     'use strict';
 
     var editor,
-        user_id = 0,
+        user_id = null,
+        user_session = null,
+        user_name = null,
         panes = [ 'gameList', 'editorPane', 'helpPane' ],
         paneNames = [ 'Games', 'Editor', 'Help' ],
         panestack = [],
         loginDefer,
         choiceDefer,
-        source;
-
-    var preScript = 'function ClientScript(document, window, alert, parent, frames, frameElment, history, fullScreen, innerHeight, innerWidth, length, location, GlobalEventHandlers, WindowEventHandlers, opener, performance, screen) { "use strict"; ';
-    var postScript = '; this.updateFunction = (typeof update === "function") ? update : null; };';
+        source,
+        hidden = [
+                'document', 'window', 'alert', 'parent', 'frames', 'frameElment',
+                'history', 'fullScreen', 'innerHeight', 'innerWidth', 'length',
+                'location', 'GlobalEventHandlers', 'WindowEventHandlers', 'opener',
+                'performance', 'screen'
+           ],
+        preScript = 'function ClientScript(' + hidden.join() + ') { "use strict"; ',
+        postScript = '; this.updateFunction = (typeof update === "function") ? update : null; };';
 
     function getFormObj(formId) {
         var formObj = {};
@@ -46,6 +61,63 @@ $(document).ready(function() {
             formObj[input.name] = input.value;
         });
         return formObj;
+    }
+
+    function spinner(spin) {
+        var s = $('#spinner');
+        if(spin) {
+            s.removeClass('glyphicon-ok');
+            s.addClass('glyphicon-refresh gly-spin');
+        }
+        else {
+            s.removeClass('glyphicon-refresh gly-spin');
+            s.addClass('glyphicon-ok');
+        }
+    }
+
+    function doAjax(func, url, data, progress, complete, fail) {
+        var q = Q.defer();
+        spinner(true);
+        if(progress !== undefined) {
+            reportStatus(progress);
+        }
+        func(url, data)
+        .done(function(result) {
+            spinner(false);
+            if(complete !== undefined) {
+                reportStatus(complete);
+            }
+            q.resolve(result);
+        })
+        .fail(function(xhr) {
+            spinner(false);
+            if(fail !== undefined) {
+                reportError(fail);
+            }
+            q.reject(xhr);
+        });
+        return q.promise;
+    }
+
+    function get(url, data, progress, complete, fail) {
+        data.user_session = user_session;
+        data.user_id = user_id || 0;
+        return doAjax($.get, url, data, progress, complete, fail);
+    }
+
+    function post(url, data, progress, complete, fail) {
+        data.user_session = user_session;
+        data.user_id = user_id || 0;
+        return doAjax($.post, url, data, progress, complete, fail);
+    }
+
+    function format(str, col) {
+        col = typeof col === 'object' ? col : Array.prototype.slice.call(arguments, 1);
+        return str.replace(/\{\{|\}\}|\{(\w+)\}/g, function (m, n) {
+            if (m == '{{') { return '{'; }
+            if (m == '}}') { return '}'; }
+            return col[n];
+        });
     }
 
     window.makeChoice = function(choice) {
@@ -60,14 +132,12 @@ $(document).ready(function() {
     window.deleteIt = function(gameID) {
         getChoice('Delete Game', 'Are you sure you want to delete this game? This action cannot be undone', 'Yes, delete it permanently', 'No')
         .then(function() {
-            $.post('/delete', {
-                user_id: user_id,
-                game_id: gameID})
-            .done(function(result) {
+            post('/api/delete', { game_id: gameID }, 'Deleting game...', '', 'Error deleting game')
+            .then(function(result) {
                 refreshGameList();
                 reportStatus('Game deleted');
-            })
-            .fail(function(xhr){
+            },
+            function(xhr){
                 reportError(xhr.statusText);
             });
         },
@@ -76,35 +146,67 @@ $(document).ready(function() {
         });
     };
 
-    window.viewIt = function(gameID) {
-
-    };
-
-    window.playIt = function(gameID) {
-        $.get('/source', {game_id: gameID})
-        .done(function(result)
-        {
+    window.playIt = function(game_id) {
+        get('/api/source', { game_id: game_id }, 'Getting game...', '', 'Error getting game')
+        .then(function(result) {
             execute(result.source);
-        })
-        .fail(function(xhr)
-        {
+        },
+        function(xhr) {
             reportError(xhr.statusText);
         });
     };
+
+    function enable(id, enabled) {
+        $(id).prop('disabled', !enabled);
+    }
+
+    function getSource(game_id) {
+        var p = Q.defer();
+        get('/api/source', { game_id: game_id }, 'Loading game...', '', 'Error loading game')
+        .then(function(result) {
+            editor.setValue(result.source, -1);
+            editor.session.getUndoManager().reset();
+            $('#gameName').val(result.game_title);
+            p.resolve(result);
+        },
+        function(xhr) {
+            reportError(xhr.statusText);
+            p.reject();
+        });
+        return p.promise;
+    }
 
     window.EditIt = function(game_id) {
-        $.get('/source', {game_id: game_id})
-        .done(function(result) {
-            console.log(result);
+        getSource(game_id)
+        .then(function(result) {
+            editor.setOptions({ readOnly: false, highlightActiveLine: true });
+            enableKeyBindings();
+            show('#saveButton', true);
             editor.session.getUndoManager().reset();
-            editor.setValue(result.source, -1);
-            $('#gameName').val(result.game_title);
+            enable("#gameName", true);
             showPane('editorPane');
-        })
-        .fail(function(xhr) {
-            reportError(xhr.statusText);
         });
     };
+
+    window.viewIt = function(game_id) {
+        getSource(game_id)
+        .then(function(result) {
+            editor.setOptions({ readOnly: true, highlightActiveLine: false });
+            disableKeyBindings();
+            show('#saveButton', false);
+            enable("#gameName", false);
+            showPane('editorPane');
+        });
+    };
+
+    function show(id, vis) {
+        if(vis) {
+            $(id).removeClass('masked');
+        }
+        else {
+            $(id).addClass('masked');
+        }
+    }
 
     function getChoice(banner, text, yesText, noText) {
         choiceDefer = Q.defer();
@@ -112,6 +214,17 @@ $(document).ready(function() {
         $('#choiceLabel').text(banner || '');
         $('#choiceYes').text(yesText || 'Yes');
         $('#choiceNo').text(noText || 'No');
+        show('#choiceNo', true);
+        $('#choiceModal').modal('show');
+        return choiceDefer.promise;
+    }
+
+    function showAlert(banner, text, buttonText) {
+        choiceDefer = Q.defer();
+        $('#choiceText').text(text);
+        $('#choiceLabel').text(banner || '');
+        $('#choiceYes').text(buttonText || 'OK');
+        show('#choiceNo', false);
         $('#choiceModal').modal('show');
         return choiceDefer.promise;
     }
@@ -123,13 +236,13 @@ $(document).ready(function() {
             if(name === panes[i]) {
                 if(p.hasClass('masked') && push !== false) {
                     panestack.push(i);
-                    $('#closeButton').removeClass('masked');
+                    show('#closeButton', true);
                 }
-                p.removeClass('masked');
+                show(p, true);
                 $('#paneTitle').text(paneNames[i]);
             }
             else {
-                p.addClass('masked');
+                show(p, false);
             }
         }
     };
@@ -138,9 +251,7 @@ $(document).ready(function() {
         if(panestack.length > 1) {
             panestack.pop();
             showPane(panestack[panestack.length - 1], false);
-            if(panestack.length === 1) {
-                $('#closeButton').addClass('masked');
-            }
+            show('#closeButton', panestack.length > 1);
         }
     };
 
@@ -155,27 +266,26 @@ $(document).ready(function() {
 
     window.reportStatus = function(e) {
         var sb = $('#statusBar');
-        sb.html(e);
+        sb.text(e);
         sb.removeClass('statusError');
-        focusEditor();
     };
 
     window.reportError = function(e) {
         var sb = $('#statusBar');
-        sb.html(e);
+        sb.text(e);
         sb.addClass('statusError');
-        focusEditor();
     };
 
     function doLogin() {
-        $.post('/login', getFormObj('loginForm'))
-        .done(function(result) {
+        post('/api/login', getFormObj('loginForm'), 'Logging in...', '', 'Error logging in')
+        .then(function(result) {
             user_id = result.user_id;
+            user_session = result.user_session;
+            user_name = result.user_username;
             $('#loginModal').modal('hide');
-            $('#loginButton').text('Logout');
             loginDefer.resolve();
-        })
-        .fail(function(xhr) {
+        },
+        function(xhr) {
             if(xhr.status === 401) {
                 $('#loginMessage').show();
             }
@@ -198,6 +308,7 @@ $(document).ready(function() {
     window.handleLogin = function(e) {
         loginDefer = Q.defer();
         doLogin().then(function() {
+            showRegistrationInfo();
             refreshGameList();
         });
         return false;
@@ -207,8 +318,8 @@ $(document).ready(function() {
         $('#registerMessage').text('');
         var data = getFormObj('registerForm');
         console.log(data);
-        $.post('/register', data)
-        .done(function(result) {
+        post('/api/register', data, 'Registering...', '', 'Error registering')
+        .then(function(result) {
             console.log(result);
             if(result.status !== 'ok') {
                 $('#registerMessage').html(result.message);
@@ -216,23 +327,18 @@ $(document).ready(function() {
             } else {
                 // success - should be a user_id in there
                 user_id = result.user_id;
+                user_session = result.user_session;
+                user_name = result.user_username;
+                showRegistrationInfo();
+                refreshGameList();
             }
-        })
-        .fail(function(xhr) {
+        },
+        function(xhr) {
             $('#registerMessage').html(xhr.statusText);
             $('#registerMessage').show();
         });
         return false;
     };
-
-    function format(str, col) {
-        col = typeof col === 'object' ? col : Array.prototype.slice.call(arguments, 1);
-        return str.replace(/\{\{|\}\}|\{(\w+)\}/g, function (m, n) {
-            if (m == '{{') { return '{'; }
-            if (m == '}}') { return '}'; }
-            return col[n];
-        });
-    }
 
     function row(index, g) {
 
@@ -244,14 +350,23 @@ $(document).ready(function() {
                 "<td>" +
                     "{user}" +
                 "</td>" +
+                "<td>" +
+                    "{lastsaved}" +
+                "</td>" +
+                "<td>" +
+                    "{created}" +
+                "</td>" +
+                "<td>" +
+                    "{rating}" +
+                "</td>" +
             "</tr>" +
             "<tr class='hid'>" +
-                "<td colspan='2'>" +
+                "<td colspan='5'>" +
                     "<div class='accordion-body collapse tableContainer' id='row{index}' row='#headerRow{index}' collapsible aria-expanded='false' style>" +
                         "<table class='table inner'>" +
                             "<tbody>" +
                                 "<tr>" +
-                                    "<td colspan='2' class='butter'>" +
+                                    "<td colspan='5' class='butter'>" +
                                         "<button class='btn btn-xs btn-primary' onclick='viewIt({game_id})'>View &nbsp;<i class='glyphicon glyphicon-info-sign'></i></button>&nbsp;" +
                                         "<button class='btn btn-xs btn-success' onclick='playIt({game_id})'>Play &nbsp;<i class='glyphicon glyphicon-play'></i></button>&nbsp;" +
                                         "<button class='btn btn-xs btn-info' onclick='{action}It({game_id})'>{action} &nbsp;<i class='glyphicon glyphicon-edit'></i></button>&nbsp;" +
@@ -273,7 +388,15 @@ $(document).ready(function() {
             "</tr>",
             isMine = g.user_id === user_id,
             copyEdit,
+            star = function(x) {
+                var r = '', i;
+                    for(i = 1; i <= 5; ++i) {
+                        r += format("<i class='{on}star glyphicon glyphicon-star'></i>", { on: (x >= i) ? 'yellow' : 'white' });
+                    }
+                    return r;
+                },
             params = {
+                rating: star(3),
                 index: index,
                 game_title: g.game_title,
                 game_id: g.game_id,
@@ -288,16 +411,14 @@ $(document).ready(function() {
 
     window.refreshGameList = function() {
         var i, games = $('#games'), table = '';
-        $.get('/list', {
-                user_id: 1
-            })
-        .done(function(result) {
+        get('/api/list', { user_id: 0 })
+        .then(function(result) {
             for(i in result.games) {
                 table += row(i, result.games[i]);
             }
             $('#results').html(table);
-        })
-        .fail(function(xhr) {
+        },
+        function(xhr) {
             setStatus(xhr.statusText);
         });
     };
@@ -307,19 +428,36 @@ $(document).ready(function() {
         $('#registerModal').modal('show');
     };
 
+    function showRegistrationInfo() {
+        if(user_id !== 0 && user_session !== null && user_name !== null) {
+            setCookie('user_userid', user_id, 30);
+            setCookie('user_username', user_name, 30);
+            setCookie('user_session', user_session, 30);
+            $('#loginButton').text('Logout ' + user_name);
+        }
+        else {
+            $('#loginButton').text('Sign in/Register');
+        }
+    }
+
     window.showLogin = function() {
         loginDefer = Q.defer();
-        if(user_id === 0) {
+        if(!user_id) {
             $('#loginModal').modal('show');
         }
         else {
             user_id = 0;
+            user_name = null;
+            user_session = null;
+            clearCookie('user_session');
+            clearCookie('user_username');
+            clearCookie('user_userid');
             $('#loginButton').text('Sign in/Register');
         }
         return loginDefer.promise;
     };
 
-    function createCookie(name, value, days) {
+    function setCookie(name, value, days) {
         var expires;
         if (days) {
             var date = new Date();
@@ -331,19 +469,25 @@ $(document).ready(function() {
         document.cookie = encodeURIComponent(name) + '=' + encodeURIComponent(value) + expires + '; path=/';
     }
 
-    function readCookie(name) {
-        var nameEQ = encodeURIComponent(name) + '=';
-        var ca = document.cookie.split(';');
-        for (var i = 0; i < ca.length; i++) {
-            var c = ca[i];
-            while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-            if (c.indexOf(nameEQ) === 0) return decodeURIComponent(c.substring(nameEQ.length, c.length));
+    // returns cookie value if it exists or defaultValue (or null if no defaultValue supplied)
+    function getCookie(name, defaultValue) {
+        var nameEQ = encodeURIComponent(name) + '=',
+            ca = document.cookie.split(';'),
+            i, c ;
+        for (i = 0; i < ca.length; i++) {
+            c = ca[i];
+            while (c.charAt(0) === ' ') {
+                c = c.substring(1, c.length);
+            }
+            if (c.indexOf(nameEQ) === 0) {
+                return decodeURIComponent(c.substring(nameEQ.length, c.length));
+            }
         }
-        return null;
+        return defaultValue || null;
     }
 
-    function eraseCookie(name) {
-        createCookie(name, '', -1);
+    function clearCookie(name) {
+        setCookie(name, '', -1);
     }
 
     function execute(source, args, request) {
@@ -363,15 +507,13 @@ $(document).ready(function() {
             data =  { user_id: user_id, source: editor.getValue(), name: $("#gameName").val() };
         if(user_id !== 0) {
             console.log(data);
-            $.post('/save', data)
-            .done(function(result) {
+            post('/api/save', data, 'Saving ' + data.name, '', 'Error saving ' + data.name)
+            .then(function(result) {
                 reportStatus("Saved " + data.name + " OK\n");
-                editor.session.getUndoManager().reset();
-                $('#saveButton').attr('disabled');
                 refreshGameList();
                 defer.resolve();
-            })
-            .fail(function(xhr) {
+            },
+            function(xhr) {
                 reportError("Error saving: " + xhr.status + " " + xhr.statusText);
                 defer.reject();
             });
@@ -383,12 +525,32 @@ $(document).ready(function() {
     }
 
     window.saveit = function() {
-        var source = editor.getValue();
+        var n = $('#gameName').val(),
+            source = editor.getValue();
         window.localStorage.setItem('source', source);
-        loginAnd().then(doSave);
+        console.log('[' +  n + ']');
+        if(n !== '') {
+            loginAnd().then(doSave);
+        }
+        else {
+            showAlert('No name', 'You need to give your game a name!')
+            .then(function(){
+                $("#gameName").focus();
+            });
+        }
     };
 
     window.createNewGame = function() {
+        // clear the name (and check it's not empty when they try to save)
+        // make the editor empty
+        // make the editor writeable etc
+        editor.setValue('', -1);
+        editor.setOptions({ readOnly: false, highlightActiveLine: true });
+        enableKeyBindings();
+        show('#saveButton', true);
+        editor.session.getUndoManager().reset();
+        $('#gameName').val('');
+        enable('#gameName', true);
         showPane('editorPane');
     };
 
@@ -410,7 +572,6 @@ $(document).ready(function() {
         enableLiveAutocompletion: true
     });
     editor.session.getUndoManager().reset();
-    $('#saveButton').attr('disabled');
 
     $('#gameName').bind('keypress', function (event) {
         var regex = new RegExp("^[\'\:\;\! \?\.\,a-zA-Z0-9]+$");
@@ -421,37 +582,31 @@ $(document).ready(function() {
         }
     });
 
-    // editor.on('input', function() {
-    //     if(editor.session.getUndoManager().hasUndo()) {
-    //         console.log('Disabling');
-    //         $('#saveButton').removeAttr('disabled');
-    //     }
-    //     else {
-    //         $('#saveButton').attr('disabled');
-    //         console.log('Enabling');
-    //     }
-    // });
+    function enableKeyBindings() {
+        editor.commands.addCommand({
+            name:'save',
+            bindKey: {
+                win: 'Ctrl-S',
+                mac: 'Command-S',
+                sender: 'editor|cli'
+            },
+            exec: saveit
+            });
 
-    editor.commands.addCommand({
-        name:'save',
-        bindKey: {
-            win: 'Ctrl-S',
-            mac: 'Command-S',
-            sender: 'editor|cli'
-        },
-        exec: saveit
+        editor.commands.addCommand({
+            name:'run',
+            bindKey: {
+                win: 'Ctrl-R',
+                mac: 'Command-R',
+                sender: 'editor|cli'
+            },
+            exec: runit
         });
+    }
 
-    editor.commands.addCommand({
-        name:'run',
-        bindKey: {
-            win: 'Ctrl-R',
-            mac: 'Command-R',
-            sender: 'editor|cli'
-        },
-        exec: execute
-    });
-
+    function disableKeyBindings() {
+        editor.commands.commmandKeyBinding = {};
+    }
     user_id = 0;
 
     $('#loginForm').validate();
@@ -461,8 +616,36 @@ $(document).ready(function() {
     panestack.push('gameList');
     showPane('gameList', false);
 
-    refreshGameList();
+    function validateSession() {
+        user_session = getCookie('user_session');
+        user_id = parseInt(getCookie('user_userid'));
+        user_name = getCookie('user_username');
+        reportStatus('Logging in...');
+        if(user_session && user_id && user_name) {
+            get('/api/refreshSession', {
+                user_session: user_session,
+                user_id: user_id,
+                user_name: user_name
+            })
+            .then(function(result) {
+                user_id = parseInt(result.user_id);
+                user_session = result.user_session;
+                user_name = result.user_username;
+                setCookie('user_userid', user_id, 30);
+                setCookie('user_username', user_name, 30);
+                setCookie('user_session', user_session, 30);
+                reportStatus("Welcome back " + user_name);
+            },
+            function(xhr) {
+                reportStatus('Session expired, please log in again...');
+                clearCookie('user_userid');
+                clearCookie('user_username');
+                clearCookie('user_session');
+            });
+        }
+        showRegistrationInfo();
+        refreshGameList();
+    }
 
-//    focusEditor();
-
+    validateSession();
 });
