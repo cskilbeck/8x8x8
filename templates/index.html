@@ -114,8 +114,9 @@
         <div class="content">
             <!-- TOP ROW (HELP/SIGN IN etc) -->
             <div class="top_block banner">
-                <div class="content">
-                    <a href="#" onClick="showPane('helpPane')" class="btn btn-sm btn-default">Help</a>
+                <div class="content container-fluid">
+                    <div class='col-md-2'><h4><i>8x8x8</i></h4></div>
+                    <div class='col-md-4'><a href="#" onClick="showPane('helpPane')" class="btn btn-sm btn-default">Help</a></div>
                     <div class='pull-right'>
                         <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" onClick="showLogin()" id="loginButton">Sign in/Register</button>
                     </div>
@@ -203,6 +204,7 @@
                             </div>
                             <div class='col-xs-4'>
                                 <button title='Ctrl-R' class='btn btn-sm btn-primary' onclick='createNewGame();'>New Game&nbsp;<i class='glyphicon glyphicon-star-empty'></i></button>
+                                <button title='Ctrl-R' class='btn btn-sm btn-default' onclick='refreshGameList();'>Refresh&nbsp;<i class='glyphicon glyphicon-refresh'></i></button>
                             </div>
                         </div>
                         <div id='gameList'>
@@ -210,11 +212,20 @@
                                 <table class='table outer'>
                                     <thead class='bg-primary'>
                                         <tr>
-                                            <th width=20%>
+                                            <th width=15%>
                                             Game
                                             </th>
-                                            <th width=80%>
+                                            <th width=35%>
                                             User
+                                            </th>
+                                            <th width=15%>
+                                            Modified
+                                            </th>
+                                            <th width=15%>
+                                            Created
+                                            </th>
+                                            <th width=20%>
+                                            Rating
                                             </th>
                                         </tr>
                                     </thead>
@@ -233,8 +244,9 @@
                 </div>
             </div>
             <div class="bottom_block statusBar">
-                <div class="content" id="statusBar">
-                    Welcome. Errors are shown here...
+                <div class="content">
+                    <span><i id='spinner' class='glyphicon glyphicon-ok'></i>&nbsp;</span>
+                    <span id='statusBar'>Welcome. Errors are shown here...</span>
                 </div>
             </div>
         </div>
