@@ -1,0 +1,16 @@
+                    <div class="masked pane" id='editorPane'>
+                        <div class="grid_editorheader grid_row">
+                            <div class="row toolbar">
+                                <div class='col-xs-4'>
+                                    <input id='gameName' type='text' class='form-control input-sm' value='Snake' maxlength="32" />
+                                </div>
+                                <div class='col-xs-4'>
+                                    <button title='Ctrl-R' class='btn btn-sm btn-success' onclick='runit();'>Run &nbsp;<i class='glyphicon glyphicon-play'></i></button>
+                                    <button title='Ctrl-S' class='btn btn-sm btn-primary' onclick='saveit();' id="saveButton">Save &nbsp;<i class='glyphicon glyphicon-floppy-disk'></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class='grid_editorbody grid_row grid_scroll-y' id='editorContainer'>
+                            <div id='editor' tabindex='1'></div>
+                        </div>
+                    </div>

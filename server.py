@@ -42,7 +42,11 @@ urls = (
 
     '/favicon.ico', 'favicon',
     '/history', 'history',
-
+    '/routes', 'routes',
+    '/routes#/home', 'routes',
+    '/routes#/viewStudents', 'routes',
+    '/routes', 'routes',
+    '/panes', 'panes',
     '/(.*)', 'index'
     )
 
@@ -192,7 +196,7 @@ class list(Get):
         data['search'] = '%' + data['search'].replace('*', '%').replace('.', '_') + '%'
         cur.execute('''SELECT game_id, games.user_id, game_title, game_lastsaved, game_created, user_username
                         FROM games INNER JOIN users ON users.user_id = games.user_id
-                        WHERE (%(user_id)s = 0 OR games.user_id = %(user_id)s) AND game_title LIKE %(search)s
+                        WHERE (%(user_id)s < 0 OR games.user_id = %(user_id)s) AND game_title LIKE %(search)s
                         ORDER BY game_lastsaved, game_created DESC
                         LIMIT %(length)s OFFSET %(offset)s'''
                     , data)
@@ -277,7 +281,7 @@ class register(Post):
                 data['session'] = getRandomInt()
                 cur.execute('''INSERT INTO users (user_email, user_password, user_username, user_created, user_session)
                                 VALUES (%(email)s, %(password)s, %(username)s, NOW(), %(session)s)
-                                ON DUPLICATE KEY UPDATE user_session = %(session)s, user_id = LAST_INSERT_ID(user_id), dummy = NOT dummy''', data)
+                                ON DUPLICATE KEY UPDATE user_session = %(session)s, user_id = LAST_INSERT_ID(user_id)''', data)
                 if cur.rowcount == 1 or cur.rowcount == 2:
                     user_id = cur.lastrowid
                     cur.execute('SELECT user_session FROM users WHERE user_email = %(email)s', data)
@@ -336,11 +340,10 @@ class refreshSession(Get):
 class endSession(Get):
     @checked({
         'user_session': str,
-        'user_id': str,
-        'user_name': str
+        'user_id': str
         })
     def handleGet(self, db, cur, data):
-        cur.execute('''UPDATE users SET user_session = NULL WHERE user_id = %(user_id)s AND user_username=%(user_name)s AND user_session = %(user_session)s''', data)
+        cur.execute('''UPDATE users SET user_session = NULL WHERE user_id = %(user_id)s AND user_session = %(user_session)s''', data)
         if cur.rowcount != 1:
             raise web.HTTPError('404 Session not found')
         return { 'status': 'ok' }
@@ -356,15 +359,23 @@ class favicon:
 # index
 
 class index:
-    def GET(self, path):
-        return render.index()
+    def GET(elf, path):
+        if path is None or not '.html' in path: # anything without .html gets you the root / else serve up the file
+            return render.index()
+        return web.template.frender('templates/' + path)()
+
+class routes:
+    def GET(self):
+        print "routes"
+        return render.routes()
+
+class panes:
+    def GET(self):
+        return render.panes()
 
 class really:
     def GET(self, command, param):
         return render.index()
-
-#----------------------------------------------------------------------
-# history test
 
 class history:
     def GET(self):

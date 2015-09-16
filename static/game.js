@@ -1,4 +1,6 @@
 //////////////////////////////////////////////////////////////////////
+// - Convert to Angular with routing
+// - Make a game private/public
 // - game list
 //      differentiate between my games and others
 //      forking
@@ -6,15 +8,12 @@
 //      refresh game list on logout
 //      make the search text work (timeout on change)
 //      quick search buttons: my games, top games, most played, recently added, recently changed
-// - browser history
-// - make main left pane fill available screen space (esp. editor)
 // - user registration/login/forgot password
 //      username, verify password etc
 // - voting/rating/comments
 // - telemetry/analytics
 // - finish help pane content
 // - editor view/edit mode with forking etc
-// - ajax in progress spinner
 // - ask if they want to save when quitting the editor if changes are unsaved
 // - cache current game in editor for fast re-editing
 // - callstack from runtime errors
@@ -30,6 +29,9 @@
 // + proper query for game list (incorporate username)
 // + feedback on save/execute
 // +    Promise from login for what happens after (save, copy)
+// + make main left pane fill available screen space (esp. editor) [sort of fixed, editor expands and scrollbar shows up when necessary]
+// + fix editor height/scrolling [ugly JS hack]
+// + ajax in progress spinner
 //////////////////////////////////////////////////////////////////////
 
 $(document).ready(function() {
@@ -78,22 +80,16 @@ $(document).ready(function() {
     function doAjax(func, url, data, progress, complete, fail) {
         var q = Q.defer();
         spinner(true);
-        if(progress !== undefined) {
-            reportStatus(progress);
-        }
+        reportStatus(progress || '');
         func(url, data)
         .done(function(result) {
             spinner(false);
-            if(complete !== undefined) {
-                reportStatus(complete);
-            }
+            reportStatus(complete || '');
             q.resolve(result);
         })
         .fail(function(xhr) {
             spinner(false);
-            if(fail !== undefined) {
-                reportError(fail);
-            }
+            reportError(fail || '');
             q.reject(xhr);
         });
         return q.promise;
@@ -101,7 +97,7 @@ $(document).ready(function() {
 
     function get(url, data, progress, complete, fail) {
         data.user_session = user_session;
-        data.user_id = user_id || 0;
+        data.user_id = data.user_id || user_id || 0;
         return doAjax($.get, url, data, progress, complete, fail);
     }
 
@@ -128,6 +124,33 @@ $(document).ready(function() {
             choiceDefer.reject();
         }
     };
+
+    function getChoice(banner, text, yesText, noText) {
+        var choiceDefer = Q.defer();
+        $('#choiceText').text(text);
+        $('#choiceLabel').text(banner || '');
+        $('#choiceYes').text(yesText || 'Yes');
+        $('#choiceNo').text(noText || 'No');
+        show('#choiceNo', true);
+        $('#choiceYes').on('click', function() {
+            choiceDefer.resolve();
+        });
+        $('#choiceNo').on('click', function() {
+            choiceDefer.reject();
+        });
+        $('#choiceModal').modal('show');
+        return choiceDefer.promise;
+    }
+
+    function showAlert(banner, text, buttonText) {
+        choiceDefer = Q.defer();
+        $('#choiceText').text(text);
+        $('#choiceLabel').text(banner || '');
+        $('#choiceYes').text(buttonText || 'OK');
+        show('#choiceNo', false);
+        $('#choiceModal').modal('show');
+        return choiceDefer.promise;
+    }
 
     window.deleteIt = function(gameID) {
         getChoice('Delete Game', 'Are you sure you want to delete this game? This action cannot be undone', 'Yes, delete it permanently', 'No')
@@ -176,6 +199,13 @@ $(document).ready(function() {
         return p.promise;
     }
 
+    function inflateEditor() {
+        var editorRect = $("#editorContainer")[0].getBoundingClientRect(),
+            width = editorRect.right - editorRect.left,
+            height = editorRect.bottom - editorRect.top;
+        $('#editor').height(height - 1).width(width); // -1 for the border
+    }
+
     window.EditIt = function(game_id) {
         getSource(game_id)
         .then(function(result) {
@@ -185,6 +215,7 @@ $(document).ready(function() {
             editor.session.getUndoManager().reset();
             enable("#gameName", true);
             showPane('editorPane');
+            inflateEditor();
         });
     };
 
@@ -196,6 +227,7 @@ $(document).ready(function() {
             show('#saveButton', false);
             enable("#gameName", false);
             showPane('editorPane');
+            inflateEditor();
         });
     };
 
@@ -206,27 +238,6 @@ $(document).ready(function() {
         else {
             $(id).addClass('masked');
         }
-    }
-
-    function getChoice(banner, text, yesText, noText) {
-        choiceDefer = Q.defer();
-        $('#choiceText').text(text);
-        $('#choiceLabel').text(banner || '');
-        $('#choiceYes').text(yesText || 'Yes');
-        $('#choiceNo').text(noText || 'No');
-        show('#choiceNo', true);
-        $('#choiceModal').modal('show');
-        return choiceDefer.promise;
-    }
-
-    function showAlert(banner, text, buttonText) {
-        choiceDefer = Q.defer();
-        $('#choiceText').text(text);
-        $('#choiceLabel').text(banner || '');
-        $('#choiceYes').text(buttonText || 'OK');
-        show('#choiceNo', false);
-        $('#choiceModal').modal('show');
-        return choiceDefer.promise;
     }
 
     window.showPane = function(name, push) {
@@ -306,7 +317,6 @@ $(document).ready(function() {
     }
 
     window.handleLogin = function(e) {
-        loginDefer = Q.defer();
         doLogin().then(function() {
             showRegistrationInfo();
             refreshGameList();
@@ -317,10 +327,8 @@ $(document).ready(function() {
     window.handleRegister = function(e) {
         $('#registerMessage').text('');
         var data = getFormObj('registerForm');
-        console.log(data);
         post('/api/register', data, 'Registering...', '', 'Error registering')
         .then(function(result) {
-            console.log(result);
             if(result.status !== 'ok') {
                 $('#registerMessage').html(result.message);
                 $('#registerMessage').show();
@@ -331,11 +339,13 @@ $(document).ready(function() {
                 user_name = result.user_username;
                 showRegistrationInfo();
                 refreshGameList();
+                loginDefer.resolve();
             }
         },
         function(xhr) {
             $('#registerMessage').html(xhr.statusText);
             $('#registerMessage').show();
+            loginDefer.reject();
         });
         return false;
     };
@@ -369,7 +379,7 @@ $(document).ready(function() {
                                     "<td colspan='5' class='butter'>" +
                                         "<button class='btn btn-xs btn-primary' onclick='viewIt({game_id})'>View &nbsp;<i class='glyphicon glyphicon-info-sign'></i></button>&nbsp;" +
                                         "<button class='btn btn-xs btn-success' onclick='playIt({game_id})'>Play &nbsp;<i class='glyphicon glyphicon-play'></i></button>&nbsp;" +
-                                        "<button class='btn btn-xs btn-info' onclick='{action}It({game_id})'>{action} &nbsp;<i class='glyphicon glyphicon-edit'></i></button>&nbsp;" +
+                                        "<button class='btn btn-xs btn-info {hidden}' onclick='{action}It({game_id})'>{action} &nbsp;<i class='glyphicon glyphicon-edit'></i></button>&nbsp;" +
                                         "<button class='btn btn-xs btn-danger {hiddenIfNotMine}' onclick='deleteIt({game_id})'>Delete &nbsp;<i class='glyphicon glyphicon-trash'></i></button>" +
                                     "</td>" +
                                 "</tr>" +
@@ -400,6 +410,7 @@ $(document).ready(function() {
                 index: index,
                 game_title: g.game_title,
                 game_id: g.game_id,
+                hidden: isMine ? '' : 'masked',
                 action: isMine ? 'Edit' : 'Copy',
                 lastsaved: moment(g.game_lastsaved).fromNow(),
                 created: moment(g.game_created).fromNow(),
@@ -411,7 +422,7 @@ $(document).ready(function() {
 
     window.refreshGameList = function() {
         var i, games = $('#games'), table = '';
-        get('/api/list', { user_id: 0 })
+        get('/api/list', { user_id: -1 })
         .then(function(result) {
             for(i in result.games) {
                 table += row(i, result.games[i]);
@@ -446,13 +457,19 @@ $(document).ready(function() {
             $('#loginModal').modal('show');
         }
         else {
-            user_id = 0;
-            user_name = null;
-            user_session = null;
-            clearCookie('user_session');
-            clearCookie('user_username');
-            clearCookie('user_userid');
-            $('#loginButton').text('Sign in/Register');
+            get('/api/endSession', {}, 'Logging ' + user_name + ' out...')
+            .then(function() {
+                user_id = 0;
+                user_name = null;
+                user_session = null;
+                clearCookie('user_session');
+                clearCookie('user_username');
+                clearCookie('user_userid');
+                $('#loginButton').text('Sign in/Register');
+                refreshGameList();
+            }, function() {
+                // endSession failed!?
+            });
         }
         return loginDefer.promise;
     };
@@ -530,7 +547,9 @@ $(document).ready(function() {
         window.localStorage.setItem('source', source);
         console.log('[' +  n + ']');
         if(n !== '') {
-            loginAnd().then(doSave);
+            loginAnd().then(function() {
+                doSave();
+            });
         }
         else {
             showAlert('No name', 'You need to give your game a name!')
@@ -552,6 +571,7 @@ $(document).ready(function() {
         $('#gameName').val('');
         enable('#gameName', true);
         showPane('editorPane');
+        inflateEditor();
     };
 
     $('#editor').click(function() {
@@ -604,6 +624,8 @@ $(document).ready(function() {
         });
     }
 
+    // set editor height to something sensible
+
     function disableKeyBindings() {
         editor.commands.commmandKeyBinding = {};
     }
@@ -615,6 +637,10 @@ $(document).ready(function() {
 
     panestack.push('gameList');
     showPane('gameList', false);
+
+    $(window).resize(function(){
+        inflateEditor();
+    });
 
     function validateSession() {
         user_session = getCookie('user_session');
@@ -635,17 +661,26 @@ $(document).ready(function() {
                 setCookie('user_username', user_name, 30);
                 setCookie('user_session', user_session, 30);
                 reportStatus("Welcome back " + user_name);
+                showRegistrationInfo();
+                refreshGameList();
             },
             function(xhr) {
                 reportStatus('Session expired, please log in again...');
+                user_id = 0;
+                user_session = null;
+                user_name = null;
                 clearCookie('user_userid');
                 clearCookie('user_username');
                 clearCookie('user_session');
+                refreshGameList();
             });
         }
-        showRegistrationInfo();
-        refreshGameList();
+        else {
+            refreshGameList();
+        }
     }
+
+    // Dummy promise for login dialog if the user initiates it
 
     validateSession();
 });

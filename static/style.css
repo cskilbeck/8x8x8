@@ -1,9 +1,6 @@
 html, body {
     margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    min-width: 710px;
+    min-width: 740px;
 }
 
 #gameFrame {
@@ -17,11 +14,15 @@ html, body {
     text-align: center;
 }
 
+.mainmenu {
+    padding-top: 10px;
+}
+
 #editor {
     margin: 0;
     padding: 0;
-    border: 1px solid #CCC;
-    height: 400px;
+    height: 200px;
+    background: #E8F0FF;
 }
 
 #mainPane {
@@ -39,9 +40,10 @@ body .modal .modal-dialog {
     display: none;
 }
 
-#titleBar {
-    padding: 5px;
-    margin: 0;
+.toolbar {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
 }
 
 .whitestar {
@@ -58,15 +60,6 @@ body .modal .modal-dialog {
 }
 
 .pane {
-    border: 1px solid black;
-    background: white;
-}
-
-.content {
-    min-height: 100%;
-    position: relative;
-    overflow: auto;
-    z-index: 0;
 }
 
 .background {
@@ -77,95 +70,6 @@ body .modal .modal-dialog {
     margin: 0;
     padding: 0;
 }
-
-.top_block {
-    width: 100%;
-    display: block;
-}
-
-.bottom_block {
-    position: absolute;
-    width: 100%;
-    display: block;
-    bottom: 0;
-    border-top: 1px solid black;
-}
-
-.left_block {
-    display: block;
-    float: left;
-}
-
-.right_block {
-    display: block;
-    float: right;
-}
-
-.center_block {
-    display: block;
-    width: auto;
-}
-
-.banner {
-    width: 100%;
-    height: 70px;
-    padding: 16px;
-    border-bottom: 1px solid black;
-}
-
-.background.leftPane {
-    height: auto !important;
-    padding-bottom: 0;
-    left: 0;
-    width: 80%;
-    margin-top: 70px;
-}
-
-.leftPane {
-    height: auto;
-    width: 80%;
-    padding-bottom: 0px;
-}
-
-.titleBar {
-    width: 100%;
-    height: 32px;
-}
-
-.toolBar {
-    width: 100%;
-    height: 40px;
-    padding-top: 4px;
-}
-
-.statusBar {
-    width: 80%;
-    height: 40px;
-    color: green;
-    font-weight: bolder;
-    padding: 8px;
-}
-
-.statusBar.statusError {
-    color: red;
-}
-
-.background.rightPane {
-    height: auto !important;
-    padding-bottom: 0;
-    left: 0;
-    right: 0;
-    margin-top: 70px;
-    margin-left: 80%;
-    border-left: 1px solid black;
-}
-
-.rightPane {
-    width: auto;
-    height: auto;
-    padding-bottom: 0px;
-}
-
 
 table.table {
     table-layout: fixed;
@@ -207,7 +111,6 @@ table.table {
 }
 
 .tableContainer {
-    background: white;
     border-bottom: 1px LightGrey solid;
 }
 
@@ -245,6 +148,85 @@ table.table {
     margin-bottom: 0px;
 }
 
+pre {
+    background: white;
+    color: DarkRed;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+/* GRID LAYOUT */
+
+.grid_row, .grid_col {
+    overflow: hidden;
+    position: absolute;
+}
+
+.grid_row {
+    left: 0;
+    right: 0;
+}
+.grid_col {
+    top: 0;
+    bottom: 0;
+    border-right: 1px solid black;
+}
+.grid_scroll-x {
+    overflow-x: auto;
+}
+.grid_scroll-y {
+    overflow-y: auto;
+}
+
+.grid_header.grid_row {
+    height: 50px;
+    top: 0;
+    border-bottom: 1px solid black;
+}
+
+.grid_editorheader.grid_row {
+    height: 50px;
+    top: 50px;
+}
+
+.grid_body.grid_row {
+    top: 50px;
+    bottom: 50px;
+}
+
+.grid_helpbody.grid_row {
+    padding-left: 15px;
+    padding-right: 15px;
+    top: 50px;
+    bottom: 0;
+    overflow-y: auto;
+}
+
+#titleBar {
+    height: 50px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
+.grid_editorbody.grid_row {
+    top: 100px;
+    bottom: 0;
+    border-top: 1px solid black;
+}
+.grid_footer.grid_row {
+    height: 50px;
+    bottom: 0;
+    border-top: 1px solid black;
+    padding-top: 10px;
+    padding-left: 10px;
+}
+.grid_left.grid_col {
+    width: 80%;
+}
+.grid_right.grid_col {
+    right: 0;
+    width: 20%;
+}
 .gly-spin {
     -webkit-animation:  spin 0.5s infinite linear;
     -moz-animation:     spin 0.5s infinite linear;
@@ -262,3 +244,4 @@ table.table {
 
 @keyframes          spin {  000% { -webkit-transform: rotate(000deg); transform: rotate(000deg); }
                             100% { -webkit-transform: rotate(359deg); transform: rotate(359deg); } }
+
