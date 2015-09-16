@@ -7,6 +7,9 @@
         <title>8x8x8</title>
         <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
         <link rel="stylesheet" href="/static/style.css">
+
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.28/angular.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.28/angular-route.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/ace.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/ext-language_tools.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
@@ -16,6 +19,8 @@
         <script src="/static/Q.js"></script>
         <script src="/static/ga.js" defer></script>
         <script src="/static/game.js" defer></script>
+        <script src="/static/routes.js" defer></script>
+        <base href="/">
     </head>
     <body>
         <!-- CHOICE MODAL DIALOG -->
@@ -111,23 +116,21 @@
                 </div>
             </div>
         </div>
-        <div class="content">
+        <div>
             <!-- TOP ROW (HELP/SIGN IN etc) -->
-            <div class="top_block banner">
-                <div class="content container-fluid">
+            <div class="grid_header grid_row">
+                <div class="content container-fluid mainmenu">
                     <div class='col-md-2'><h4><i>8x8x8</i></h4></div>
-                    <div class='col-md-4'><a href="#" onClick="showPane('helpPane')" class="btn btn-sm btn-default">Help</a></div>
+                    <div class='col-md-4'><a onClick="showPane('helpPane')" class="btn btn-sm btn-default">Help</a></div>
                     <div class='pull-right'>
                         <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" onClick="showLogin()" id="loginButton">Sign in/Register</button>
                     </div>
                 </div>
             </div>
-            <div class="background leftPane">
-            </div>
-            <div class="left_block leftPane">
-                <div class="content" id='mainPane'>
+            <div class="grid_body grid_row">
+                <div class="grid_left grid_col" id='mainPane'>
                     <!-- TITLEBAR -->
-                    <div class="top_block titleBar">
+                    <div class="grid_titlebar">
                         <div class="content">
                             <div id='titleBar' class='bg-primary'>
                                 &nbsp;<span id="paneTitle">Editor</span>
@@ -136,69 +139,165 @@
                         </div>
                     </div>
                     <!-- EDITOR -->
-                    <div class="masked content" id='editorPane'>
-                        <div class="top_block toolBar">
-                            <div class='col-xs-4'>
-                                <input id='gameName' type='text' class='form-control input-sm' value='Snake' maxlength="32" />
-                            </div>
-                            <div class='col-xs-4'>
-                                <button title='Ctrl-R' class='btn btn-sm btn-success' onclick='runit();'>Run &nbsp;<i class='glyphicon glyphicon-play'></i></button>
-                                <button title='Ctrl-S' class='btn btn-sm btn-primary' onclick='saveit();' id="saveButton">Save &nbsp;<i class='glyphicon glyphicon-floppy-disk'></i></button>
+                    <div class="masked pane" id='editorPane'>
+                        <div class="grid_editorheader grid_row">
+                            <div class="row toolbar">
+                                <div class='col-xs-4'>
+                                    <input id='gameName' type='text' class='form-control input-sm' value='Snake' maxlength="32" />
+                                </div>
+                                <div class='col-xs-4'>
+                                    <button title='Ctrl-R' class='btn btn-sm btn-success' onclick='runit();'>Run &nbsp;<i class='glyphicon glyphicon-play'></i></button>
+                                    <button title='Ctrl-S' class='btn btn-sm btn-primary' onclick='saveit();' id="saveButton">Save &nbsp;<i class='glyphicon glyphicon-floppy-disk'></i></button>
+                                </div>
                             </div>
                         </div>
-                        <div id='editor' tabindex='1'></div>
+                        <div class='grid_editorbody grid_row grid_scroll-y' id='editorContainer'>
+                            <div id='editor' tabindex='1'></div>
+                        </div>
                     </div>
                     <!-- HELP -->
-                    <div class='masked content' id='helpPane' >
-                        <div class='container-fluid'>
-                            <div class='row'>
-                                <div class='col-md-8'>
-                                    <span><h2>8x8x8 - Documentation</h2></span>
-                                </div>
-                                <div class='col-md-4'>
-                                    &nbsp;
-                                </div>
-                            </div>
-                            <div class='well'>
+                    <div class='masked pane' id='helpPane' >
+                        <div class='grid_row grid_helpbody'>
+                            <div class='container-fluid grid_scroll-y'>
                                 <div class='row'>
+                                    <div class='col-md-8'>
+                                        <span><h2>Documentation</h2></span>
+                                    </div>
+                                    <div class='col-md-4'>
                                         &nbsp;
+                                    </div>
                                 </div>
                                 <div class='row'>
-                                    <div class='col-md-2'><strong>set(x, y, color)</strong></div>
-                                    <div class='col-md-6'>Set the pixel at x,y to color. Coordinates are (0,0) = top left, (7,7) = bottom right. Colors are: 0 = black, 1 = red, 2 = green, 3 = yellow, 4 = blue, 5 = magenta, 6 = cyan, 7 = white</div>
-                                    <div class='row'><div class='col-md-8'>&nbsp;</div></div>
+                                    <div class='container-fluid'>
+                                        <div class='col-md10'>
+                                            8x8x8 Games are played on an 8x8 grid of pixels and can display 8 colors.<br>
+                                            The coordinates start at (0,0) in the top left and go to (7,7) in the bottom right.<br>
+                                            The keys which can be used are: 'up', 'down', 'left', 'right' and 'space'.<br>
+                                            The colors available are:<p>
+                                            <div class='row'><div class='col-md-1 col-md-offset-1' style='height: 1.25em;  width: 1em; background: #000; border: 1px solid black;'></div><div class='col-md-2'>0 - Black</div></div>
+                                            <div class='row'><div class='col-md-1 col-md-offset-1' style='height: 1.25em;  width: 1em; background: #F00; border: 1px solid black;'></div><div class='col-md-2'>1 - Red</div></div>
+                                            <div class='row'><div class='col-md-1 col-md-offset-1' style='height: 1.25em;  width: 1em; background: #0F0; border: 1px solid black;'></div><div class='col-md-2'>2 - Green</div></div>
+                                            <div class='row'><div class='col-md-1 col-md-offset-1' style='height: 1.25em;  width: 1em; background: #FF0; border: 1px solid black;'></div><div class='col-md-2'>3 - Yellow</div></div>
+                                            <div class='row'><div class='col-md-1 col-md-offset-1' style='height: 1.25em;  width: 1em; background: #00F; border: 1px solid black;'></div><div class='col-md-2'>4 - Blue</div></div>
+                                            <div class='row'><div class='col-md-1 col-md-offset-1' style='height: 1.25em;  width: 1em; background: #F0F; border: 1px solid black;'></div><div class='col-md-2'>5 - Magenta</div></div>
+                                            <div class='row'><div class='col-md-1 col-md-offset-1' style='height: 1.25em;  width: 1em; background: #0FF; border: 1px solid black;'></div><div class='col-md-2'>6 - Cyan</div></div>
+                                            <div class='row'><div class='col-md-1 col-md-offset-1' style='height: 1.25em;  width: 1em; background: #FFF; border: 1px solid black;'></div><div class='col-md-2'>7 - White</div></div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class='row'>
-                                    <div class='col-md-2'><strong>clear(color)</strong></div>
-                                    <div class='col-md-6'>Set all the pixels to color.</div>
-                                    <div class='row'><div class='col-md-8'>&nbsp;</div></div>
+                                        <br>
                                 </div>
                                 <div class='row'>
-                                    <div class='col-md-2'><strong>pressed(key)</strong></div>
-                                    <div class='col-md-6'>Check if key was just pressed. Keys are 'left', 'right', 'up', 'down', 'space'.</div>
-                                    <div class='row'><div class='col-md-8'>&nbsp;</div></div>
+                                    <div class='col-md-8'>
+                                        <strong>Functions:</strong><br><br>
+                                    </div>
                                 </div>
-                                <div class='row'>
-                                    <div class='col-md-2'><strong>released(key)</strong></div>
-                                    <div class='col-md-6'>Check if key was just released. Keys are 'left', 'right', 'up', 'down', 'space'.</div>
-                                    <div class='row'><div class='col-md-8'>&nbsp;</div></div>
+                                <div class='well'>
+                                    <div class='row'>
+                                        <div class='col-md-2'><strong>set(x, y, color)</strong></div>
+                                        <div class='col-md-9'>
+                                            Set the pixel at x,y to color.<br><br>
+                                            <i>This will set the top left pixel to the color cyan</i>
+                                            <pre>set(0, 0, 6);</pre></p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class='row'>
-                                    <div class='col-md-2'><strong>held(key)</strong></div>
-                                    <div class='col-md-6'>Check if key is currently held down. Keys are 'left', 'right', 'up', 'down', 'space'.</div>
-                                    <div class='row'><div class='col-md-8'>&nbsp;</div></div>
+                                <div class='well'>
+                                    <div class='row'>
+                                        <div class='col-md-2'><strong>get(x, y)</strong></div>
+                                        <div class='col-md-9'>
+                                            Get the color of the pixel at x,y.<br><br>
+                                            <i>This will check if the color of the pixel at (4,5) is yellow</i>
+                                            <pre>if(get(4, 5) === 3) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;// ...<br>
+}</pre></p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class='row'>
-                                    <div class='col-md-2'><strong>update(frame)</strong></div>
-                                    <div class='col-md-6'>You provide this function, it will be called every frame in a loop. Parameter 'frame' increases by 1 each time the function is called.</div>
-                                    <div class='row'><div class='col-md-8'>&nbsp;</div></div>
+                                <div class='well'>
+                                    <div class='row'>
+                                        <div class='col-md-2'><strong>clear(color)</strong></div>
+                                        <div class='col-md-9'>Set all the pixels to a single color.<br><br>
+                                            <i>This will clear all the pixels to black</i>
+                                            <pre>clear(0);</pre></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class='well'>
+                                    <div class='row'>
+                                        <div class='col-md-2'><strong>pressed(key)</strong></div>
+                                        <div class='col-md-9'>Check if key was just pressed.<br><br>
+                                            <i>This will check if the space bar was pressed since the last time update() was called</i>
+                                            <pre>if(pressed('space')) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;// ...<br>
+}</pre></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class='well'>
+                                    <div class='row'>
+                                        <div class='col-md-2'><strong>released(key)</strong></div>
+                                        <div class='col-md-9'>Check if key was just released.<br><br>
+                                            <i>This will check if the left key was released since the last time update() was called</i>
+                                            <pre>if(released('left')) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;// ...<br>
+}</pre></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class='well'>
+                                    <div class='row'>
+                                        <div class='col-md-2'><strong>held(key)</strong></div>
+                                        <div class='col-md-9'>Check if key is held down.<br><br>
+                                            <i>This will check if the up key is currently being pressed</i>
+                                            <pre>if(held('up')) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;// ...<br>
+}</pre></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class='well'>
+                                    <div class='row'>
+                                        <div class='col-md-2'><strong>update(frame)</strong></div>
+                                        <div class='col-md-9'>You provide this function, it will be called repeatedly about 60 times every second. The parameter 'frame' is increased by 1 each time the function is called.<br><br>
+                                            <i>This is a very simple game</i>
+                                            <pre>var x, y, c;<br>
+
+x = 0;<br>
+y = 0;<br>
+c = 1;<br>
+clear(0);   // code outside functions is run once when game starts<br>
+<br>
+function&nbsp;update(frame)&nbsp;{<br>
+&nbsp; &nbsp; if(held('right'))&nbsp;{<br>
+&nbsp; &nbsp; &nbsp; &nbsp; x&nbsp;=&nbsp;x&nbsp;+&nbsp;1;<br>
+&nbsp; &nbsp; &nbsp; &nbsp; if(x&nbsp;===&nbsp;8)&nbsp;{<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; clear(0);<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; x&nbsp;=&nbsp;0;<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; y&nbsp;=&nbsp;y&nbsp;+&nbsp;1;<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if(y&nbsp;===&nbsp;8)&nbsp;{<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; y&nbsp;=&nbsp;0;<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; }<br>
+&nbsp; &nbsp; &nbsp; &nbsp; }<br>
+&nbsp; &nbsp; }<br>
+&nbsp; &nbsp; if(pressed('space'))&nbsp;{<br>
+&nbsp; &nbsp; &nbsp; &nbsp; c&nbsp;=&nbsp;c&nbsp;+&nbsp;1;<br>
+&nbsp; &nbsp; &nbsp; &nbsp; if(c&nbsp;===&nbsp;8)&nbsp;{<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; c&nbsp;=&nbsp;1;<br>
+&nbsp; &nbsp; &nbsp; &nbsp; }<br>
+&nbsp; &nbsp; }<br>
+&nbsp; &nbsp; set(x,&nbsp;y,&nbsp;c);<br>
+}</pre></p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <!-- GAME LIST -->
-                    <div class='content' id='gameList' >
-                        <div class="top_block toolBar">
+                    <div class='pane' id='gameList' >
+                        <div class="row toolbar">
                             <div class='col-xs-4'>
                                 <input id='gameSearch' type='text' class='form-control input-sm' placeholder='Search' maxlength="32" />
                             </div>
@@ -236,17 +335,20 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="background rightPane">
-                <div class="content centered">
-                    <iframe id='gameFrame' sandbox='allow-scripts allow-same-origin' src='/static/frame.html'>
-                    </iframe>
+                <div class="grid_right grid_col">
+                    <div class="content centered">
+                        <iframe id='gameFrame' sandbox='allow-scripts allow-same-origin' src='/static/frame.html'>
+                        </iframe>
+                    </div>
                 </div>
             </div>
-            <div class="bottom_block statusBar">
+            <div class="grid_footer grid_row">
                 <div class="content">
                     <span><i id='spinner' class='glyphicon glyphicon-ok'></i>&nbsp;</span>
                     <span id='statusBar'>Welcome. Errors are shown here...</span>
+                </div>
+                 <div ng-app="mainApp">
+                    <ng-view></ng-view>
                 </div>
             </div>
         </div>
