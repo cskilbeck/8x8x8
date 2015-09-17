@@ -44,6 +44,43 @@
                 </div>
             </div>
         </div>
+        <!-- EDITOR OPTIONS DIALOG -->
+        <div class="modal bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" id='editorOptionsModal'>
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="editorOptionsModalLabel">Editor Options</h4>
+                    </div>
+                    <form id="editorOptionsForm" name="editorOptionsForm" onSubmit='return editorOptionsChanged()' method='none'>
+                        <div class="modal-body">
+                            <div class='form-group'>
+                                <label for='theme'>Theme&nbsp</label>
+                                <div class="btn-group">
+                                    <button type="button" id='themeButton' class="btn btn-sm dropdown-toggle" data-toggle="dropdown">
+                                        Monokai <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a style='cursor: pointer;' onClick='setTheme("Chrome");'>Chrome</a></li>
+                                        <li><a style='cursor: pointer;' onClick='setTheme("Cobalt");'>Cobalt</a></li>
+                                        <li><a style='cursor: pointer;' onClick='setTheme("Monokai");'>Monokai</a></li>
+                                        <li><a style='cursor: pointer;' onClick='setTheme("Eclipse");'>Eclipse</a></li>
+                                        <li><a style='cursor: pointer;' onClick='setTheme("TextMate");'>TextMate</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class='form-group'>
+                                <div class='checkbox'>
+                                    <label>
+                                        <input type='checkbox' id='lineNumbersCheckbox'>Line Numbers
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
         <!-- LOGIN MODAL DIALOG -->
         <div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" id='loginModal'>
             <div class="modal-dialog modal-lg">
@@ -146,9 +183,10 @@
                                 <div class='col-xs-4'>
                                     <input id='gameName' type='text' class='form-control input-sm' value='Snake' maxlength="32" />
                                 </div>
-                                <div class='col-xs-4'>
+                                <div class='col-xs-8'>
                                     <button title='Ctrl-R' class='btn btn-sm btn-success' onclick='runit();'>Run &nbsp;<i class='glyphicon glyphicon-play'></i></button>
                                     <button title='Ctrl-S' class='btn btn-sm btn-primary' onclick='saveit();' id="saveButton">Save &nbsp;<i class='glyphicon glyphicon-floppy-disk'></i></button>
+                                    <button title='Options' class='btn btn-sm btn-default pull-right' onclick='editorOptions();' id='editorOptionsButton'>Options&nbsp;<i class='glyphicon glyphicon-cog'></i></button>
                                 </div>
                             </div>
                         </div>
@@ -170,7 +208,7 @@
                         <div id='gameList'>
                             <div id='games'>
                                 <table class='table outer'>
-                                    <thead class='bg-primary'>
+                                    <thead class='bg-info'>
                                         <tr>
                                             <th width=15%>
                                             Title

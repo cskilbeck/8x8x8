@@ -22,10 +22,15 @@ html, body {
     margin: 0;
     padding: 0;
     height: 200px;
-    background: #E8F0FF;
 }
 
 #mainPane {
+}
+
+.errorLine {
+  position:absolute;
+  background:rgba(100,200,100,0.5);
+  z-index:20
 }
 
 body .modal .modal-dialog {
@@ -44,6 +49,8 @@ body .modal .modal-dialog {
     padding-top: 5px;
     padding-bottom: 5px;
     padding-left: 10px;
+    padding-right: 10px;
+    height: 40px;
 }
 
 .whitestar {
@@ -112,6 +119,10 @@ table.table {
 }
 
 .table.outer >tbody >tr.clickable:not(:last-child)  {
+    border-bottom: 1px LightGrey solid;
+}
+
+.table>thead>tr>th{
     border-bottom: 1px LightGrey solid;
 }
 
@@ -190,8 +201,8 @@ pre {
 }
 
 .grid_editorheader.grid_row {
-    height: 50px;
     top: 50px;
+    height: 40px;
 }
 
 .grid_body.grid_row {
@@ -217,7 +228,7 @@ pre {
 }
 
 .grid_editorbody.grid_row {
-    top: 100px;
+    top: 90px;
     bottom: 0;
     border-top: 1px solid black;
 }

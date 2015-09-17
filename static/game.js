@@ -11,6 +11,7 @@
 // - user registration/login/forgot password
 //      username, verify password etc
 //      fix login/register promise resolve...
+//      save user options [editor,...?] in the database and as cookies
 // - voting/rating/comments
 // - telemetry/analytics
 // - finish help pane content
@@ -47,6 +48,8 @@ $(document).ready(function() {
         panestack = [],
         loginDefer,
         choiceDefer,
+        currentTheme = 'Monokai',
+        Range = ace.require('ace/range').Range,
         source,
         hidden = [
                 'document', 'window', 'alert', 'parent', 'frames', 'frameElment',
@@ -65,6 +68,39 @@ $(document).ready(function() {
         });
         return formObj;
     }
+
+    $('#editorOptionsModal').on('shown.bs.modal', function (e) {
+        $(".modal-backdrop.in").css({ opacity: 0.0 });
+    });
+
+    //when modal closes
+    $('#editorOptionsModal').on('hidden.bs.modal', function (e) {
+        $(".modal-backdrop.in").css({ opacity: 0.5 });
+    });
+
+    window.getTheme = function() {
+        return currentTheme;
+    };
+
+    window.setTheme = function(name) {
+        if(editor) {
+            editor.setTheme('ace/theme/' + name.toLowerCase());
+        }
+        $("#themeButton").html(name + " <span class='caret'></span>");
+    };
+
+    $('#lineNumbersCheckbox').click(function() {
+        var checked = $('#lineNumbersCheckbox').is(':checked');
+        editor.session.setOptions({
+            showLineNumbers: checked
+        });
+    });
+
+    window.editorOptions = function() {
+        $("#editorOptionsModal").modal("show");
+    };
+
+    window.setTheme(currentTheme);
 
     function spinner(spin) {
         var s = $('#spinner');
@@ -210,7 +246,7 @@ $(document).ready(function() {
     window.EditIt = function(game_id) {
         getSource(game_id)
         .then(function(result) {
-            editor.setOptions({ readOnly: false, highlightActiveLine: true });
+            editor.setOptions({ readOnly: false, highlightActiveLine: false });
             enableKeyBindings();
             show('#saveButton', true);
             editor.session.getUndoManager().reset();
@@ -282,19 +318,25 @@ $(document).ready(function() {
         sb.removeClass('statusError');
     };
 
-    function jumpToLine(e) {
+    function highlightError(e) {
         var trace = printStackTrace({e:e}),
             re = /(.*)@(.*)\:(\d+):(\d+)/,
             parts = trace[0].match(re),
             line = parseInt(parts[3]),
             column = parseInt(parts[4]);
         editor.gotoLine(line, Math.max(0, column - 1), true);
+        editor.session.setAnnotations([{
+            row: line - 1,
+            column: column - 1,
+            text: e.message,
+            type: 'error'
+        }]);
     }
 
     window.reportRuntimeError = function(e) {
         // get line of 1st error
         reportError(e.message);
-        jumpToLine(e);
+        highlightError(e);
         focusEditor();
     };
 
@@ -581,7 +623,7 @@ $(document).ready(function() {
         // make the editor empty
         // make the editor writeable etc
         editor.setValue('', -1);
-        editor.setOptions({ readOnly: false, highlightActiveLine: true });
+        editor.setOptions({ readOnly: false, highlightActiveLine: false });
         enableKeyBindings();
         show('#saveButton', true);
         editor.session.getUndoManager().reset();
@@ -605,10 +647,16 @@ $(document).ready(function() {
     editor.setShowPrintMargin(false);
     editor.setShowFoldWidgets(false);
     editor.getSession().setMode('ace/mode/javascript');
+    editor.setTheme("ace/theme/monokai");
     editor.setOptions({
-        enableLiveAutocompletion: true
+        enableLiveAutocompletion: true,
+
     });
     editor.session.getUndoManager().reset();
+
+    editor.on('input', function() {
+
+    });
 
     $('#gameName').bind('keypress', function (event) {
         var regex = new RegExp("^[\'\:\;\! \?\.\,a-zA-Z0-9]+$");

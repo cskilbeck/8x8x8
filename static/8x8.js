@@ -198,8 +198,9 @@
     };
 
     function onFrame() {
-        var i;
+        var i, hasUpdate;
         if(client && client.updateFunction !== null && !exception) {
+            hasUpdate = true;
             try {
                 client.updateFunction(frame++);
             }
@@ -213,7 +214,12 @@
             keyPressed[i] = false;
             keyReleased[i] = false;
         }
-        requestAnimationFrame(onFrame);
+        if(hasUpdate) {
+            requestAnimationFrame(onFrame);
+        }
+        else {
+            parent.window.focusEditor();
+        }
         // function@file:line:col
         // if ('8x8.js' in file) {
         //     stop
