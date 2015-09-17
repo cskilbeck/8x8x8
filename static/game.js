@@ -10,13 +10,13 @@
 //      quick search buttons: my games, top games, most played, recently added, recently changed
 // - user registration/login/forgot password
 //      username, verify password etc
+//      fix login/register promise resolve...
 // - voting/rating/comments
 // - telemetry/analytics
 // - finish help pane content
 // - editor view/edit mode with forking etc
 // - ask if they want to save when quitting the editor if changes are unsaved
-// - cache current game in editor for fast re-editing
-// - callstack from runtime errors
+// - cache current game in editor for fast re-editing even after going back to the game list
 //
 // + save current source in LocalStorage
 // + web service
@@ -32,6 +32,7 @@
 // + make main left pane fill available screen space (esp. editor) [sort of fixed, editor expands and scrollbar shows up when necessary]
 // + fix editor height/scrolling [ugly JS hack]
 // + ajax in progress spinner
+// + callstack from runtime errors [not full callstack but line & column at least]
 //////////////////////////////////////////////////////////////////////
 
 $(document).ready(function() {
@@ -281,9 +282,25 @@ $(document).ready(function() {
         sb.removeClass('statusError');
     };
 
+    function jumpToLine(e) {
+        var trace = printStackTrace({e:e}),
+            re = /(.*)@(.*)\:(\d+):(\d+)/,
+            parts = trace[0].match(re),
+            line = parseInt(parts[3]),
+            column = parseInt(parts[4]);
+        editor.gotoLine(line, Math.max(0, column - 1), true);
+    }
+
+    window.reportRuntimeError = function(e) {
+        // get line of 1st error
+        reportError(e.message);
+        jumpToLine(e);
+        focusEditor();
+    };
+
     window.reportError = function(e) {
         var sb = $('#statusBar');
-        sb.text(e);
+        sb.text("Error: " + e);
         sb.addClass('statusError');
     };
 

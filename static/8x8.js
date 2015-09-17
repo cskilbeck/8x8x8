@@ -63,8 +63,7 @@
         screen = [];
 
     function reportError(e) {
-        parent.window.reportError(e);
-        parent.window.FocusEditor();
+        parent.window.reportRuntimeError(e);
     }
 
     function ellipse(ctx, cx, cy, w, h){
@@ -170,7 +169,7 @@
         var key;
         if(e.keyCode === 27) {
             parent.window.focus();
-            parent.FocusEditor();
+            parent.focusEditor();
         }
         if(keyCount > 0 && e.keyCode === lastkey) {
         }
@@ -215,6 +214,10 @@
             keyReleased[i] = false;
         }
         requestAnimationFrame(onFrame);
+        // function@file:line:col
+        // if ('8x8.js' in file) {
+        //     stop
+        // }
     }
 
     canvas = document.getElementById('canvas');
@@ -228,10 +231,11 @@
     window.pressed = function(k) { return doPressed(k); };
     window.released = function(k) { return doReleased(k); };
 
-    window.onerror = function(e) {
-        reportError(e);
-        exception = true;
-    };
+    // window.onerror = function(e) {
+    //     console.log(getStackTrace());
+    //     reportError(e);
+    //     exception = true;
+    // };
 
     if(typeof parent.GameSource !== 'undefined') {
         var script = document.createElement('script');
@@ -241,7 +245,12 @@
         body.appendChild(script);
     }
 
-    client = (typeof ClientScript !== 'undefined') ? new ClientScript() : null;
+    try {
+        client = (typeof ClientScript !== 'undefined') ? new ClientScript() : null;
+    }
+    catch(e) {
+        reportError(e);
+    }
 
     requestAnimationFrame(onFrame);
 

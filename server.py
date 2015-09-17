@@ -26,9 +26,11 @@ import os
 import time;
 
 #----------------------------------------------------------------------
+# globals
 
 app = None
 render = web.template.render('templates/')
+
 urls = (
     '/api/login', 'login',
     '/api/register', 'register',
@@ -41,12 +43,7 @@ urls = (
     '/api/endSession', 'endSession',
 
     '/favicon.ico', 'favicon',
-    '/history', 'history',
-    '/routes', 'routes',
-    '/routes#/home', 'routes',
-    '/routes#/viewStudents', 'routes',
-    '/routes', 'routes',
-    '/panes', 'panes',
+    '/(.*)\.html', 'subPage',
     '/(.*)', 'index'
     )
 
@@ -60,6 +57,7 @@ def show(x, m = 'var'):
         print m + ": " + pprint.pformat(x)
 
 #----------------------------------------------------------------------
+# JSON printer with date support
 
 def date_handler(obj):
     return obj.isoformat() if hasattr(obj, 'isoformat') else obj
@@ -71,11 +69,13 @@ def getJSON(x):
     return json.dumps(x, indent = 4, separators=(',',': '), default = date_handler)
 
 #----------------------------------------------------------------------
+# get a 32 bit random number
 
 def getRandomInt():
     return struct.unpack("<L", os.urandom(4))[0]
 
 #----------------------------------------------------------------------
+# persistent session in debug mode
 
 def session():
     global app
@@ -183,7 +183,7 @@ def checked(paramspec):
     return wrapper
 
 #----------------------------------------------------------------------
-# list
+# /api/list
 
 class list(Get):
     @checked({
@@ -203,7 +203,7 @@ class list(Get):
         return { 'count': cur.rowcount, 'games': cur.fetchall() }
 
 #----------------------------------------------------------------------
-# count
+# /api/count
 
 class count(Get):
     @checked({
@@ -216,7 +216,7 @@ class count(Get):
         return cur.fetchone()
 
 #----------------------------------------------------------------------
-# source
+# /api/source
 
 class source(Get):
     @checked({ 'game_id': int })
@@ -227,7 +227,7 @@ class source(Get):
         raise web.HTTPError('404 Game not found')
 
 #----------------------------------------------------------------------
-# save
+# /api/save
 
 class save(Post):
     @checked({
@@ -246,7 +246,7 @@ class save(Post):
             return { 'saved': cur.rowcount }
 
 #----------------------------------------------------------------------
-# delete
+# /api/delete
 
 class delete(Post):
     @checked({
@@ -260,7 +260,7 @@ class delete(Post):
         return { 'deleted': cur.rowcount }
 
 #----------------------------------------------------------------------
-# register
+# /api/register
 
 class register(Post):
     @checked({
@@ -296,7 +296,7 @@ class register(Post):
         return result
 
 #----------------------------------------------------------------------
-# login
+# /api/login
 
 class login(Post):
     @checked({
@@ -316,7 +316,7 @@ class login(Post):
         return row
 
 #----------------------------------------------------------------------
-# refreshSession
+# /api/refreshSession
 
 class refreshSession(Get):
     @checked({
@@ -335,7 +335,7 @@ class refreshSession(Get):
                 }
 
 #----------------------------------------------------------------------
-# endSession
+# /api/endSession
 
 class endSession(Get):
     @checked({
@@ -356,30 +356,18 @@ class favicon:
         raise web.seeother('/static/favicon.ico')
 
 #----------------------------------------------------------------------
-# index
+# /
 
 class index:
-    def GET(elf, path):
-        if path is None or not '.html' in path: # anything without .html gets you the root / else serve up the file
-            return render.index()
-        return web.template.frender('templates/' + path)()
-
-class routes:
-    def GET(self):
-        print "routes"
-        return render.routes()
-
-class panes:
-    def GET(self):
-        return render.panes()
-
-class really:
-    def GET(self, command, param):
+    def GET(self, path):
         return render.index()
 
-class history:
-    def GET(self):
-        return render.history()
+#----------------------------------------------------------------------
+# /subPage.html
+
+class subPage:
+    def GET(self, path):
+        return web.template.frender('templates/' + path + '.html')()
 
 #----------------------------------------------------------------------
 

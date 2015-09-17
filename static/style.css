@@ -50,6 +50,11 @@ body .modal .modal-dialog {
     color: #CCC;
 }
 
+.statusError {
+    color: red;
+    font-weight: bold;
+}
+
 .yellowstar {
     color: #FC0;
 }
@@ -206,6 +211,9 @@ pre {
     height: 50px;
     padding-top: 15px;
     padding-bottom: 15px;
+    padding-left: 15px;
+    font-weight: bolder;
+    font-size: 18px;
 }
 
 .grid_editorbody.grid_row {
