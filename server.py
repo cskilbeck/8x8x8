@@ -363,7 +363,7 @@ class index:
         return render.index()
 
 #----------------------------------------------------------------------
-# /subPage.html
+# /subPage.html - these are not templated!
 
 class subPage:
     def GET(self, path):
