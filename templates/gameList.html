@@ -12,7 +12,7 @@
     <div id='gameList'>
         <div id='games'>
             <table class='table outer'>
-                <thead class='bg-primary'>
+                <thead class='bg-info'>
                     <tr>
                         <th width=15%>Game</th>
                         <th width=35%>User</th>
@@ -21,34 +21,36 @@
                         <th width=20%>Rating</th>
                     </tr>
                 </thead>
-                <tbody id='results'>
-                    <tr data-toggle='collapse' data-target='#row{index}' class='clickable' id='headerRow{index}' aria-expandable='true'>
-                        <td>{game_title}</td>
-                        <td>{user}</td>
-                        <td>{lastsaved}</td>
-                        <td>{created}</td>
-                        <td>{rating}</td>
+                <tbody id='results' ng-repeat='g in games'>
+                    <tr data-toggle='collapse' data-target='#row{{$index}}' class='clickable' id='headerRow{{$index}}' aria-expandable='true'>
+                        <td>{{g.game_title}}</td>
+                        <td>{{g.user_username}}</td>
+                        <td>{{timer(g.game_lastsaved)}}</td>
+                        <td>{{timer(g.game_created)}}</td>
+                        <td>
+                            <i ng-repeat='i in [1,2,3,4,5]' class='{{star(i, 5)}}star glyphicon glyphicon-star'></i>
+                        </td>
                     </tr>
                     <tr class='hid'>
                         <td colspan='5'>
-                            <div class='accordion-body collapse tableContainer' id='row{index}' row='#headerRow{index}' collapsible aria-expanded='false' style>
+                            <div class='accordion-body collapse tableContainer' id='row{{$index}}' row='#headerRow{{$index}}' collapsible aria-expanded='false' style>
                                 <table class='table inner'>
                                     <tbody>
                                         <tr>
                                             <td colspan='5' class='butter'>
-                                                <button class='btn btn-xs btn-primary' onclick='viewIt({game_id})'>View &nbsp;<i class='glyphicon glyphicon-info-sign'></i></button>&nbsp;
-                                                <button class='btn btn-xs btn-success' onclick='playIt({game_id})'>Play &nbsp;<i class='glyphicon glyphicon-play'></i></button>&nbsp;
-                                                <button class='btn btn-xs btn-info {hidden}' onclick='{action}It({game_id})'>{action} &nbsp;<i class='glyphicon glyphicon-edit'></i></button>&nbsp;
-                                                <button class='btn btn-xs btn-danger {hiddenIfNotMine}' onclick='deleteIt({game_id})'>Delete &nbsp;<i class='glyphicon glyphicon-trash'></i></button>
+                                                <button class='btn btn-xs btn-primary' ng-click='viewIt(g.game_id)'>View &nbsp;<i class='glyphicon glyphicon-info-sign'></i></button>&nbsp;
+                                                <button class='btn btn-xs btn-success' ng-click='playIt(g.game_id)'>Play &nbsp;<i class='glyphicon glyphicon-play'></i></button>&nbsp;
+                                                <button class='btn btn-xs btn-info' ng-click='editIt(g.game_id)'>Edit &nbsp;<i class='glyphicon glyphicon-edit'></i></button>&nbsp;
+                                                <button class='btn btn-xs btn-danger' ng-click='deleteIt(g.game_id)'>Delete &nbsp;<i class='glyphicon glyphicon-trash'></i></button>
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>Last Saved</td>
-                                            <td>{lastsaved}</td>
+                                            <td>{{timer(g.game_lastsaved)}}</td>
                                         </tr>
                                         <tr>
                                             <td>Created</td>
-                                            <td>{created}</td>
+                                            <td>{{timer(g.game_created)}}</td>
                                         </tr>
                                     </tbody>
                                 </table>

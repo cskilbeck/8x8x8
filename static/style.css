@@ -126,6 +126,10 @@ table.table {
     border-bottom: 1px LightGrey solid;
 }
 
+.table>tbody+tbody {
+    border: 0;
+}
+
 .tableContainer {
     border-bottom: 1px LightGrey solid;
 }

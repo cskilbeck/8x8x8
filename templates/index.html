@@ -54,10 +54,11 @@
                     <div class='col-xs-2'><h4><i>8x8x8</i></h4></div>
                     <div class='col-xs-4'><a href="/help" class="btn btn-sm btn-default">Help</a></div>
                     <div class='pull-right' ng-controller='LoginModalController'>
-                        <button type="button" class="btn btn-sm btn-primary" ng-click='showLoginDialog()'>Sign in/Register</button>
+                        <button type="button" class="btn btn-sm btn-primary" ng-click='showLoginDialog()'>{{signInMessage}}</button>
                     </div>
                 </div>
             </div>
+            <!-- MIDDLE ROW -->
             <div class="grid_body grid_row">
                 <div class="grid_left grid_col" id='mainPane'>
                     <!-- TITLEBAR -->
@@ -69,9 +70,11 @@
                             </div>
                         </div>
                     </div>
+                    <!-- MAIN PANE -->
                     <div ng-view>
                     </div>
                 </div>
+                <!-- RIGHT PANEL : IFRAME HOLDER -->
                 <div class="grid_right grid_col">
                     <div class="content centered">
                         <iframe id='gameFrame' sandbox='allow-scripts allow-same-origin' src='/static/frame.html'>
@@ -79,6 +82,7 @@
                     </div>
                 </div>
             </div>
+            <!-- BOTTOM ROW: FOOTER -->
             <div class="grid_footer grid_row">
                 <div class="content">
                     <span><i id='spinner' class='glyphicon glyphicon-ok'></i>&nbsp;</span>

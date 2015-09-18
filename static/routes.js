@@ -5,10 +5,10 @@
         session,
         source,
         mainApp,
-        user_id,
         editorOptions = {
             theme: 'Monokai'
         },
+        user_id = 0,
         user_session,
         user_name;
 
@@ -30,6 +30,21 @@
         return q.promise;
     }
 
+    function JSONToObject(str) {
+    }
+
+    function objectToJSON(obj) {
+    }
+
+    function format(str, col) {
+        col = typeof col === 'object' ? col : Array.prototype.slice.call(arguments, 1);
+        return str.replace(/\{\{|\}\}|\{(\w+)\}/g, function (m, n) {
+            if (m == '{{') { return '{'; }
+            if (m == '}}') { return '}'; }
+            return col[n];
+        });
+    }
+
     function get(url, data, progress, complete, fail) {
         // data.user_session = user_session;
         // data.user_id = data.user_id || user_id || 0;
@@ -40,6 +55,39 @@
         // data.user_session = user_session;
         // data.user_id = user_id || 0;
         return doAjax($.post, url, data, progress, complete, fail);
+    }
+
+    function setCookie(name, value, days) {
+        var expires;
+        if (days) {
+            var date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            expires = '; expires=' + date.toGMTString();
+        } else {
+            expires = '';
+        }
+        document.cookie = encodeURIComponent(name) + '=' + encodeURIComponent(value) + expires + '; path=/';
+    }
+
+    // returns cookie value if it exists or defaultValue (or null if no defaultValue supplied)
+    function getCookie(name, defaultValue) {
+        var nameEQ = encodeURIComponent(name) + '=',
+            ca = document.cookie.split(';'),
+            i, c ;
+        for (i = 0; i < ca.length; i++) {
+            c = ca[i];
+            while (c.charAt(0) === ' ') {
+                c = c.substring(1, c.length);
+            }
+            if (c.indexOf(nameEQ) === 0) {
+                return decodeURIComponent(c.substring(nameEQ.length, c.length));
+            }
+        }
+        return defaultValue || null;
+    }
+
+    function clearCookie(name) {
+        setCookie(name, '', -1);
     }
 
     function setOptions(o) {
@@ -82,9 +130,24 @@
     mainApp.controller('GameListController', function gameListController($scope, $routeParams) {
         $scope.$parent.pane = 'Games';
         $scope.games = [];
-        $scope.search = '';
-        // get the games list
-        // thassit
+
+        $scope.star = function(index, score) {
+            return index <= score ? 'yellow' : 'white';
+        };
+
+        $scope.timer = function(t) {
+            return moment(t).fromNow();
+        };
+
+        get('/api/list', { user_id: -1 })
+        .then(function(result) {
+            console.log(result.games);
+            $scope.games = result.games;
+            $scope.$apply();
+        },
+        function(xhr) {
+            //setStatus(xhr.statusText);
+        });
     });
 
     mainApp.controller('EditorController', function editController($scope, $modal, $routeParams) {
@@ -109,7 +172,7 @@
         editor.setShowPrintMargin(false);
         editor.setShowFoldWidgets(false);
         editor.getSession().setMode('ace/mode/javascript');
-        editor.setTheme("ace/theme/monokai");
+        setOptions(editorOptions);
         editor.setOptions({
             enableLiveAutocompletion: true,
         });
@@ -208,41 +271,69 @@
             failed: false
         };
 
+        $scope.signInMessage = "Sign In";
+
+        function signIn(result) {
+            user_id = result.user_id;
+            user_session = result.user_session;
+            user_name = result.user_username;
+            setCookie('user_userid', user_id, 30);
+            setCookie('user_username', user_name, 30);
+            setCookie('user_session', user_session, 30);
+            //reportStatus("Welcome back " + user_name);
+            $scope.signInMessage = "Sign out " + result.user_username;
+        }
+
+        function signOut() {
+            user_id = 0;
+            user_name = null;
+            user_session = null;
+            clearCookie('user_session');
+            clearCookie('user_username');
+            clearCookie('user_userid');
+            $scope.signInMessage = "Sign In";
+        }
+
         $scope.showLoginDialog = function () {
-            $modal.open({
-                animation: true,
-                templateUrl: 'loginModal.html',
-                controller: 'LoginModalInstanceController',
-                resolve: {
-                    user: function () {
-                        return $scope.user;
-                    }
-                }
-            }).result.then(function (result) {
-                if(result.registration === 'required') {
-                    $modal.open({
-                        animation: true,
-                        templateUrl: 'registerModal.html',
-                        controller: 'RegisterModalInstanceController',
-                        resolve: {
-                            user: function() {
-                                return $scope.user;
-                            }
+            if(user_id !== 0) {
+                get('/api/endSession', { user_id: user_id, user_session: user_session }, 'Logging ' + user_name + ' out...')
+                .then(function() {
+                    signOut();
+                    $scope.$apply();    // need this because not using angular ui for this
+                }, function() {
+                    // endSession failed!?
+                });
+            }
+            else {
+                $modal.open({
+                    animation: true,
+                    templateUrl: 'loginModal.html',
+                    controller: 'LoginModalInstanceController',
+                    resolve: {
+                        user: function () {
+                            return $scope.user;
                         }
-                    }).result.then(function(result) {
-                        user_id = result.user_id;
-                        user_session = result.user_session;
-                        user_name = result.user_username;
-                        console.log("User ID " + user_id + " logged in...");
-                    });
-                }
-                else {
-                    user_id = result.user_id;
-                    user_session = result.user_session;
-                    user_name = result.user_username;
-                    console.log("User ID " + user_id + " logged in...");
-                }
-            });
+                    }
+                }).result.then(function (result) {
+                    if(result.registration === 'required') {
+                        $modal.open({
+                            animation: true,
+                            templateUrl: 'registerModal.html',
+                            controller: 'RegisterModalInstanceController',
+                            resolve: {
+                                user: function() {
+                                    return $scope.user;
+                                }
+                            }
+                        }).result.then(function(result) {
+                            signIn(result);
+                        });
+                    }
+                    else {
+                        signIn(result);
+                    }
+                });
+            }
         };
     });
 
@@ -272,11 +363,19 @@
 
     mainApp.controller('RegisterModalInstanceController', function registerModalInstanceController($scope, $modalInstance, user) {
         $scope.user = user;
+        $scope.message = 'Please fill in all required fields';
         $scope.user.failed = false;
 
         $scope.ok = function () {
-            // attempt user registration
-            $modalInstance.close({});
+
+            $scope.user.failed = false;
+            post('/api/register', $scope.user, 'Registering...', '', 'Error registering')
+            .then(function done(result) {
+                $modalInstance.close(result);
+            }, function fail(xhr) {
+                $scope.message = xhr.statusText;
+                $scope.user.failed = true;
+            });
         };
 
         $scope.cancel = function () {
