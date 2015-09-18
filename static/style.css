@@ -264,3 +264,6 @@ pre {
 @keyframes          spin {  000% { -webkit-transform: rotate(000deg); transform: rotate(000deg); }
                             100% { -webkit-transform: rotate(359deg); transform: rotate(359deg); } }
 
+.help-block.inline {
+    display: inline;
+}

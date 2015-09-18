@@ -165,11 +165,16 @@
         return null;
     }
 
+    function focusEditor() {
+        if(parent && parent.window && typeof parent.window.focusEditor === 'function') {
+            parent.window.focusEditor();
+        }
+    }
+
     document.onkeydown = function(e) {
         var key;
         if(e.keyCode === 27) {
-            parent.window.focus();
-            parent.focusEditor();
+            focusEditor();
         }
         if(keyCount > 0 && e.keyCode === lastkey) {
         }
@@ -218,7 +223,7 @@
             requestAnimationFrame(onFrame);
         }
         else {
-            parent.window.focusEditor();
+            focusEditor();
         }
         // function@file:line:col
         // if ('8x8.js' in file) {

@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>8x8x8</title>
+        <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+        <link rel="stylesheet" href="/static/style.css">
+
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.28/angular.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.28/angular-route.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/ace.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/ext-language_tools.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.11.0/jquery.validate.min.js"></script>
+        <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/stacktrace.js/0.6.4/stacktrace.js"></script>
+        <script src="/static/Q.js"></script>
+        <script src="/static/ga.js" defer></script>
+        <script src="/static/game.js" defer></script>
+        <script src="/static/routes.js" defer></script>
+        <base href="/">
+    </head>
+    <body>
+        <!-- CHOICE MODAL DIALOG -->
+        <div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" id='choiceModal'>
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="choiceLabel">Make your choice</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div id='choiceText'>
+                            What is your choice?
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" id="choiceNo" class="btn btn-sm btn-default" data-dismiss="modal" onClick='makeChoice(false)'>No</button>
+                        <button type="button" id="choiceYes" class="btn btn-sm btn-primary"  data-dismiss="modal" onClick='makeChoice(true)'>Yes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- EDITOR OPTIONS DIALOG -->
+        <div class="modal bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" id='editorOptionsModal'>
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="editorOptionsModalLabel">Editor Options</h4>
+                    </div>
+                    <form id="editorOptionsForm" name="editorOptionsForm" onSubmit='return editorOptionsChanged()' method='none'>
+                        <div class="modal-body">
+                            <div class='form-group'>
+                                <label for='theme'>Theme&nbsp</label>
+                                <div class="btn-group">
+                                    <button type="button" id='themeButton' class="btn btn-sm dropdown-toggle" data-toggle="dropdown">
+                                        Monokai <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a style='cursor: pointer;' onClick='setTheme("Chrome");'>Chrome</a></li>
+                                        <li><a style='cursor: pointer;' onClick='setTheme("Cobalt");'>Cobalt</a></li>
+                                        <li><a style='cursor: pointer;' onClick='setTheme("Monokai");'>Monokai</a></li>
+                                        <li><a style='cursor: pointer;' onClick='setTheme("Eclipse");'>Eclipse</a></li>
+                                        <li><a style='cursor: pointer;' onClick='setTheme("TextMate");'>TextMate</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class='form-group'>
+                                <div class='checkbox'>
+                                    <label>
+                                        <input type='checkbox' id='lineNumbersCheckbox'>Line Numbers
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- LOGIN MODAL DIALOG -->
+        <div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" id='loginModal'>
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="myModalLabel">Sign in</h4>
+                    </div>
+                    <form id="loginForm" name="loginForm" onSubmit='return handleLogin()' method='none'>
+                        <div class="modal-body">
+                            <div class='well'>
+                                <div class='form-group'>
+                                    <label for='email'>Email</label>
+                                    <input type='email' name="email" class='form-control' id='emailInput' required />
+                                </div>
+                                <div class='form-group'>
+                                    <label for='passwordInput'>Password</label>
+                                    <input type='password' name='password' class='form-control' id='passwordInput' minlength='6' required />
+                                </div>
+                            </div>
+                            <div id='loginMessage' hidden='hidden'>
+                                Incorrect password. Forgotten it? <button type='button' class='btn btn-xs btn-primary'>Reset it</button>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" id="registerSubmit" class="btn btn-sm btn-success pull-left" onclick="showRegistration()">New user? Register</button>
+                            <button type="button" class="btn btn-sm btn-default" data-dismiss="modal">Cancel</button>
+                            <input type="submit" id="signInSubmit" value="Sign in" class="btn btn-sm btn-primary" />
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- REGISTER MODAL DIALOG -->
+        <div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" id='registerModal'>
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="myModalLabel">Register</h4>
+                    </div>
+                    <form id="registerForm" name="registerForm" onSubmit='return handleRegister()' method='none'>
+                        <div class="modal-body">
+                            <div class='well'>
+                                <div class='form-group'>
+                                    <label for='username'>Username</label>
+                                    <input type='text' name="username" class='form-control' id='usernameInput' required />
+                                </div>
+                                <div class='form-group'>
+                                    <label for='email'>Email</label>
+                                    <input type='email' name="email" class='form-control' id='emailRegisterInput' required />
+                                </div>
+                                <div class='form-group'>
+                                    <label for='passwordInput'>Password</label>
+                                    <input type='password' name='password' class='form-control' id='passwordRegisterInput' minlength='6' required />
+                                </div>
+                                <div class='form-group'>
+                                    <label for='passwordInput'>Confirm Password</label>
+                                    <input type='password' name='passwordConfirm' class='form-control' id='passwordConfirmInput' minlength='6' data-rule-required='true' data-rule-equalto="#passwordRegisterInput"/>
+                                </div>
+                            </div>
+                            <div id='registerMessage' hidden='hidden'>
+                                ...
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-sm btn-default" data-dismiss="modal">Cancel</button>
+                            <input type="submit" id="registerSubmit" value="Register" class="btn btn-sm btn-primary" />
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div>
+            <!-- TOP ROW (HELP/SIGN IN etc) -->
+            <div class="grid_header grid_row">
+                <div class="content container-fluid mainmenu">
+                    <div class='col-md-2'><h4><i>8x8x8</i></h4></div>
+                    <div class='col-md-4'><a onClick="showPane('helpPane')" class="btn btn-sm btn-default">Help</a></div>
+                    <div class='pull-right'>
+                        <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" onClick="showLogin()" id="loginButton">Sign in/Register</button>
+                    </div>
+                </div>
+            </div>
+            <div class="grid_body grid_row">
+                <div class="grid_left grid_col" id='mainPane'>
+                    <!-- TITLEBAR -->
+                    <div class="grid_titlebar">
+                        <div class="content">
+                            <div id='titleBar' class='bg-primary'>
+                                &nbsp;<span id="paneTitle">Editor</span>
+                                <button class='masked close closeButton' id="closeButton" onclick='popPane();'><span aria-hidden='true'>&times;</span>&nbsp;</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- EDITOR -->
+                    <div class="masked pane" id='editorPane'>
+                        <div class="grid_editorheader grid_row">
+                            <div class="row toolbar">
+                                <div class='col-xs-4'>
+                                    <input id='gameName' type='text' class='form-control input-sm' value='Snake' maxlength="32" />
+                                </div>
+                                <div class='col-xs-8'>
+                                    <button title='Ctrl-R' class='btn btn-sm btn-success' onclick='runit();'>Run &nbsp;<i class='glyphicon glyphicon-play'></i></button>
+                                    <button title='Ctrl-S' class='btn btn-sm btn-primary' onclick='saveit();' id="saveButton">Save &nbsp;<i class='glyphicon glyphicon-floppy-disk'></i></button>
+                                    <button title='Options' class='btn btn-sm btn-default pull-right' onclick='editorOptions();' id='editorOptionsButton'>Options&nbsp;<i class='glyphicon glyphicon-cog'></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class='grid_editorbody grid_row grid_scroll-y' id='editorContainer'>
+                            <div id='editor' tabindex='1'></div>
+                        </div>
+                    </div>
+                    <!-- GAME LIST -->
+                    <div class='pane' id='gameList' >
+                        <div class="row toolbar">
+                            <div class='col-xs-4'>
+                                <input id='gameSearch' type='text' class='form-control input-sm' placeholder='Search' maxlength="32" />
+                            </div>
+                            <div class='col-xs-4'>
+                                <button title='Ctrl-R' class='btn btn-sm btn-primary' onclick='createNewGame();'>New Game&nbsp;<i class='glyphicon glyphicon-star-empty'></i></button>
+                                <button title='Ctrl-R' class='btn btn-sm btn-default' onclick='refreshGameList();'>Refresh&nbsp;<i class='glyphicon glyphicon-refresh'></i></button>
+                            </div>
+                        </div>
+                        <div id='gameList'>
+                            <div id='games'>
+                                <table class='table outer'>
+                                    <thead class='bg-info'>
+                                        <tr>
+                                            <th width=15%>
+                                            Title
+                                            </th>
+                                            <th width=35%>
+                                            User
+                                            </th>
+                                            <th width=15%>
+                                            Modified
+                                            </th>
+                                            <th width=15%>
+                                            Created
+                                            </th>
+                                            <th width=20%>
+                                            Rating
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id='results'>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- HELP -->
+                    <div class='masked pane' id='helpPane' >
+                        <div class='grid_row grid_helpbody'>
+                            <div class='container-fluid grid_scroll-y'>
+                                <div class='row'>
+                                    <div class='col-md-8'>
+                                        <span><h2>Documentation</h2></span>
+                                    </div>
+                                    <div class='col-md-4'>
+                                        &nbsp;
+                                    </div>
+                                </div>
+                                <div class='row'>
+                                    <div class='container-fluid'>
+                                        <div class='col-md10'>
+                                            8x8x8 Games are played on an 8x8 grid of pixels and can display 8 colors.<br>
+                                            The coordinates start at (0,0) in the top left and go to (7,7) in the bottom right.<br>
+                                            The keys which can be used are: 'up', 'down', 'left', 'right' and 'space'.<br>
+                                            The colors available are:<p>
+                                            <div class='row'><div class='col-md-1 col-md-offset-1' style='height: 1.25em;  width: 1em; background: #000; border: 1px solid black;'></div><div class='col-md-2'>0 - Black</div></div>
+                                            <div class='row'><div class='col-md-1 col-md-offset-1' style='height: 1.25em;  width: 1em; background: #F00; border: 1px solid black;'></div><div class='col-md-2'>1 - Red</div></div>
+                                            <div class='row'><div class='col-md-1 col-md-offset-1' style='height: 1.25em;  width: 1em; background: #0F0; border: 1px solid black;'></div><div class='col-md-2'>2 - Green</div></div>
+                                            <div class='row'><div class='col-md-1 col-md-offset-1' style='height: 1.25em;  width: 1em; background: #FF0; border: 1px solid black;'></div><div class='col-md-2'>3 - Yellow</div></div>
+                                            <div class='row'><div class='col-md-1 col-md-offset-1' style='height: 1.25em;  width: 1em; background: #00F; border: 1px solid black;'></div><div class='col-md-2'>4 - Blue</div></div>
+                                            <div class='row'><div class='col-md-1 col-md-offset-1' style='height: 1.25em;  width: 1em; background: #F0F; border: 1px solid black;'></div><div class='col-md-2'>5 - Magenta</div></div>
+                                            <div class='row'><div class='col-md-1 col-md-offset-1' style='height: 1.25em;  width: 1em; background: #0FF; border: 1px solid black;'></div><div class='col-md-2'>6 - Cyan</div></div>
+                                            <div class='row'><div class='col-md-1 col-md-offset-1' style='height: 1.25em;  width: 1em; background: #FFF; border: 1px solid black;'></div><div class='col-md-2'>7 - White</div></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class='row'>
+                                        <br>
+                                </div>
+                                <div class='row'>
+                                    <div class='col-md-8'>
+                                        <strong>Functions:</strong><br><br>
+                                    </div>
+                                </div>
+                                <div class='well'>
+                                    <div class='row'>
+                                        <div class='col-md-2'><strong>set(x, y, color)</strong></div>
+                                        <div class='col-md-9'>
+                                            Set the pixel at x,y to color.<br><br>
+                                            <i>This will set the top left pixel to the color cyan</i>
+                                            <pre>set(0, 0, 6);</pre></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class='well'>
+                                    <div class='row'>
+                                        <div class='col-md-2'><strong>get(x, y)</strong></div>
+                                        <div class='col-md-9'>
+                                            Get the color of the pixel at x,y.<br><br>
+                                            <i>This will check if the color of the pixel at (4,5) is yellow</i>
+                                            <pre>if(get(4, 5) === 3) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;// ...<br>
+}</pre></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class='well'>
+                                    <div class='row'>
+                                        <div class='col-md-2'><strong>clear(color)</strong></div>
+                                        <div class='col-md-9'>Set all the pixels to a single color.<br><br>
+                                            <i>This will clear all the pixels to black</i>
+                                            <pre>clear(0);</pre></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class='well'>
+                                    <div class='row'>
+                                        <div class='col-md-2'><strong>pressed(key)</strong></div>
+                                        <div class='col-md-9'>Check if key was just pressed.<br><br>
+                                            <i>This will check if the space bar was pressed since the last time update() was called</i>
+                                            <pre>if(pressed('space')) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;// ...<br>
+}</pre></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class='well'>
+                                    <div class='row'>
+                                        <div class='col-md-2'><strong>released(key)</strong></div>
+                                        <div class='col-md-9'>Check if key was just released.<br><br>
+                                            <i>This will check if the left key was released since the last time update() was called</i>
+                                            <pre>if(released('left')) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;// ...<br>
+}</pre></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class='well'>
+                                    <div class='row'>
+                                        <div class='col-md-2'><strong>held(key)</strong></div>
+                                        <div class='col-md-9'>Check if key is held down.<br><br>
+                                            <i>This will check if the up key is currently being pressed</i>
+                                            <pre>if(held('up')) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;// ...<br>
+}</pre></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class='well'>
+                                    <div class='row'>
+                                        <div class='col-md-2'><strong>update(frame)</strong></div>
+                                        <div class='col-md-9'>You provide this function, it will be called repeatedly about 60 times every second. The parameter 'frame' is increased by 1 each time the function is called.<br><br>
+                                            <i>This is a very simple game</i>
+                                            <pre>var x, y, c;<br>
+
+x = 0;<br>
+y = 0;<br>
+c = 1;<br>
+clear(0);   // code outside functions is run once when game starts<br>
+<br>
+function&nbsp;update(frame)&nbsp;{<br>
+&nbsp; &nbsp; if(held('right'))&nbsp;{<br>
+&nbsp; &nbsp; &nbsp; &nbsp; x&nbsp;=&nbsp;x&nbsp;+&nbsp;1;<br>
+&nbsp; &nbsp; &nbsp; &nbsp; if(x&nbsp;===&nbsp;8)&nbsp;{<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; clear(0);<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; x&nbsp;=&nbsp;0;<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; y&nbsp;=&nbsp;y&nbsp;+&nbsp;1;<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if(y&nbsp;===&nbsp;8)&nbsp;{<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; y&nbsp;=&nbsp;0;<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; }<br>
+&nbsp; &nbsp; &nbsp; &nbsp; }<br>
+&nbsp; &nbsp; }<br>
+&nbsp; &nbsp; if(pressed('space'))&nbsp;{<br>
+&nbsp; &nbsp; &nbsp; &nbsp; c&nbsp;=&nbsp;c&nbsp;+&nbsp;1;<br>
+&nbsp; &nbsp; &nbsp; &nbsp; if(c&nbsp;===&nbsp;8)&nbsp;{<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; c&nbsp;=&nbsp;1;<br>
+&nbsp; &nbsp; &nbsp; &nbsp; }<br>
+&nbsp; &nbsp; }<br>
+&nbsp; &nbsp; set(x,&nbsp;y,&nbsp;c);<br>
+}</pre></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid_right grid_col">
+                    <div class="content centered">
+                        <iframe id='gameFrame' sandbox='allow-scripts allow-same-origin' src='/static/frame.html'>
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+            <div class="grid_footer grid_row">
+                <div class="content">
+                    <span><i id='spinner' class='glyphicon glyphicon-ok'></i>&nbsp;</span>
+                    <span id='statusBar'>Welcome. Errors are shown here...</span>
+                </div>
+                 <div ng-app="mainApp">
+                    <ng-view></ng-view>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,38 @@
+<div class="modal-header">
+    <button type="button" class="close" ng-click="cancel()" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <h4 class="modal-title">Register</h4>
+</div>
+<div class="modal-body">
+    <form name="registerForm" ng-submit='handleRegister()' novalidate>
+        <div class='form-group' ng-class="{'has-error': registerForm.username.$invalid && !registerForm.username.$pristine }">
+            <label for='username'>Username</label>
+            <span ng-show='registerForm.username.$invalid && !registerForm.username.$pristine' class='help-block inline'> must be at least 3 characters</span>
+            <input type='text' name="username" class='form-control' required minlength='3' ng-model='user.username'/>
+        </div>
+        <div class='form-group' ng-class="{'has-error': registerForm.email.$invalid && !registerForm.email.$pristine }">
+            <label for='email'>Email</label>
+            <span ng-show='registerForm.email.$invalid && !registerForm.email.$pristine' class='help-block inline'> Please enter a valid email</span>
+            <input type='email' name="email" class='form-control' required ng-model='user.email'/>
+        </div>
+        <div class='form-group' ng-class="{'has-error': registerForm.password.$invalid && !registerForm.password.$pristine }">
+            <label for='passwordInput'>Password</label>
+            <span ng-show='registerForm.password.$invalid && !registerForm.password.$pristine' class='help-block inline'> must be at least 6 characters</span>
+            <input type='password' name='password' class='form-control' minlength='6' required ng-model='user.password' />
+            
+        </div>
+        <div class='form-group' ng-class="{'has-error': (registerForm.password2.$invalid || !passmatch()) && !registerForm.password2.$pristine }">
+            <label for='password2'>Confirm Password</label>
+            <span
+                ng-show='(registerForm.password2.$invalid || !passmatch()) && !registerForm.password2.$pristine'
+                class='help-block inline'> (must match the first one)</span>
+            <input type='password' name='password2' class='form-control' minlength='6' ng-model='user.password2' />
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <span ng-show='registerForm.$invalid || !passmatch()' class='pull-left'>
+        Please fill in all required fields
+    </span>
+    <button class="btn btn-primary" type="button" ng-click="ok()" ng-disabled="registerForm.$invalid">OK</button>
+    <button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>
+</form>

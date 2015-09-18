@@ -1,39 +1,62 @@
-                    <!-- GAME LIST -->
-                    <div class='pane' id='gameList' >
-                        <div class="row toolbar">
-                            <div class='col-xs-4'>
-                                <input id='gameSearch' type='text' class='form-control input-sm' placeholder='Search' maxlength="32" />
-                            </div>
-                            <div class='col-xs-4'>
-                                <button title='Ctrl-R' class='btn btn-sm btn-primary' onclick='createNewGame();'>New Game&nbsp;<i class='glyphicon glyphicon-star-empty'></i></button>
-                                <button title='Ctrl-R' class='btn btn-sm btn-default' onclick='refreshGameList();'>Refresh&nbsp;<i class='glyphicon glyphicon-refresh'></i></button>
-                            </div>
-                        </div>
-                        <div id='gameList'>
-                            <div id='games'>
-                                <table class='table outer'>
-                                    <thead class='bg-primary'>
+<!-- GAME LIST -->
+<div class='pane' id='gameList' >
+    <div class='row toolbar'>
+        <div class='col-xs-4'>
+            <input id='gameSearch' type='text' class='form-control input-sm' placeholder='Search' maxlength=32 />
+        </div>
+        <div class='col-xs-4'>
+            <button class='btn btn-sm btn-primary' onclick='createNewGame();'>New Game&nbsp;<i class='glyphicon glyphicon-star-empty'></i></button>
+            <button class='btn btn-sm btn-default' onclick='refreshGameList();'>Refresh&nbsp;<i class='glyphicon glyphicon-refresh'></i></button>
+        </div>
+    </div>
+    <div id='gameList'>
+        <div id='games'>
+            <table class='table outer'>
+                <thead class='bg-primary'>
+                    <tr>
+                        <th width=15%>Game</th>
+                        <th width=35%>User</th>
+                        <th width=15%>Modified</th>
+                        <th width=15%>Created</th>
+                        <th width=20%>Rating</th>
+                    </tr>
+                </thead>
+                <tbody id='results'>
+                    <tr data-toggle='collapse' data-target='#row{index}' class='clickable' id='headerRow{index}' aria-expandable='true'>
+                        <td>{game_title}</td>
+                        <td>{user}</td>
+                        <td>{lastsaved}</td>
+                        <td>{created}</td>
+                        <td>{rating}</td>
+                    </tr>
+                    <tr class='hid'>
+                        <td colspan='5'>
+                            <div class='accordion-body collapse tableContainer' id='row{index}' row='#headerRow{index}' collapsible aria-expanded='false' style>
+                                <table class='table inner'>
+                                    <tbody>
                                         <tr>
-                                            <th width=15%>
-                                            Game
-                                            </th>
-                                            <th width=35%>
-                                            User
-                                            </th>
-                                            <th width=15%>
-                                            Modified
-                                            </th>
-                                            <th width=15%>
-                                            Created
-                                            </th>
-                                            <th width=20%>
-                                            Rating
-                                            </th>
+                                            <td colspan='5' class='butter'>
+                                                <button class='btn btn-xs btn-primary' onclick='viewIt({game_id})'>View &nbsp;<i class='glyphicon glyphicon-info-sign'></i></button>&nbsp;
+                                                <button class='btn btn-xs btn-success' onclick='playIt({game_id})'>Play &nbsp;<i class='glyphicon glyphicon-play'></i></button>&nbsp;
+                                                <button class='btn btn-xs btn-info {hidden}' onclick='{action}It({game_id})'>{action} &nbsp;<i class='glyphicon glyphicon-edit'></i></button>&nbsp;
+                                                <button class='btn btn-xs btn-danger {hiddenIfNotMine}' onclick='deleteIt({game_id})'>Delete &nbsp;<i class='glyphicon glyphicon-trash'></i></button>
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody id='results'>
+                                        <tr>
+                                            <td>Last Saved</td>
+                                            <td>{lastsaved}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Created</td>
+                                            <td>{created}</td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
-                    </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

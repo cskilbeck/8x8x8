@@ -309,7 +309,9 @@ $(document).ready(function() {
 
     window.focusEditor = function() {
         focus();
-        editor.focus();
+        if(editor) {
+            editor.focus();
+        }
     };
 
     window.reportStatus = function(e) {
@@ -695,8 +697,6 @@ $(document).ready(function() {
         editor.commands.commmandKeyBinding = {};
     }
     user_id = 0;
-
-    $('#loginForm').validate();
 
 //    $('#registerForm').validate();
 

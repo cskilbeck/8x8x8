@@ -367,7 +367,11 @@ class index:
 
 class subPage:
     def GET(self, path):
-        return web.template.frender('templates/' + path + '.html')()
+        try:
+            f = open('templates/' + path + '.html')
+            return f.read()
+        except:
+            raise web.HTTPError('404 File %s.html not found' % (path,))
 
 #----------------------------------------------------------------------
 
