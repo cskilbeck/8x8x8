@@ -18,10 +18,7 @@
         games = [],
         editorOptions = {
             theme: 'Monokai'
-        },
-        user_id = 0,
-        user_session,
-        user_name;
+        };
 
     function JSONToObject(str) {
     }
@@ -60,24 +57,23 @@
     }
 
     function get(url, data, progress, complete, fail) {
-        // data.user_session = user_session;
-        // data.user_id = data.user_id || user_id || 0;
         return doAjax($.get, url, data, progress, complete, fail);
     }
 
     function post(url, data, progress, complete, fail) {
-        // data.user_session = user_session;
-        // data.user_id = user_id || 0;
         return doAjax($.post, url, data, progress, complete, fail);
     }
-
-    function login() {
-        return angular.element('[ng-controller="LoginModalController"]').scope().login();
-    }
-
-    function refreshSession() {
-        // if there's a session, try to refresh it. If that fails, show login dialog (they've been away for a while, but were logged in at one time)
-        // if there's no session, do nothing
+    
+    function refreshGames() {
+        var q = Q.defer();
+        get('/api/list', { user_id: -1 }, 'Getting games...')
+        .then(function(result) {
+            games = result.games;
+            q.resolve(games);
+        }, function(xhr){
+            q.reject(xhr);
+        });
+        return q.promise;
     }
 
     function setCookie(name, value, days) {
@@ -121,16 +117,163 @@
 
     mainApp = angular.module("mainApp", ['ngRoute', 'ngAnimate', 'ui.bootstrap']);
 
+    // a global service for user login details
+    // user_id, user_username, user_email, user_session etc
+
+    mainApp.factory('user', [ '$rootScope', '$modal', function ($rootScope, $modal) {
+
+        var details = {
+            user_id: 0,
+            user_username: "",
+            user_email: "",
+            user_session: 0
+        };
+
+        var user = {
+
+            signOut: function() {
+            },
+
+            isLoggedIn: function() {
+                return details.user_id !== 0;
+            },
+
+            login: function () {
+                var loginDetails =  {
+                    username: '',
+                    email: '',
+                    password: '',
+                    password2: '',
+                    failed: false
+                };
+
+                var q = Q.defer();
+                if(details.user_id === 0) {
+                    $modal.open({
+                        animation: true,
+                        templateUrl: 'loginModal.html',
+                        controller: 'LoginModalInstanceController',
+                        resolve: {
+                            user: function () {
+                                return loginDetails;
+                            }
+                        }
+                    }).result.then(function (result) {
+                        if(result.registration === 'required') {
+                            $modal.open({
+                                animation: true,
+                                templateUrl: 'registerModal.html',
+                                controller: 'RegisterModalInstanceController',
+                                resolve: {
+                                    user: function() {
+                                        return loginDetails;
+                                    }
+                                }
+                            }).result.then(function(result) {
+                                user.update(result);
+                                q.resolve(result);
+                            }, function(xhr) {
+                                q.reject(xhr);
+                            });
+                        }
+                        else {
+                            user.update(result);
+                            q.resolve(result);
+                        }
+                    }, function(xhr) {
+                        q.reject(xhr);
+                    });
+                } else {
+                    q.resolve(details);
+                }
+                return q.promise;
+            },
+
+            refreshSession: function() {
+                var data = {
+                        user_session: parseInt(getCookie('user_session')),
+                        user_id: parseInt(getCookie('user_userid')),
+                        user_username: getCookie('user_username'),
+                        user_email: getCookie('user_email')
+                    },
+                    q = Q.defer();
+
+                // if cookie session is set but different from current one (either because)
+
+                console.log(data.user_session + ", " + user.session());
+
+                if(data.user_session !== null && data.user_session !== user.session()) {
+                    console.log("Session refresh required");
+                    get('/api/refreshSession', data)
+                    .then(function(result) {
+                        result.user_email = data.user_email; // TODO (chs): get user details back from refreshSession
+                        console.log(result);
+                        user.update(result);
+                        $rootScope.$broadcast('status', 'Welcome back ' + data.user_username);
+                        q.resolve();
+                    },
+                    function(xhr) {
+                        user.update({user_id: 0});
+                        $rootScope.$broadcast('status', 'Session expired, please log in again...');
+                        q.resolve();
+                    });
+                }
+                else {
+                    console.log("Session in progress");
+                    q.resolve();
+                }
+                return q.promise;
+            },
+
+            logout: function() {
+                var q = Q.defer();
+                get('/api/endSession', { user_id: details.user_id, user_session: details.user_session }, 'Logging ' + details.user_username + ' out...')
+                .then(function() {
+                    user.update({user_id: 0});
+                    q.resolve();
+                }, function() {
+                    q.reject();
+                });
+                return q.promise;
+            },
+
+            update: function(d) {
+                details = d;
+                console.log(d);
+                setCookie('user_userid', details.user_id, 30);
+                setCookie('user_username', details.user_username, 30);
+                setCookie('user_session', details.user_session, 30);
+                setCookie('user_email', details.user_email, 30);
+                $rootScope.$broadcast('user:updated', details);
+                console.log("A> " + user.session());
+            },
+
+            id: function() {
+                return details.user_id;
+            },
+
+            name: function() {
+                return details.user_username;
+            },
+
+            session: function() {
+                return details.user_session;
+            },
+
+            email: function() {
+                return details.user_email;
+            }
+        };
+
+        return user;
+
+    }]);
+
     // add confirm-on-exit attribute if your controller has isWorkUnsaved() and saveState() functions
 
     mainApp.directive('confirmOnExit', function() {
         return {
             link: function($scope, elem, attrs) {
-                window.onbeforeunload = function() {
-                    if ($scope.isWorkUnsaved()) {
-                        return "Changes have not been saved.";
-                    }
-                };
                 $scope.$on('$locationChangeStart', function(event, next, current) {
                     if (!$scope.saveState()) {
                         event.preventDefault();
@@ -162,12 +305,44 @@
         $locationProvider.html5Mode(true);
     }]);
 
-    mainApp.controller('MainController', function mainAppController($scope) {
+    mainApp.controller('MainController', ['$scope', '$modal', 'user', function mainAppController($scope, $modal, user) {
+
+        $scope.signInMessage = "Sign In";
+
+        $scope.$on('user:updated', function(msg, details) {
+            if(details.user_id !== 0) {
+                $scope.signInMessage = "Sign out " + details.user_username;
+                $scope.reportStatus("Welcome back " + details.user_username);
+            }
+            else {
+                $scope.signInMessage = "Sign In";
+                $scope.reportStatus("Signed out");
+            }
+        });
+
+        $scope.$on('status', function(e, msg) {
+            $scope.reportStatus(msg);
+        });
+
+        $scope.$on('error', function(e, msg) {
+            $scope.reportError(msg);
+        });
+
+        $scope.toggleLogin = function() {
+            if(user.isLoggedIn()) {
+                user.logout().then($scope.apply);
+            }
+            else {
+                user.login().then($scope.apply);
+            }
+        };
+
         $scope.pane = '';
         $scope.status = '';
         $scope.isError = false;
         $scope.networkBusy = '';
         $scope.networkIcon = 'glyphicon-ok';
+        $scope.user_id = user.id();
 
         $scope.reportError = function(text) {
             $scope.isError = true;
@@ -183,16 +358,17 @@
             $scope.networkBusy = p;
             $scope.networkIcon = p ? 'glyphicon-repeat' : 'glyphicon-ok';
         };
-    });
+    }]);
 
     mainApp.controller('HelpController', function helpController($scope) {
     });
 
     // TODO (chs): save/restore state of which rows in gamelist were expanded
 
-    mainApp.controller('GameListController', function gameListController($scope, $routeParams) {
+    mainApp.controller('GameListController', ['$scope', '$routeParams', 'user', function gameListController($scope, $routeParams, user) {
         $scope.$parent.pane = 'Games';
         $scope.games = games;
+        $scope.user_id = user.id();
 
         $scope.star = function(index, score) {
             return index <= score ? 'yellow' : 'white';
@@ -202,18 +378,35 @@
             return moment(t).fromNow();
         };
 
+        $scope.$on('user:updated', function(msg, details) {
+            $scope.user_id = user.id();
+            $scope.refreshGameList();
+        });
+
+        // search term
+        // pqging, order by
+        // 'my games'
+        // 'top games'
+        // 'new games'
+        // 'most played'
+        // 'games by Username'
+
         $scope.refreshGameList = function() {
-            get('/api/list', { user_id: -1 }, 'Getting games...')
-            .then(function(result) {
-                games = $scope.games = result.games;
+            $scope.user_id = user.id();
+            refreshGames().then(function(result) {
+                $scope.games = result;
+                games = result;
                 $scope.$apply();
             });
         };
 
-        $scope.refreshGameList();
-    });
+        user.refreshSession().then(function() {
+            $scope.refreshGameList();
+        });
 
-    mainApp.controller('EditorController', function editController($scope, $modal, $routeParams) {
+    }]);
+
+    mainApp.controller('EditorController', ['$scope', '$modal', '$routeParams', 'user', function editController($scope, $modal, $routeParams, user) {
 
         var newGameID = $routeParams.game_id;
 
@@ -223,11 +416,25 @@
 
         $scope.options = editorOptions;
 
+//        $scope.nameRegEx = /[\"\'\:\;\! \?\.\,\-a-zA-Z0-9]*/;
+
         editor = ace.edit("editor");
         editor.$blockScrolling = Infinity;
 
         $scope.isWorkUnsaved = function() {
-            return !editor.session.getUndoManager().isClean();
+            return !(editor && editor.session && editor.session.getUndoManager().isClean());
+        };
+
+        $scope.validateName = function() {
+            var i,
+                n = '',
+                regex = /[\"\'\:\;\! \?\.\,\-a-zA-Z0-9]*/;
+            for(i in $scope.gameName) {
+                if (regex.test($scope.gameName[i])) {
+                    n += $scope.gameName[i];
+                }
+            }
+            $scope.gameName = n;
         };
 
         $scope.saveState = function() {
@@ -254,8 +461,6 @@
                             editor.setValue(result.source, -1);
                             $scope.gameName = result.game_title;
                             editor.session.getUndoManager().reset();
-                        }, function(xhr) {
-                            console.log(error);
                         });
                     }
                     catch(e) {
@@ -281,17 +486,21 @@
         editor.on('input', function() {
         });
 
-        $scope.$on("$destroy", function() {
+        $scope.$on("$destroy", function(e) {
+            // // OK: true
+            // // Cancel: false
+            // if(!(editor.session.getUndoManager().isClean() || confirm("Changes are not saved, really close the editor?"))) {
+            //     e.preventDefault(); // this doesn't work for $destroy because it's a broadcast message
+            // }
         });
 
         // TODO (chs): require session to save game
 
         $scope.saveIt = function() {
             var data;
-            console.log("Save!");
-            login().then(function() {
+            user.login().then(function(details) {
                 data = {
-                    user_id: user_id,
+                    user_id: details.user_id,
                     name: $scope.gameName,
                     source: editor.getValue()
                 };
@@ -326,15 +535,6 @@
                 setOptions(editorOptions);
             });
         };
-
-        $('#gameName').bind('keypress', function (event) {
-            var regex = new RegExp("^[\'\:\;\! \?\.\,a-zA-Z0-9]+$");
-            var key = String.fromCharCode(!event.charCode ? event.which : event.charCode);
-            if (!regex.test(key)) {
-               event.preventDefault();
-               return false;
-            }
-        });
 
         function inflateEditor() {
             var editorRect = $("#editorContainer")[0].getBoundingClientRect(),
@@ -379,101 +579,11 @@
         inflateEditor();
         enableKeyBindings();
         focusEditor();
-    });
 
-    mainApp.controller('LoginModalController', function loginModalController($scope, $modal) {
+        $scope.$emit('error', "knob!");
+    }]);
 
-        $scope.user =  {
-            username: '',
-            email: '',
-            password: '',
-            password2: '',
-            failed: false
-        };
-
-        $scope.signInMessage = "Sign In";
-
-        function signIn(result) {
-            user_id = result.user_id;
-            user_session = result.user_session;
-            user_name = result.user_username;
-            setCookie('user_userid', user_id, 30);
-            setCookie('user_username', user_name, 30);
-            setCookie('user_session', user_session, 30);
-            //reportStatus("Welcome back " + user_name);
-            $scope.signInMessage = "Sign out " + result.user_username;
-        }
-
-        function signOut() {
-            user_id = 0;
-            user_name = null;
-            user_session = null;
-            clearCookie('user_session');
-            clearCookie('user_username');
-            clearCookie('user_userid');
-            $scope.signInMessage = "Sign In";
-        }
-
-        $scope.toggleLogin = function() {
-            if(user_id !== 0) {
-                get('/api/endSession', { user_id: user_id, user_session: user_session }, 'Logging ' + user_name + ' out...')
-                .then(function() {
-                    signOut();
-                    $scope.$apply();    // need this because not using angular ui for this
-                }, function() {
-                    // endSession failed!?
-                });
-            }
-            else {
-                $scope.login();
-            }
-        };
-
-        $scope.login = function () {
-            var q = Q.defer();
-            if(user_id === 0) {
-                $modal.open({
-                    animation: true,
-                    templateUrl: 'loginModal.html',
-                    controller: 'LoginModalInstanceController',
-                    resolve: {
-                        user: function () {
-                            return $scope.user;
-                        }
-                    }
-                }).result.then(function (result) {
-                    if(result.registration === 'required') {
-                        $modal.open({
-                            animation: true,
-                            templateUrl: 'registerModal.html',
-                            controller: 'RegisterModalInstanceController',
-                            resolve: {
-                                user: function() {
-                                    return $scope.user;
-                                }
-                            }
-                        }).result.then(function(result) {
-                            signIn(result);
-                            q.resolve();
-                        }, function(xhr) {
-                            q.reject(xhr);
-                        });
-                    }
-                    else {
-                        signIn(result);
-                        q.resolve();
-                    }
-                }, function(xhr) {
-                    q.reject(xhr);
-                });
-            } else {
-                q.resolve();
-            }
-            return q.promise;
-        };
-    });
-
-    mainApp.controller('LoginModalInstanceController', function loginModalInstanceController($scope, $modalInstance, user) {
+    mainApp.controller('LoginModalInstanceController', ['$scope', '$modal', '$modalInstance', 'user', function loginModalInstanceController($scope, $modal, $modalInstance, user) {
         $scope.user = user;
         $scope.user.failed = false;
 
@@ -496,9 +606,9 @@
         $scope.showRegistration = function () {
             $modalInstance.close({'registration': 'required'});
         };
-    });
+    }]);
 
-    mainApp.controller('RegisterModalInstanceController', function registerModalInstanceController($scope, $modalInstance, user) {
+    mainApp.controller('RegisterModalInstanceController', ['$scope', '$modal', '$modalInstance', 'user', function registerModalInstanceController($scope, $modal, $modalInstance, user) {
         $scope.user = user;
         $scope.message = 'Please fill in all required fields';
         $scope.user.failed = false;
@@ -523,11 +633,12 @@
         $scope.passmatch = function() {
             return $scope.user.password === $scope.user.password2;
         };
-    });
+    }]);
 
-    mainApp.controller('EditorOptionsModalInstanceController', function editorOptionsModalInstanceController($scope, $modalInstance, options) {
+    mainApp.controller('EditorOptionsModalInstanceController', ['$scope', '$modal', '$modalInstance', 'options', function editorOptionsModalInstanceController($scope, $modal, $modalInstance, options) {
 
         $scope.options = options;
+
         $scope.themes = [
             'Chrome',
             'Cobalt',
@@ -549,6 +660,6 @@
             $modalInstance.dismiss();
         };
 
-    });
+    }]);
 
 })();

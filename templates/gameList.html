@@ -1,5 +1,4 @@
-<!-- GAME LIST -->
-<div class='pane' id='gameList' >
+<div class='pane'>
     <div class='row toolbar'>
         <div class='col-xs-4'>
             <input id='gameSearch' type='text' class='form-control input-sm' placeholder='Search' maxlength=32 />
@@ -38,10 +37,12 @@
                                     <tbody>
                                         <tr>
                                             <td colspan='5' class='butter'>
-                                                <button class='btn btn-xs btn-primary' ng-click='viewIt(g.game_id)'>View &nbsp;<i class='glyphicon glyphicon-info-sign'></i></button>&nbsp;
+                                                <a class='btn btn-xs btn-primary' href='/view/{{g.game_id}}'>View &nbsp;<i class='glyphicon glyphicon-info-sign'></i></a>&nbsp;
                                                 <button class='btn btn-xs btn-success' ng-click='playIt(g.game_id)'>Play &nbsp;<i class='glyphicon glyphicon-play'></i></button>&nbsp;
-                                                <a class='btn btn-xs btn-info' href='/edit/{{g.game_id}}'>Edit &nbsp;<i class='glyphicon glyphicon-edit'></i></a>&nbsp;
-                                                <button class='btn btn-xs btn-danger' ng-click='deleteIt(g.game_id)'>Delete &nbsp;<i class='glyphicon glyphicon-trash'></i></button>
+                                                <span ng-show='user_id===g.user_id'>
+                                                    <a class='btn btn-xs btn-info' href='/edit/{{g.game_id}}'>Edit &nbsp;<i class='glyphicon glyphicon-edit'></i></a>&nbsp;
+                                                    <button class='btn btn-xs btn-danger' ng-click='deleteIt(g.game_id)'>Delete &nbsp;<i class='glyphicon glyphicon-trash'></i></button>
+                                                </span>
                                             </td>
                                         </tr>
                                         <tr>

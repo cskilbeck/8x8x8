@@ -2,7 +2,7 @@
     <div class="grid_editorheader grid_row">
         <div class="row toolbar">
             <div class='col-xs-4'>
-                <input ng-model='gameName' type='text' class='form-control input-sm' value='Snake' maxlength="32" />
+                <input ng-model='gameName' type='text' ng-change='validateName()' class='form-control input-sm' value='Snake' maxlength="32" />
             </div>
             <div class='col-xs-8'>
                 <button title='Ctrl-R' class='btn btn-sm btn-success' ng-click='runIt()'>Run <i class='glyphicon glyphicon-play'></i></button>

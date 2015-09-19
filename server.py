@@ -69,10 +69,13 @@ def getJSON(x):
     return json.dumps(x, indent = 4, separators=(',',': '), default = date_handler)
 
 #----------------------------------------------------------------------
-# get a 32 bit random number
+# get a 32 bit random number which is not 0
 
 def getRandomInt():
-    return struct.unpack("<L", os.urandom(4))[0]
+    while True:
+        i = struct.unpack("<L", os.urandom(4))[0]
+        if i != 0:
+            return i
 
 #----------------------------------------------------------------------
 # persistent session in debug mode
@@ -310,7 +313,7 @@ class login(Post):
         cur.execute('''UPDATE users SET user_session = %(session)s WHERE user_email = %(email)s AND user_password=%(password)s''', data)
         if cur.rowcount != 1:
             raise web.HTTPError('401 Incorrect email address or password')
-        cur.execute('''SELECT user_id, user_username, user_session FROM users WHERE user_email = %(email)s''', data)
+        cur.execute('''SELECT user_id, user_username, user_session, user_email FROM users WHERE user_email = %(email)s''', data)
         if cur.rowcount != 1:
             raise web.HTTPError('500 Login error')
         row = cur.fetchone()
@@ -321,19 +324,16 @@ class login(Post):
 
 class refreshSession(Get):
     @checked({
-        'user_session': str,
-        'user_id': str,
-        'user_name': str
+        'user_session': int,
+        'user_id': int,
+        'user_username': str
         })
     def handleGet(self, db, cur, data):
         data['session'] = getRandomInt()
-        cur.execute('''UPDATE users SET user_session = %(session)s WHERE user_id = %(user_id)s AND user_username = %(user_name)s AND user_session = %(user_session)s''', data)
+        cur.execute('''UPDATE users SET user_session = %(session)s WHERE user_id = %(user_id)s AND user_username = %(user_username)s AND user_session = %(user_session)s''', data)
         if cur.rowcount != 1:
             raise web.HTTPError('404 Session not found')
-        return {'user_id': data['user_id'],
-                'user_username': data['user_name'],
-                'user_session': data['session']
-                }
+        return data;
 
 #----------------------------------------------------------------------
 # /api/endSession
