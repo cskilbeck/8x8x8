@@ -4,7 +4,7 @@
             <input id='gameSearch' type='text' class='form-control input-sm' placeholder='Search' maxlength=32 />
         </div>
         <div class='col-xs-4'>
-            <a class='btn btn-sm btn-primary' href='/edit/new'>New Game&nbsp;<i class='glyphicon glyphicon-star-empty'></i></a>
+            <a class='btn btn-sm btn-primary' href='/edit/new'>New Game&nbsp;<i class='glyphicon glyphicon-pencil'></i></a>
             <button class='btn btn-sm btn-default' ng-click='refreshGameList()'>Refresh&nbsp;<i class='glyphicon glyphicon-refresh'></i></button>
         </div>
     </div>
@@ -41,7 +41,7 @@
                                                 <button class='btn btn-xs btn-success' ng-click='playIt(g.game_id)'>Play &nbsp;<i class='glyphicon glyphicon-play'></i></button>&nbsp;
                                                 <span ng-show='user_id===g.user_id'>
                                                     <a class='btn btn-xs btn-info' href='/edit/{{g.game_id}}'>Edit &nbsp;<i class='glyphicon glyphicon-edit'></i></a>&nbsp;
-                                                    <button class='btn btn-xs btn-danger' ng-click='deleteIt(g.game_id)'>Delete &nbsp;<i class='glyphicon glyphicon-trash'></i></button>
+                                                    <button class='btn btn-xs btn-danger' ng-click='deleteIt(g.game_id, g.game_title)'>Delete &nbsp;<i class='glyphicon glyphicon-trash'></i></button>
                                                 </span>
                                             </td>
                                         </tr>

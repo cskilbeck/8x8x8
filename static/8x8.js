@@ -66,6 +66,10 @@
         parent.window.reportRuntimeError(e);
     }
 
+    function reportErrorDirect(msg, line, column) {
+        parent.window.reportRuntimeErrorDirect(msg, line, column);
+    }
+
     function ellipse(ctx, cx, cy, w, h){
         var lx = cx - w,
             rx = cx + w,
@@ -225,10 +229,6 @@
         else {
             focusEditor();
         }
-        // function@file:line:col
-        // if ('8x8.js' in file) {
-        //     stop
-        // }
     }
 
     canvas = document.getElementById('canvas');
@@ -242,11 +242,10 @@
     window.pressed = function(k) { return doPressed(k); };
     window.released = function(k) { return doReleased(k); };
 
-    // window.onerror = function(e) {
-    //     console.log(getStackTrace());
-    //     reportError(e);
-    //     exception = true;
-    // };
+    window.onerror = function(message, file, line, column) {
+        reportErrorDirect(message, line, column);
+        exception = true;
+    };
 
     if(typeof parent.GameSource !== 'undefined') {
         var script = document.createElement('script');

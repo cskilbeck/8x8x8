@@ -252,16 +252,23 @@ class save(Post):
 #----------------------------------------------------------------------
 # /api/delete
 
+# TODO (chs): check user_session!
+
 class delete(Post):
     @checked({
         'user_id': int,
-        'game_id': int
+        'game_id': int,
+        'user_session': int
         })
     def handlePost(self, db, cur, data):
-        cur.execute('DELETE FROM games WHERE game_id = %(game_id)s AND user_id = %(user_id)s', data)
-        if cur.rowcount == 0:
-            raise web.HTTPError('404 Game not found')
-        return { 'deleted': cur.rowcount }
+        cur.execute('''SELECT COUNT(*) AS count FROM users WHERE user_id = %(user_id)s AND user_session = %(user_session)s''', data)
+        ok = cur.fetchone()['count']
+        if ok == 1:
+            cur.execute('DELETE FROM games WHERE game_id = %(game_id)s AND user_id = %(user_id)s', data)
+            if cur.rowcount == 0:
+                raise web.HTTPError('404 Game not found')
+            return { 'deleted': cur.rowcount }
+        raise web.HTTPError('404 Session not found')
 
 #----------------------------------------------------------------------
 # /api/register
@@ -333,6 +340,7 @@ class refreshSession(Get):
         cur.execute('''UPDATE users SET user_session = %(session)s WHERE user_id = %(user_id)s AND user_username = %(user_username)s AND user_session = %(user_session)s''', data)
         if cur.rowcount != 1:
             raise web.HTTPError('404 Session not found')
+        data['user_session'] = data['session']
         return data;
 
 #----------------------------------------------------------------------

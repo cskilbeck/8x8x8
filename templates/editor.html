@@ -2,11 +2,11 @@
     <div class="grid_editorheader grid_row">
         <div class="row toolbar">
             <div class='col-xs-4'>
-                <input ng-model='gameName' type='text' ng-change='validateName()' class='form-control input-sm' value='Snake' maxlength="32" />
+                <input ng-disabled='readonly' ng-model='gameName' type='text' ng-change='validateName()' class='form-control input-sm' value='Snake' maxlength="32" />
             </div>
             <div class='col-xs-8'>
                 <button title='Ctrl-R' class='btn btn-sm btn-success' ng-click='runIt()'>Run <i class='glyphicon glyphicon-play'></i></button>
-                <button title='Ctrl-S' class='btn btn-sm btn-primary' ng-click='saveIt()'>Save <i class='glyphicon glyphicon-floppy-disk'></i></button>
+                <button ng-hide='readonly' title='Ctrl-S' class='btn btn-sm btn-primary' ng-click='saveIt()'>Save <i class='glyphicon glyphicon-save'></i></button>
                 <button class='btn btn-sm btn-default pull-right' ng-click='showOptions()'>Options <i class='glyphicon glyphicon-cog'></i></button>
             </div>
         </div>

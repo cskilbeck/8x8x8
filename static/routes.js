@@ -1,17 +1,14 @@
-// - Finish sign-in bits (session refresh especially)
-// - Make Run work
-// - Make Save work
-// - Make status/error bar and spinner work
-// - Make New Game work
-// - Make refresh work
-// - Make View work
-// - Make Delete work
+// - split the javascript up (make mainApp a global)
+// - get rid of all the local variables outside controllers
+// - make a utility class for all the local functions
+// - save editor options in user record
 
 (function() {
     "use strict";
 
     var editor,
         session,
+        name,
         game_id,
         source,
         mainApp,
@@ -120,150 +117,179 @@
     // a global service for user login details
     // user_id, user_username, user_email, user_session etc
 
+    mainApp.factory('dialog', ['$rootScope', '$modal', function($rootScope, $modal) {
+
+        function dialog(banner, text, oktext, canceltext, okclass, cancelclass) {
+            var options = {
+                    banner: banner,
+                    text: text,
+                    oktext: oktext,
+                    canceltext: canceltext,
+                    okclass: okclass || 'btn-primary',
+                    cancelclass: cancelclass || 'btn-warning'
+                },
+                q = Q.defer();
+            $modal.open({
+                animation: true,
+                templateUrl: 'dialogModal.html',
+                controller: 'DialogModalInstanceController',
+                resolve: {
+                    options: function () {
+                        return options;
+                    }
+                }
+            }).result.then(function() {
+                q.resolve(true);
+            }, function() {
+                q.resolve(false);
+            });
+            return q.promise;
+        }
+        return dialog;
+    }]);
+
     mainApp.factory('user', [ '$rootScope', '$modal', function ($rootScope, $modal) {
 
         var details = {
-            user_id: 0,
-            user_username: "",
-            user_email: "",
-            user_session: 0
-        };
-
-        var user = {
-
-            signOut: function() {
+                user_id: 0,
+                user_username: "",
+                user_email: "",
+                user_session: 0
             },
 
-            isLoggedIn: function() {
-                return details.user_id !== 0;
-            },
+            user = {
 
-            login: function () {
-                var loginDetails =  {
-                    username: '',
-                    email: '',
-                    password: '',
-                    password2: '',
-                    failed: false
-                };
+                isLoggedIn: function() {
+                    return details.user_id !== 0;
+                },
 
-                var q = Q.defer();
-                if(details.user_id === 0) {
-                    $modal.open({
-                        animation: true,
-                        templateUrl: 'loginModal.html',
-                        controller: 'LoginModalInstanceController',
-                        resolve: {
-                            user: function () {
-                                return loginDetails;
-                            }
-                        }
-                    }).result.then(function (result) {
-                        if(result.registration === 'required') {
-                            $modal.open({
-                                animation: true,
-                                templateUrl: 'registerModal.html',
-                                controller: 'RegisterModalInstanceController',
-                                resolve: {
-                                    user: function() {
-                                        return loginDetails;
-                                    }
+                login: function () {
+                    var loginDetails =  {
+                        username: '',
+                        email: '',
+                        password: '',
+                        password2: '',
+                        failed: false
+                    };
+
+                    var q = Q.defer();
+                    if(details.user_id === 0) {
+                        $modal.open({
+                            animation: true,
+                            templateUrl: 'loginModal.html',
+                            controller: 'LoginModalInstanceController',
+                            resolve: {
+                                user: function () {
+                                    return loginDetails;
                                 }
-                            }).result.then(function(result) {
+                            }
+                        }).result.then(function (result) {
+                            if(result.registration === 'required') {
+                                $modal.open({
+                                    animation: true,
+                                    templateUrl: 'registerModal.html',
+                                    controller: 'RegisterModalInstanceController',
+                                    resolve: {
+                                        user: function() {
+                                            return loginDetails;
+                                        }
+                                    }
+                                }).result.then(function(result) {
+                                    user.update(result);
+                                    q.resolve(result);
+                                }, function(xhr) {
+                                    q.reject(xhr);
+                                });
+                            }
+                            else {
                                 user.update(result);
                                 q.resolve(result);
-                            }, function(xhr) {
-                                q.reject(xhr);
-                            });
-                        }
-                        else {
+                            }
+                        }, function(xhr) {
+                            q.reject(xhr);
+                        });
+                    } else {
+                        q.resolve(details);
+                    }
+                    return q.promise;
+                },
+
+                refreshSession: function() {
+                    var data = {
+                            user_session: parseInt(getCookie('user_session')),
+                            user_id: parseInt(getCookie('user_userid')),
+                            user_username: getCookie('user_username'),
+                            user_email: getCookie('user_email')
+                        },
+                        q = Q.defer();
+
+                    // if cookie session is set but different from current one (either because)
+
+                    console.log(data.user_session + ", " + user.session());
+
+                    if(data.user_session !== null && data.user_session !== user.session()) {
+                        console.log("Session refresh required");
+                        get('/api/refreshSession', data)
+                        .then(function(result) {
+                            result.user_email = data.user_email; // TODO (chs): get user details back from refreshSession
+                            console.log(result);
                             user.update(result);
-                            q.resolve(result);
-                        }
-                    }, function(xhr) {
-                        q.reject(xhr);
-                    });
-                } else {
-                    q.resolve(details);
-                }
-                return q.promise;
-            },
-
-            refreshSession: function() {
-                var data = {
-                        user_session: parseInt(getCookie('user_session')),
-                        user_id: parseInt(getCookie('user_userid')),
-                        user_username: getCookie('user_username'),
-                        user_email: getCookie('user_email')
-                    },
-                    q = Q.defer();
-
-                // if cookie session is set but different from current one (either because)
-
-                console.log(data.user_session + ", " + user.session());
-
-                if(data.user_session !== null && data.user_session !== user.session()) {
-                    console.log("Session refresh required");
-                    get('/api/refreshSession', data)
-                    .then(function(result) {
-                        result.user_email = data.user_email; // TODO (chs): get user details back from refreshSession
-                        console.log(result);
-                        user.update(result);
-                        $rootScope.$broadcast('status', 'Welcome back ' + data.user_username);
+                            $rootScope.$broadcast('status', 'Welcome back ' + data.user_username);
+                            q.resolve();
+                        },
+                        function(xhr) {
+                            user.update({user_id: 0});
+                            $rootScope.$broadcast('status', 'Session expired, please log in again...');
+                            q.resolve();
+                        });
+                    }
+                    else {
+                        console.log("Session in progress");
                         q.resolve();
-                    },
-                    function(xhr) {
+                    }
+                    return q.promise;
+                },
+
+                logout: function() {
+                    var q = Q.defer();
+                    get('/api/endSession', { user_id: details.user_id, user_session: details.user_session }, 'Logging ' + details.user_username + ' out...')
+                    .then(function() {
                         user.update({user_id: 0});
-                        $rootScope.$broadcast('status', 'Session expired, please log in again...');
                         q.resolve();
+                    }, function() {
+                        user.update({user_id: 0});
+                        q.reject();
                     });
+                    return q.promise;
+                },
+
+                update: function(d) {
+                    details = d;
+                    console.log(d);
+                    setCookie('user_userid', details.user_id, 30);
+                    setCookie('user_username', details.user_username, 30);
+                    setCookie('user_session', details.user_session, 30);
+                    setCookie('user_email', details.user_email, 30);
+                    $rootScope.$broadcast('user:updated', details);
+                    console.log("A> " + user.session());
+                },
+
+                id: function() {
+                    return details.user_id;
+                },
+
+                name: function() {
+                    return details.user_username;
+                },
+
+                session: function() {
+                    return details.user_session;
+                },
+
+                email: function() {
+                    return details.user_email;
                 }
-                else {
-                    console.log("Session in progress");
-                    q.resolve();
-                }
-                return q.promise;
-            },
-
-            logout: function() {
-                var q = Q.defer();
-                get('/api/endSession', { user_id: details.user_id, user_session: details.user_session }, 'Logging ' + details.user_username + ' out...')
-                .then(function() {
-                    user.update({user_id: 0});
-                    q.resolve();
-                }, function() {
-                    q.reject();
-                });
-                return q.promise;
-            },
-
-            update: function(d) {
-                details = d;
-                console.log(d);
-                setCookie('user_userid', details.user_id, 30);
-                setCookie('user_username', details.user_username, 30);
-                setCookie('user_session', details.user_session, 30);
-                setCookie('user_email', details.user_email, 30);
-                $rootScope.$broadcast('user:updated', details);
-                console.log("A> " + user.session());
-            },
-
-            id: function() {
-                return details.user_id;
-            },
-
-            name: function() {
-                return details.user_username;
-            },
-
-            session: function() {
-                return details.user_session;
-            },
-
-            email: function() {
-                return details.user_email;
-            }
-        };
+            };
 
         return user;
 
@@ -292,10 +318,18 @@
             controller: 'GameListController'
         }).when('/edit/:game_id', {
             templateUrl: 'editor.html',
-            controller: 'EditorController'
+            controller: 'EditorController',
+            resolve: {
+                readonly: function() { return false; }
+            }
+        }).when('/view/:game_id', {
+            templateUrl: 'editor.html',
+            controller: 'EditorController',
+            resolve: {
+                readonly: function() { return true; }
+            }
         }).when('/help', {
-            templateUrl: 'help.html',
-            // controller: 'HelpController'
+            templateUrl: 'help.html'
         }).when('/viewStudents', {
             templateUrl: 'viewStudents.html',
             controller: 'StudentController'
@@ -306,6 +340,15 @@
     }]);
 
     mainApp.controller('MainController', ['$scope', '$modal', 'user', function mainAppController($scope, $modal, user) {
+
+        var hidden = [
+                'document', 'window', 'alert', 'parent', 'frames', 'frameElment',
+                'history', 'fullScreen', 'innerHeight', 'innerWidth', 'length',
+                'location', 'GlobalEventHandlers', 'WindowEventHandlers', 'opener',
+                'performance', 'screen'
+            ],
+            preScript = 'function ClientScript(' + hidden.join() + ') { "use strict";\n',
+            postScript = '; this.updateFunction = (typeof update === "function") ? update : null; };';
 
         $scope.signInMessage = "Sign In";
 
@@ -328,6 +371,18 @@
             $scope.reportError(msg);
         });
 
+        window.reportRuntimeError = function(e) {
+            $scope.reportError(e.message);
+            $scope.$broadcast('runtimeerror', e);
+            $scope.$apply();
+        };
+
+        window.reportRuntimeErrorDirect = function(msg, line, column) {
+            $scope.reportError(msg);
+            $scope.$broadcast('editorGoto', {line: line, column: column, msg: msg});
+            $scope.$apply();
+        };
+
         $scope.toggleLogin = function() {
             if(user.isLoggedIn()) {
                 user.logout().then($scope.apply);
@@ -336,6 +391,14 @@
                 user.login().then($scope.apply);
             }
         };
+
+        $scope.$on('play', function(e, source) {
+            var iframe = document.getElementById('gameFrame');
+            $scope.reportStatus('');
+            window.GameSource = preScript + source + postScript;
+            iframe.src = '/static/frame.html';
+            iframe.contentWindow.focus();
+        });
 
         $scope.pane = '';
         $scope.status = '';
@@ -358,14 +421,15 @@
             $scope.networkBusy = p;
             $scope.networkIcon = p ? 'glyphicon-repeat' : 'glyphicon-ok';
         };
-    }]);
 
-    mainApp.controller('HelpController', function helpController($scope) {
-    });
+        user.refreshSession().then(function() {
+            $scope.$apply();
+        });
+    }]);
 
     // TODO (chs): save/restore state of which rows in gamelist were expanded
 
-    mainApp.controller('GameListController', ['$scope', '$routeParams', 'user', function gameListController($scope, $routeParams, user) {
+    mainApp.controller('GameListController', ['$scope', '$routeParams', 'dialog', 'user', function gameListController($scope, $routeParams, dialog, user) {
         $scope.$parent.pane = 'Games';
         $scope.games = games;
         $scope.user_id = user.id();
@@ -379,7 +443,6 @@
         };
 
         $scope.$on('user:updated', function(msg, details) {
-            $scope.user_id = user.id();
             $scope.refreshGameList();
         });
 
@@ -400,15 +463,66 @@
             });
         };
 
-        user.refreshSession().then(function() {
-            $scope.refreshGameList();
-        });
+        $scope.deleteIt = function(id, name) {
+            dialog("Delete " + name + "!?", "Do you really want to delete " + name + "? This action cannot be undone", "Yes, delete it permanently", "No", 'btn-danger', 'btn-default')
+            .then(function(result) {
+                if(result) {
+                    post('/api/delete', { game_id: id, user_id: user.id(), user_session: user.session() }, 'Deleting ' + name + '...', name + ' deleted', 'Error deleting game')
+                    .then(function(result) {
+                        $scope.refreshGameList();
+                    });
+                }
+            });
+        };
 
+        $scope.playIt = function(id) {
+            var s;
+            get('/api/source', {game_id: id})
+            .then(function(result) {
+                $scope.$emit('play', result.source);
+            });
+        };
     }]);
 
-    mainApp.controller('EditorController', ['$scope', '$modal', '$routeParams', 'user', function editController($scope, $modal, $routeParams, user) {
+    mainApp.controller('EditorController', ['$scope', '$modal', '$routeParams', 'user', 'readonly', function editController($scope, $modal, $routeParams, user, readonly) {
 
         var newGameID = $routeParams.game_id;
+
+        $scope.readonly = readonly;
+
+        function highlightError(e) {
+            var trace = printStackTrace({e:e}),
+                re = /(.*)@(.*)\:(\d+):(\d+)/,
+                parts = trace[0].match(re),
+                line = parseInt(parts[3]),
+                column = parseInt(parts[4]);
+
+            // NOTE (chs): the dodgy line offsets are due to 0-based and 1-based differences and the preScript taking 1 line
+
+            editor.gotoLine(line - 1, Math.max(0, column - 1), true);
+            editor.session.setAnnotations([{
+                row: line - 2,
+                column: column - 1,
+                text: e.message,
+                type: 'error'
+            }]);
+            focusEditor();
+        }
+
+        $scope.$on('runtimeerror', function(m, e) {
+            highlightError(e);
+        });
+
+        $scope.$on('editorGoto', function(m, o) {
+            editor.gotoLine(o.line - 1, o.column - 1, true);
+            editor.session.setAnnotations([{
+                row: o.line - 2,
+                column: o.column - 1,
+                text: o.msg,
+                type: 'error'
+            }]);
+            focusEditor();
+        });
 
         $scope.$parent.pane = 'Editor';
 
@@ -416,10 +530,9 @@
 
         $scope.options = editorOptions;
 
-//        $scope.nameRegEx = /[\"\'\:\;\! \?\.\,\-a-zA-Z0-9]*/;
-
         editor = ace.edit("editor");
         editor.$blockScrolling = Infinity;
+        editor.setReadOnly(readonly);
 
         $scope.isWorkUnsaved = function() {
             return !(editor && editor.session && editor.session.getUndoManager().isClean());
@@ -435,17 +548,20 @@
                 }
             }
             $scope.gameName = n;
+            name = n;
         };
 
         $scope.saveState = function() {
             source = editor.getValue();
             session = editor.getSession();
+            name = $scope.gameName;
             localStorage.setItem('source', source);
             return true;
         };
 
         if(session && newGameID === game_id) {
             editor.setSession(session);
+            $scope.gameName = name;
         }
         else {
             if($routeParams.game_id) {
@@ -461,6 +577,7 @@
                             editor.setValue(result.source, -1);
                             $scope.gameName = result.game_title;
                             editor.session.getUndoManager().reset();
+                            $scope.$apply();
                         });
                     }
                     catch(e) {
@@ -504,15 +621,12 @@
                     name: $scope.gameName,
                     source: editor.getValue()
                 };
-                post('/api/save', data, 'Saving ' + data.name)
-                .then(function(){
-                    reportStatus(data.name + " saved");
-                });
+                post('/api/save', data, 'Saving ' + data.name, 'Saved ' + data.name, 'Error saving ' + data.name);
             });
         };
 
         $scope.runIt = function() {
-            console.log("Run!");
+            $scope.$emit('play', editor.getValue());
         };
 
         $scope.showOptions = function() {
@@ -580,7 +694,6 @@
         enableKeyBindings();
         focusEditor();
 
-        $scope.$emit('error', "knob!");
     }]);
 
     mainApp.controller('LoginModalInstanceController', ['$scope', '$modal', '$modalInstance', 'user', function loginModalInstanceController($scope, $modal, $modalInstance, user) {
@@ -654,6 +767,20 @@
 
         $scope.ok = function() {
             $modalInstance.close($scope.options);
+        };
+
+        $scope.cancel = function() {
+            $modalInstance.dismiss();
+        };
+
+    }]);
+
+    mainApp.controller('DialogModalInstanceController', ['$scope', '$modal', '$modalInstance', 'options', function editorOptionsModalInstanceController($scope, $modal, $modalInstance, options) {
+
+        $scope.options = options;
+
+        $scope.ok = function() {
+            $modalInstance.close();
         };
 
         $scope.cancel = function() {
