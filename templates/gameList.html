@@ -5,8 +5,8 @@
             <input id='gameSearch' type='text' class='form-control input-sm' placeholder='Search' maxlength=32 />
         </div>
         <div class='col-xs-4'>
-            <button class='btn btn-sm btn-primary' onclick='createNewGame();'>New Game&nbsp;<i class='glyphicon glyphicon-star-empty'></i></button>
-            <button class='btn btn-sm btn-default' onclick='refreshGameList();'>Refresh&nbsp;<i class='glyphicon glyphicon-refresh'></i></button>
+            <a class='btn btn-sm btn-primary' href='/edit/new'>New Game&nbsp;<i class='glyphicon glyphicon-star-empty'></i></a>
+            <button class='btn btn-sm btn-default' ng-click='refreshGameList()'>Refresh&nbsp;<i class='glyphicon glyphicon-refresh'></i></button>
         </div>
     </div>
     <div id='gameList'>
@@ -40,7 +40,7 @@
                                             <td colspan='5' class='butter'>
                                                 <button class='btn btn-xs btn-primary' ng-click='viewIt(g.game_id)'>View &nbsp;<i class='glyphicon glyphicon-info-sign'></i></button>&nbsp;
                                                 <button class='btn btn-xs btn-success' ng-click='playIt(g.game_id)'>Play &nbsp;<i class='glyphicon glyphicon-play'></i></button>&nbsp;
-                                                <button class='btn btn-xs btn-info' ng-click='editIt(g.game_id)'>Edit &nbsp;<i class='glyphicon glyphicon-edit'></i></button>&nbsp;
+                                                <a class='btn btn-xs btn-info' href='/edit/{{g.game_id}}'>Edit &nbsp;<i class='glyphicon glyphicon-edit'></i></a>&nbsp;
                                                 <button class='btn btn-xs btn-danger' ng-click='deleteIt(g.game_id)'>Delete &nbsp;<i class='glyphicon glyphicon-trash'></i></button>
                                             </td>
                                         </tr>

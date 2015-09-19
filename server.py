@@ -228,6 +228,7 @@ class source(Get):
 
 #----------------------------------------------------------------------
 # /api/save
+# TODO (chs): require session to save game
 
 class save(Post):
     @checked({

@@ -51,10 +51,10 @@
             <!-- TOP ROW (HELP/SIGN IN etc) -->
             <div class="grid_header grid_row">
                 <div class="content container-fluid mainmenu">
-                    <div class='col-xs-2'><h4><i>8x8x8</i></h4></div>
+                    <div class='col-xs-2'><h4><a href='/'><i>8x8x8</i></a></h4></div>
                     <div class='col-xs-4'><a href="/help" class="btn btn-sm btn-default">Help</a></div>
                     <div class='pull-right' ng-controller='LoginModalController'>
-                        <button type="button" class="btn btn-sm btn-primary" ng-click='showLoginDialog()'>{{signInMessage}}</button>
+                        <button type="button" class="btn btn-sm btn-primary" ng-click='toggleLogin()'>{{signInMessage}}</button>
                     </div>
                 </div>
             </div>
@@ -85,8 +85,8 @@
             <!-- BOTTOM ROW: FOOTER -->
             <div class="grid_footer grid_row">
                 <div class="content">
-                    <span><i id='spinner' class='glyphicon glyphicon-ok'></i>&nbsp;</span>
-                    <span id='statusBar'>Welcome. Errors are shown here...</span>
+                    <span><i id='spinner' ng-class='[ "glyphicon", networkIcon, { "gly-spin": networkBusy } ]'></i>&nbsp;</span>
+                    <span id='statusBar' ng-class='{ statusError: isError }'>{{status}}</span>
                 </div>
             </div>
         </div>
