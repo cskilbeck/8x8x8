@@ -237,13 +237,14 @@ class source(Get):
 class save(Post):
     @checked({
         'user_id': int,
+        'user_session': int,
         'source': str,
         'name': str
         })
     def handlePost(self, db, cur, data):
-        cur.execute('SELECT * FROM users WHERE user_id =%(user_id)s', data)
+        cur.execute('SELECT * FROM users WHERE user_id = %(user_id)s AND user_session = %(user_session)s', data)
         if cur.fetchone() is None:
-            raise web.HTTPError('401 Invalid user_id')
+            raise web.HTTPError('401 Invalid user session')
         else:
             cur.execute('''INSERT INTO games (user_id, game_created, game_lastsaved, game_source, game_title)
                             VALUES (%(user_id)s, NOW(), NOW(), %(source)s, %(name)s)

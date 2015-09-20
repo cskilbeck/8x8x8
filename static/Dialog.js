@@ -9,7 +9,7 @@ function($rootScope, $modal) {
                 oktext: oktext,
                 canceltext: canceltext,
                 okclass: okclass || 'btn-primary',
-                cancelclass: cancelclass || 'btn-warning'
+                cancelclass: cancelclass || (canceltext === null ? 'masked' : 'btn-warning')
             },
             q = Q.defer();
         $modal.open({

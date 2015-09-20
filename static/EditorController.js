@@ -1,3 +1,5 @@
+// TODO (chs): allow save undo (or maintain N versions or something)
+
 (function() {
     "use strict";
 
@@ -17,38 +19,25 @@
 
         $scope.readonly = readonly;
 
-        function highlightError(e) {
-            var trace = printStackTrace({e:e}),
-                re = /(.*)@(.*)\:(\d+):(\d+)/,
-                parts = trace[0].match(re),
-                line = parseInt(parts[3]),
-                column = parseInt(parts[4]);
-
-            // NOTE (chs): the dodgy line offsets are due to 0-based and 1-based differences and the preScript taking 1 line
-
+        // NOTE (chs): the dodgy line offsets are due to 0-based and 1-based differences and the preScript taking 1 line
+        function gotoError(msg, line, column) {
             editor.gotoLine(line - 1, Math.max(0, column - 1), true);
             editor.session.setAnnotations([{
                 row: line - 2,
                 column: column - 1,
-                text: e.message,
+                text: msg,
                 type: 'error'
             }]);
             focusEditor();
         }
 
         $scope.$on('runtimeerror', function(m, e) {
-            highlightError(e);
+            var parts = printStackTrace({ e: e })[0].match(/.*@.*\:(\d+):(\d+)/);
+            gotoError(e.message, parseInt(parts[1]), parseInt(parts[2]));
         });
 
         $scope.$on('editorGoto', function(m, o) {
-            editor.gotoLine(o.line - 1, o.column - 1, true);
-            editor.session.setAnnotations([{
-                row: o.line - 2,
-                column: o.column - 1,
-                text: o.msg,
-                type: 'error'
-            }]);
-            focusEditor();
+            gotoError(o.msg, o.line, o.column);
         });
 
         $scope.$parent.pane = 'Editor';
@@ -84,6 +73,10 @@
             return true;
         };
 
+        function resetUndo() {
+            editor.session.setUndoManager(new ace.UndoManager());
+        }
+
         function noGame() {
             dialog('Game not found', "I can't find game '" + game_id + "'. Would you like to create a new game?", "Yes", "No, go back to games list")
             .then(function(result) {
@@ -115,7 +108,7 @@
                             .then(function(result){
                                 editor.setValue(result.source, -1);
                                 $scope.gameName = result.game_title;
-                                editor.session.getUndoManager().reset();
+                                resetUndo();
                                 $scope.$apply();
                             }, function(xhr) {
                                 noGame();
@@ -133,7 +126,7 @@
             else {
                 source = '// Huh?';
                 editor.setValue(source, -1);
-                editor.session.getUndoManager().reset();
+                resetUndo();
             }
         }
 
@@ -160,15 +153,26 @@
 
         $scope.saveIt = function() {
             var data;
-            user.login().then(function(details) {
-                data = {
-                    user_id: details.user_id,
-                    name: $scope.gameName,
-                    source: editor.getValue()
-                };
-                ajax.post('/api/save', data, 'Saving ' + data.name, 'Saved ' + data.name, 'Error saving ' + data.name);
-                games.reset();
-            });
+            if($scope.gameName) {
+                user.login().then(function(details) {
+                    data = {
+                        user_id: user.id(),
+                        user_session: user.session(),
+                        name: $scope.gameName,
+                        source: editor.getValue()
+                    };
+                    ajax.post('/api/save', data, 'Saving ' + data.name, 'Saved ' + data.name, 'Error saving ' + data.name);
+                    games.reset();
+                });
+            }
+            else {
+                dialog('A game needs a name', "Your game has no name - once you've set the name, you can save it", "OK", null)
+                .then(function() {
+                    $("#gameName").focus();
+                    $scope.gameName = "New Game";
+                    $scope.$apply();
+                });
+            }
         };
 
         $scope.runIt = function() {
