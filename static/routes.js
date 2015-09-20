@@ -17,12 +17,6 @@
             theme: 'Monokai'
         };
 
-    function JSONToObject(str) {
-    }
-
-    function objectToJSON(obj) {
-    }
-
     function format(str, col) {
         col = typeof col === 'object' ? col : Array.prototype.slice.call(arguments, 1);
         return str.replace(/\{\{|\}\}|\{(\w+)\}/g, function (m, n) {
@@ -30,47 +24,6 @@
             if (m == '}}') { return '}'; }
             return col[n];
         });
-    }
-
-    function doAjax(func, url, data, progress, complete, fail) {
-        var q = Q.defer(),
-            scope = angular.element('[ng-controller=MainController').scope();
-        scope.setInProgress(true);
-        scope.reportStatus(progress || ' ');
-        func(url, data)
-        .done(function(result) {
-            scope.setInProgress(false);
-            scope.reportStatus(complete || ' ');
-            scope.$apply();
-            q.resolve(result);
-        })
-        .fail(function(xhr) {
-            scope.setInProgress(false);
-            scope.reportError(fail || xhr.statusText);
-            scope.$apply();
-            q.reject(xhr);
-        });
-        return q.promise;
-    }
-
-    function get(url, data, progress, complete, fail) {
-        return doAjax($.get, url, data, progress, complete, fail);
-    }
-
-    function post(url, data, progress, complete, fail) {
-        return doAjax($.post, url, data, progress, complete, fail);
-    }
-    
-    function refreshGames() {
-        var q = Q.defer();
-        get('/api/list', { user_id: -1 }, 'Getting games...')
-        .then(function(result) {
-            games = result.games;
-            q.resolve(games);
-        }, function(xhr){
-            q.reject(xhr);
-        });
-        return q.promise;
     }
 
     function setCookie(name, value, days) {
@@ -106,18 +59,63 @@
         setCookie(name, '', -1);
     }
 
-    function setOptions(o) {
-        if(editor) {
-            editor.setTheme('ace/theme/' + o.theme.toLowerCase());
-        }
-    }
-
     mainApp = angular.module("mainApp", ['ngRoute', 'ngAnimate', 'ui.bootstrap']);
 
     // a global service for user login details
     // user_id, user_username, user_email, user_session etc
 
-    mainApp.factory('dialog', ['$rootScope', '$modal', function($rootScope, $modal) {
+    mainApp.factory('ajax', ['$rootScope',
+    function($rootScope){
+
+        function setInProgress(p) {
+            $rootScope.$broadcast('network', p);
+        }
+
+        function reportStatus(msg) {
+            $rootScope.$broadcast('status', msg);
+        }
+
+        function reportError(msg) {
+            $rootScope.$broadcast('error', msg);
+        }
+
+        function doAjax(func, url, data, progress, complete, fail) {
+            var q = Q.defer();
+            setInProgress(true);
+            reportStatus(progress);
+            func(url, data)
+            .done(function(result) {
+                setInProgress(false);
+                reportStatus(complete);
+                $rootScope.$apply();
+                q.resolve(result);
+            })
+            .fail(function(xhr) {
+                setInProgress(false);
+                reportError(fail || xhr.statusText);
+                $rootScope.$apply();
+                q.reject(xhr);
+            });
+            return q.promise;
+        }
+
+        var ajax = {
+
+            get: function(url, data, progress, complete, fail) {
+                return doAjax($.get, url, data, progress, complete, fail);
+            },
+
+            post: function(url, data, progress, complete, fail) {
+                return doAjax($.post, url, data, progress, complete, fail);
+            }
+        };
+
+        return ajax;
+
+    }]);
+
+    mainApp.factory('dialog', ['$rootScope', '$modal',
+    function($rootScope, $modal) {
 
         function dialog(banner, text, oktext, canceltext, okclass, cancelclass) {
             var options = {
@@ -148,7 +146,8 @@
         return dialog;
     }]);
 
-    mainApp.factory('user', [ '$rootScope', '$modal', function ($rootScope, $modal) {
+    mainApp.factory('user', [ '$rootScope', '$modal', 'ajax',
+    function ($rootScope, $modal, ajax) {
 
         var details = {
                 user_id: 0,
@@ -229,7 +228,7 @@
 
                     if(data.user_session !== null && data.user_session !== user.session()) {
                         console.log("Session refresh required");
-                        get('/api/refreshSession', data)
+                        ajax.get('/api/refreshSession', data)
                         .then(function(result) {
                             result.user_email = data.user_email; // TODO (chs): get user details back from refreshSession
                             console.log(result);
@@ -252,7 +251,7 @@
 
                 logout: function() {
                     var q = Q.defer();
-                    get('/api/endSession', { user_id: details.user_id, user_session: details.user_session }, 'Logging ' + details.user_username + ' out...')
+                    ajax.get('/api/endSession', { user_id: details.user_id, user_session: details.user_session }, 'Logging ' + details.user_username + ' out...')
                     .then(function() {
                         user.update({user_id: 0});
                         q.resolve();
@@ -297,7 +296,9 @@
 
     // add confirm-on-exit attribute if your controller has isWorkUnsaved() and saveState() functions
 
-    mainApp.directive('confirmOnExit', function() {
+    mainApp.directive('confirmOnExit',
+    function() {
+
         return {
             link: function($scope, elem, attrs) {
                 $scope.$on('$locationChangeStart', function(event, next, current) {
@@ -309,7 +310,9 @@
         };
     });
 
-    mainApp.config(['$routeProvider', '$locationProvider', '$modalProvider', function($routeProvider, $locationProvider) {
+    mainApp.config(['$routeProvider', '$locationProvider', '$modalProvider',
+    function($routeProvider, $locationProvider) {
+
         $routeProvider.when('/', {
             templateUrl: 'gameList.html',
             controller: 'GameListController'
@@ -339,7 +342,8 @@
         $locationProvider.html5Mode(true);
     }]);
 
-    mainApp.controller('MainController', ['$scope', '$modal', 'user', function mainAppController($scope, $modal, user) {
+    mainApp.controller('MainController', ['$scope', '$modal', 'user', 'ajax',
+    function($scope, $modal, user, ajax) {
 
         var hidden = [
                 'document', 'window', 'alert', 'parent', 'frames', 'frameElment',
@@ -351,6 +355,12 @@
             postScript = '; this.updateFunction = (typeof update === "function") ? update : null; };';
 
         $scope.signInMessage = "Sign In";
+        $scope.pane = '';
+        $scope.status = '';
+        $scope.isError = false;
+        $scope.networkBusy = '';
+        $scope.networkIcon = 'glyphicon-ok';
+        $scope.user_id = user.id();
 
         $scope.$on('user:updated', function(msg, details) {
             if(details.user_id !== 0) {
@@ -369,6 +379,18 @@
 
         $scope.$on('error', function(e, msg) {
             $scope.reportError(msg);
+        });
+
+        $scope.$on('network', function(e, msg) {
+            $scope.setInProgress(msg);
+        });
+
+        $scope.$on('play', function(e, source) {
+            var iframe = document.getElementById('gameFrame');
+            $scope.reportStatus('');
+            window.GameSource = preScript + source + postScript;
+            iframe.src = '/static/frame.html';
+            iframe.contentWindow.focus();
         });
 
         window.reportRuntimeError = function(e) {
@@ -392,21 +414,6 @@
             }
         };
 
-        $scope.$on('play', function(e, source) {
-            var iframe = document.getElementById('gameFrame');
-            $scope.reportStatus('');
-            window.GameSource = preScript + source + postScript;
-            iframe.src = '/static/frame.html';
-            iframe.contentWindow.focus();
-        });
-
-        $scope.pane = '';
-        $scope.status = '';
-        $scope.isError = false;
-        $scope.networkBusy = '';
-        $scope.networkIcon = 'glyphicon-ok';
-        $scope.user_id = user.id();
-
         $scope.reportError = function(text) {
             $scope.isError = true;
             $scope.status = text;
@@ -429,7 +436,11 @@
 
     // TODO (chs): save/restore state of which rows in gamelist were expanded
 
-    mainApp.controller('GameListController', ['$scope', '$routeParams', 'dialog', 'user', function gameListController($scope, $routeParams, dialog, user) {
+    mainApp.controller('GameListController', ['$scope', '$routeParams', 'dialog', 'user', 'ajax',
+    function ($scope, $routeParams, dialog, user, ajax) {
+
+        var refreshing = false;
+
         $scope.$parent.pane = 'Games';
         $scope.games = games;
         $scope.user_id = user.id();
@@ -455,19 +466,23 @@
         // 'games by Username'
 
         $scope.refreshGameList = function() {
-            $scope.user_id = user.id();
-            refreshGames().then(function(result) {
-                $scope.games = result;
-                games = result;
-                $scope.$apply();
-            });
+            if(!refreshing) {
+                refreshing = true;
+                $scope.user_id = user.id();
+                ajax.get('/api/list', { user_id: -1 }).then(function(result) {
+                    $scope.games = result.games;
+                    games = result.games;
+                    $scope.$apply();
+                    refreshing = false;
+                });
+            }
         };
 
         $scope.deleteIt = function(id, name) {
             dialog("Delete " + name + "!?", "Do you really want to delete " + name + "? This action cannot be undone", "Yes, delete it permanently", "No", 'btn-danger', 'btn-default')
             .then(function(result) {
                 if(result) {
-                    post('/api/delete', { game_id: id, user_id: user.id(), user_session: user.session() }, 'Deleting ' + name + '...', name + ' deleted', 'Error deleting game')
+                    ajax.post('/api/delete', { game_id: id, user_id: user.id(), user_session: user.session() }, 'Deleting ' + name + '...', name + ' deleted', 'Error deleting game')
                     .then(function(result) {
                         $scope.refreshGameList();
                     });
@@ -477,14 +492,20 @@
 
         $scope.playIt = function(id) {
             var s;
-            get('/api/source', {game_id: id})
+            ajax.get('/api/source', {game_id: id})
             .then(function(result) {
                 $scope.$emit('play', result.source);
             });
         };
+
+        if(games.length === 0) {
+            $scope.refreshGameList();
+        }
+
     }]);
 
-    mainApp.controller('EditorController', ['$scope', '$modal', '$routeParams', 'user', 'readonly', function editController($scope, $modal, $routeParams, user, readonly) {
+    mainApp.controller('EditorController', ['$scope', '$modal', '$routeParams', 'user', 'readonly', 'ajax',
+    function ($scope, $modal, $routeParams, user, readonly, ajax) {
 
         var newGameID = $routeParams.game_id;
 
@@ -511,6 +532,16 @@
 
         $scope.$on('runtimeerror', function(m, e) {
             highlightError(e);
+        });
+
+        function setOptions(options) {
+            if(editor) {
+                editor.setTheme('ace/theme/' + options.theme.toLowerCase());
+            }
+        }
+
+        $scope.$on('options', function(e, options) {
+            setOptions(options);
         });
 
         $scope.$on('editorGoto', function(m, o) {
@@ -572,7 +603,7 @@
                 else {
                     try {
                         newGameID = parseInt(game_id);
-                        get('/api/source', $routeParams, 'Getting game...')
+                        ajax.get('/api/source', $routeParams, 'Getting game...')
                         .then(function(result){
                             editor.setValue(result.source, -1);
                             $scope.gameName = result.game_title;
@@ -621,7 +652,8 @@
                     name: $scope.gameName,
                     source: editor.getValue()
                 };
-                post('/api/save', data, 'Saving ' + data.name, 'Saved ' + data.name, 'Error saving ' + data.name);
+                ajax.post('/api/save', data, 'Saving ' + data.name, 'Saved ' + data.name, 'Error saving ' + data.name);
+                games = []; // force a gamelist refresh
             });
         };
 
@@ -696,12 +728,14 @@
 
     }]);
 
-    mainApp.controller('LoginModalInstanceController', ['$scope', '$modal', '$modalInstance', 'user', function loginModalInstanceController($scope, $modal, $modalInstance, user) {
+    mainApp.controller('LoginModalInstanceController', ['$scope', '$modal', '$modalInstance', 'user', 'ajax',
+    function ($scope, $modal, $modalInstance, user, ajax) {
+        
         $scope.user = user;
         $scope.user.failed = false;
 
         $scope.ok = function () {
-            post('/api/login', user, 'Logging in ' + user.email + '...')
+            ajax.post('/api/login', user, 'Logging in ' + user.email + '...')
             .then(function(result) {
                 $scope.user.failed = false;
                 $modalInstance.close(result);
@@ -721,7 +755,9 @@
         };
     }]);
 
-    mainApp.controller('RegisterModalInstanceController', ['$scope', '$modal', '$modalInstance', 'user', function registerModalInstanceController($scope, $modal, $modalInstance, user) {
+    mainApp.controller('RegisterModalInstanceController', ['$scope', '$modal', '$modalInstance', 'user', 'ajax',
+    function ($scope, $modal, $modalInstance, user, ajax) {
+
         $scope.user = user;
         $scope.message = 'Please fill in all required fields';
         $scope.user.failed = false;
@@ -729,7 +765,7 @@
         $scope.ok = function () {
 
             $scope.user.failed = false;
-            post('/api/register', $scope.user, 'Registering...')
+            ajax.post('/api/register', $scope.user, 'Registering...')
             .then(function done(result) {
                 $modalInstance.close(result);
             }, function fail(xhr) {
@@ -748,7 +784,8 @@
         };
     }]);
 
-    mainApp.controller('EditorOptionsModalInstanceController', ['$scope', '$modal', '$modalInstance', 'options', function editorOptionsModalInstanceController($scope, $modal, $modalInstance, options) {
+    mainApp.controller('EditorOptionsModalInstanceController', ['$scope', '$modal', '$modalInstance', 'options',
+    function ($scope, $modal, $modalInstance, options) {
 
         $scope.options = options;
 
@@ -762,7 +799,7 @@
 
         $scope.setTheme = function(t) {
             $scope.options.theme = $scope.themes[t];
-            setOptions($scope.options);
+            $scope.$emit('options', $scope.options);
         };
 
         $scope.ok = function() {
@@ -775,7 +812,8 @@
 
     }]);
 
-    mainApp.controller('DialogModalInstanceController', ['$scope', '$modal', '$modalInstance', 'options', function editorOptionsModalInstanceController($scope, $modal, $modalInstance, options) {
+    mainApp.controller('DialogModalInstanceController', ['$scope', '$modal', '$modalInstance', 'options',
+    function ($scope, $modal, $modalInstance, options) {
 
         $scope.options = options;
 

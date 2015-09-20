@@ -5,6 +5,7 @@
 # TODO (chs): autogenerate REST docs from parameter check dictionaries
 # TODO (chs): make delete undoable for N days
 # TODO (chs): make it unicode
+#
 # DONE (chs): parameter validation and conditioning engine
 # DONE (chs): DRY the REST functions
 #----------------------------------------------------------------------
@@ -362,7 +363,8 @@ class endSession(Get):
 
 class favicon:
     def GET(self):
-        raise web.seeother('/static/favicon.ico')
+        f = open('static/favicon.ico', 'rb')
+        return f.read()
 
 #----------------------------------------------------------------------
 # /
