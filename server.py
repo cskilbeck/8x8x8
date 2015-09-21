@@ -36,6 +36,7 @@ urls = (
     '/api/login', 'login',
     '/api/register', 'register',
     '/api/save', 'save',
+    '/api/create', 'create',
     '/api/source', 'source',
     '/api/count', 'count',
     '/api/delete', 'delete',
@@ -146,13 +147,24 @@ class Get(RequestHandler):
         except KeyError:
             raise web.HTTPError('405 Invalid Method')
 
+class Delete(RequestHandler):
+    def DELETE(self):
+        try:
+            return self.mainHandler(self.handleDelete)
+        except KeyError:
+            raise web.HTTPError('405 Invalid Method')
+
 #----------------------------------------------------------------------
 
-def checked(paramspec):
+def checked(paramspec, validateSession = False):
+
     def wrapper(func):
-        def new_fun(*args, **kwargs):
+
+        def new_fun(self, db, cur, **kwargs):
+
             result = {}
             data = kwargs.get('data', {})
+
             for name in paramspec:
                 default = paramspec[name]
                 deftype = type(default)
@@ -182,7 +194,16 @@ def checked(paramspec):
                     raise KeyError('Parameter %s is missing (expected: %s)' % (name, default.__name__))
                 else:
                     result[name] = val
-            return func(*args, data = result)
+
+            if validateSession:
+                if not ('user_id' in result and 'user_session' in result):
+                    raise ValueError('Invalid paramspec - user_id & user_session must be present if validateSession is True')
+
+                cur.execute('SELECT COUNT(*) AS count FROM users AS count WHERE user_id = %(user_id)s AND user_session = %(user_session)s', data)
+                if cur.fetchone()['count'] != 1:
+                    raise web.HTTPError('401 Invalid user session')
+
+            return func(self, db, cur, data = result)
         return new_fun
     return wrapper
 
@@ -225,10 +246,25 @@ class count(Get):
 class source(Get):
     @checked({ 'game_id': int })
     def handleGet(self, db, cur, data):
-        cur.execute('SELECT game_source as source, game_title FROM GAMES WHERE game_id=%(game_id)s', data)
+        cur.execute('SELECT game_source, game_title FROM GAMES WHERE game_id=%(game_id)s', data)
         if cur.rowcount == 1:
             return cur.fetchone()
         raise web.HTTPError('404 Game not found')
+
+#----------------------------------------------------------------------
+# /api/create
+
+class create(Post):
+    @checked({
+        'user_id': int,
+        'user_session': int,
+        'name': str,
+        'source': str
+        }, True)
+    def handlePost(self, db, cur, data):
+        cur.execute('''INSERT INTO games (user_id, game_created, game_lastsaved, game_source, game_title)
+                        VALUES (%(user_id)s, NOW(), NOW(), %(source)s, %(name)s)''' , data)
+        return { 'created': cur.rowcount }
 
 #----------------------------------------------------------------------
 # /api/save
@@ -238,18 +274,14 @@ class save(Post):
     @checked({
         'user_id': int,
         'user_session': int,
+        'game_id': int,
         'source': str,
         'name': str
-        })
+        }, True)
     def handlePost(self, db, cur, data):
-        cur.execute('SELECT * FROM users WHERE user_id = %(user_id)s AND user_session = %(user_session)s', data)
-        if cur.fetchone() is None:
-            raise web.HTTPError('401 Invalid user session')
-        else:
-            cur.execute('''INSERT INTO games (user_id, game_created, game_lastsaved, game_source, game_title)
-                            VALUES (%(user_id)s, NOW(), NOW(), %(source)s, %(name)s)
-                            ON DUPLICATE KEY UPDATE game_source = VALUES(game_source), game_lastsaved = VALUES(game_lastsaved)''' , data)
-            return { 'saved': cur.rowcount }
+        cur.execute('''UPDATE games SET user_id = %(user_id)s, game_lastsaved = NOW(), game_source = %(source)s, game_title = %(name)s
+                        WHERE game_id = %(game_id)s AND user_id = %(user_id)s''' , data)
+        return { 'saved': cur.rowcount }
 
 #----------------------------------------------------------------------
 # /api/delete
@@ -259,18 +291,14 @@ class save(Post):
 class delete(Post):
     @checked({
         'user_id': int,
-        'game_id': int,
-        'user_session': int
-        })
+        'user_session': int,
+        'game_id': int
+        }, True)
     def handlePost(self, db, cur, data):
-        cur.execute('''SELECT COUNT(*) AS count FROM users WHERE user_id = %(user_id)s AND user_session = %(user_session)s''', data)
-        ok = cur.fetchone()['count']
-        if ok == 1:
-            cur.execute('DELETE FROM games WHERE game_id = %(game_id)s AND user_id = %(user_id)s', data)
-            if cur.rowcount == 0:
-                raise web.HTTPError('404 Game not found')
-            return { 'deleted': cur.rowcount }
-        raise web.HTTPError('404 Session not found')
+        cur.execute('DELETE FROM games WHERE game_id = %(game_id)s AND user_id = %(user_id)s', data)
+        if cur.rowcount == 0:
+            raise web.HTTPError('404 Game not found')
+        return { 'deleted': cur.rowcount }
 
 #----------------------------------------------------------------------
 # /api/register
@@ -333,8 +361,8 @@ class login(Post):
 
 class refreshSession(Get):
     @checked({
-        'user_session': int,
         'user_id': int,
+        'user_session': int,
         'user_username': str
         })
     def handleGet(self, db, cur, data):
@@ -350,9 +378,9 @@ class refreshSession(Get):
 
 class endSession(Get):
     @checked({
-        'user_session': str,
-        'user_id': str
-        })
+        'user_id': str,
+        'user_session': str
+        }, True)
     def handleGet(self, db, cur, data):
         cur.execute('''UPDATE users SET user_session = NULL WHERE user_id = %(user_id)s AND user_session = %(user_session)s''', data)
         if cur.rowcount != 1:

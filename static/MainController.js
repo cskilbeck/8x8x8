@@ -18,13 +18,16 @@ function($scope, $modal, user, ajax) {
     $scope.networkBusy = '';
     $scope.networkIcon = 'glyphicon-ok';
     $scope.user_id = user.id();
+    $scope.usernameMessage = "";
 
     $scope.$on('user:updated', function(msg, details) {
         if(details.user_id !== 0) {
-            $scope.signInMessage = "Sign out " + details.user_username;
+            $scope.usernameMessage = 'Signed in as ' + details.user_username;
+            $scope.signInMessage = "Sign out";
             $scope.reportStatus("Welcome back " + details.user_username);
         }
         else {
+            $scope.usernameMessage = '';
             $scope.signInMessage = "Sign In";
             $scope.reportStatus("Signed out");
         }

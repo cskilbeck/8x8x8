@@ -115,6 +115,7 @@
             .then(function(result) {
                 if(result) {
                     $scope.gameName = 'New Game';
+                    game_id = 'new';
                 }
                 else {
                     session = null;
@@ -139,7 +140,7 @@
                         if(newGameID) {
                             ajax.get('/api/source', $routeParams, 'Getting game...')
                             .then(function(result){
-                                editor.setValue(result.source, -1);
+                                editor.setValue(result.game_source, -1);
                                 $scope.gameName = result.game_title;
                                 resetUndo();
                                 $scope.$apply();
@@ -180,13 +181,25 @@
             var data;
             if($scope.gameName) {
                 user.login().then(function(details) {
-                    data = {
-                        user_id: user.id(),
-                        user_session: user.session(),
-                        name: $scope.gameName,
-                        source: editor.getValue()
-                    };
-                    ajax.post('/api/save', data, 'Saving ' + data.name, 'Saved ' + data.name, 'Error saving ' + data.name);
+                    if(game_id === 'new') {
+                        data = {
+                            user_id: user.id(),
+                            user_session: user.session(),
+                            name: $scope.gameName,
+                            source: editor.getValue()
+                        };
+                        ajax.post('/api/create', data, 'Creating ' + data.name, 'Created ' + data.name, 'Error creating ' + data.name);
+                    }
+                    else {
+                        data = {
+                            game_id: parseInt(game_id),
+                            user_id: user.id(),
+                            user_session: user.session(),
+                            name: $scope.gameName,
+                            source: editor.getValue()
+                        };
+                        ajax.post('/api/save', data, 'Saving ' + data.name, 'Saved ' + data.name, 'Error saving ' + data.name);
+                    }
                     games.reset();
                 });
             }
