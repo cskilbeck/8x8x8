@@ -5,7 +5,7 @@
 <div class="modal-body">
     <form name="editorOptionsForm" novalidate>
         <div class='form-group'>
-            <label for='theme'>Theme&nbsp</label>
+            <label for='theme'>Theme&nbsp;</label>
             <div class="btn-group">
                 <button type="button" id='themeButton' class="btn btn-sm dropdown-toggle" data-toggle="dropdown">
                     {{options.theme}} <span class="caret"></span>
@@ -18,8 +18,38 @@
         <div class='form-group'>
             <div class='checkbox'>
                 <label>
-                    <input type='checkbox' id='lineNumbersCheckbox'>Line Numbers
+                    <input type='checkbox' ng-model='options.options.enableLiveAutocompletion'>Auto complete suggestions
                 </label>
+            </div>
+            <div clas='form-group'>
+                <div class='checkbox'>
+                    <label>
+                        <input type='checkbox' ng-model='options.options.showFoldWidgets'>Code folding
+                    </label>
+                </div>
+            </div>
+            <div clas='form-group'>
+                <div class='checkbox'>
+                    <label>
+                        <input type='checkbox' ng-model='options.options.showLineNumbers'>Line numbers
+                    </label>
+                </div>
+            </div>
+            <div clas='form-group'>
+                <div class='row'>
+                    <div class='col-xs-6'>
+                        <div class='checkbox'>
+                            <label>
+                                <input type='checkbox' ng-model='options.options.showPrintMargin'>Show print margin
+                            </label>
+                        </div>
+                    </div>
+                    <div class='col-xs-6'>
+                        <div ng-show='options.options.showPrintMargin'>
+                            <input type="number" ng-model='options.options.printMargin' name='printMargin' min="30" max="500" class="form-control" placeholder="30-500">
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </form>

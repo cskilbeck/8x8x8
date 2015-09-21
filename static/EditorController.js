@@ -9,7 +9,14 @@
         name,
         game_id,
         editorOptions = {
-            theme: 'Monokai'
+            theme: 'Monokai',
+            options: {
+                enableLiveAutocompletion: true,
+                showFoldWidgets: true,
+                printMargin: 120,
+                showLineNumbers: true,
+                showPrintMargin: false
+            }
         };
 
     mainApp.controller('EditorController', ['$scope', '$modal', '$routeParams', 'user', 'readonly', 'ajax', '$rootScope', 'games', 'dialog', '$location',
@@ -44,7 +51,32 @@
 
         $scope.gameName = '';
 
+        (function() {
+            var opts = localStorage.getItem('editorOptions');
+            if(opts) {
+                editorOptions = JSON.parse(opts);
+            }
+            else {
+                // TODO (chs): roaming options - load it from the database
+            }
+
+        })();
+
         editor = ace.edit("editor");
+
+        ace.config.set("modePath", "https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/");
+        ace.config.set("workerPath", "https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/");
+        ace.config.set("themePath", "https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/");
+
+        setOptions(editorOptions);
+
+        ace.config.loadModule('ace/ext/language_tools', function(m) {
+            ace.require(['ace/ext/language_tools']);
+            editor.getSession().setMode('ace/mode/javascript');
+            setOptions(editorOptions);
+        });
+
+
         editor.$blockScrolling = Infinity;
         editor.setReadOnly(readonly);
 
@@ -70,6 +102,7 @@
             session = editor.getSession();
             name = $scope.gameName;
             localStorage.setItem('source', source);
+            // TODO (chs): roaming options: save it to the database
             return true;
         };
 
@@ -130,14 +163,6 @@
             }
         }
 
-        editor.setShowPrintMargin(false);
-        editor.setShowFoldWidgets(false);
-        editor.getSession().setMode('ace/mode/javascript');
-        setOptions(editorOptions);
-        editor.setOptions({
-            enableLiveAutocompletion: true,
-        });
-
         editor.on('input', function() {
         });
 
@@ -182,6 +207,8 @@
         function setOptions(options) {
             if(editor) {
                 editor.setTheme('ace/theme/' + options.theme.toLowerCase());
+                editor.setOptions(options.options);
+                localStorage.setItem('editorOptions', JSON.stringify(editorOptions));
             }
         }
 

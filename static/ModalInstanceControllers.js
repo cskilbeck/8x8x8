@@ -3,7 +3,7 @@
 
     mainApp.controller('LoginModalInstanceController', ['$scope', '$modal', '$modalInstance', 'user', 'ajax',
     function ($scope, $modal, $modalInstance, user, ajax) {
-        
+
         $scope.user = user;
         $scope.user.failed = false;
 
@@ -72,8 +72,13 @@
 
         $scope.setTheme = function(t) {
             $scope.options.theme = $scope.themes[t];
-            $rootScope.$broadcast('options', $scope.options);
         };
+
+        $scope.$watch(function(scope) {
+            return scope.options;
+        }, function(newValue, oldValue) {
+            $rootScope.$broadcast('options', newValue);
+        }, true);
 
         $scope.ok = function() {
             $modalInstance.close($scope.options);
@@ -102,4 +107,3 @@
 
 })();
 
-    
