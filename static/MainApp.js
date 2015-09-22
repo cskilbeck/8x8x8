@@ -7,7 +7,6 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 // - standalone player
 // - share button
 // - register 256pixels.net
-// - make it 16 coloursSpace Invaders
 // - voting/rating/comments
 // - telemetry/analytics
 // - ask if they want to save when quitting the editor if changes are unsaved
@@ -57,3 +56,4 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 // + save user options [editor,...?] in the database and as cookies [just saved in localStorage for now]
 // + differentiate between my games and others
 // + make it 16x16
+// + make it 16 colours
