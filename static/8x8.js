@@ -35,8 +35,8 @@
 (function() {
     "use strict";
 
-    var W = 8,
-        H = 8,
+    var W = 16,
+        H = 16,
         CW,
         CH,
         context,
@@ -48,14 +48,58 @@
         lastkey,
         frame = 0,
         colors = [
-            "#000",
-            "#F00",
-            "#0F0",
-            "#FF0",
-            "#00F",
-            "#F0F",
-            "#0FF",
-            "#FFF"
+            '#000', // black
+            '#080', // dark green
+            '#0F0', // green
+            '#8F8', // light green
+            '#800', // dark red
+            '#F00', // red
+            '#F88', // light red
+            '#008', // dark blue
+            '#00F', // blue
+            '#0FF', // lightblue
+            '#808', // purple
+            '#F0F', // magenta
+            '#F8F', // pink
+            '#F80', // orange
+            '#FF0', // yellow
+            '#FFF'  // white
+        ],
+        colorTable = {
+            black: 0,
+            darkgreen: 1,
+            green: 2,
+            lightgreen: 3,
+            darkred: 4,
+            red: 5,
+            lightred: 6,
+            darkblue: 7,
+            blue: 8,
+            lightblue: 9,
+            purple: 10,
+            magenta: 11,
+            pink: 12,
+            orange: 13,
+            yellow: 14,
+            white: 15  
+        },
+        colorNames = [
+            "black",
+            "darkgreen",
+            "green",
+            "lightgreen",
+            "darkred",
+            "red",
+            "lightred",
+            "darkblue",
+            "blue",
+            "lightblue",
+            "purple",
+            "magenta",
+            "pink",
+            "orange",
+            "yellow",
+            "white"
         ],
         keyPressed = [ false, false, false, false, false ],
         keyHeld = [ false, false, false, false, false ],
@@ -70,12 +114,12 @@
         parent.window.reportRuntimeErrorDirect(msg, line, column);
     }
 
-    function ellipse(ctx, cx, cy, w, h){
+    function ellipse(ctx, cx, cy, w, h, rounded){
         var lx = cx - w,
             rx = cx + w,
             ty = cy - h,
             by = cy + h;
-        var m = 0.551784;
+        var m = 0.551784 * (rounded || 1);
         var xm = m * w;
         var ym = h * m;
         ctx.beginPath();
@@ -98,12 +142,12 @@
         context.fillRect(0, 0, canvas.width, canvas.height);
         for(y = ym2; y < CH; y += ym) {
             for(x = xm2; x < CW; x += xm) {
-                context.fillStyle = colors[screen[i++] & 7];
+                context.fillStyle = colors[screen[i++] & 15];
                 context.globalAlpha = 0.8;
-                ellipse(context, x, y, xm2 - 1, ym2 - 1);
+                ellipse(context, x, y, xm2 - 1, ym2 - 1, 1.5);
                 context.fill();
                 context.globalAlpha = 1.0;
-                ellipse(context, x, y, xm2 - 2, ym2 - 2);
+                ellipse(context, x, y, xm2 - 2, ym2 - 2, 1.5);
                 context.fill();
             }
         }
@@ -124,18 +168,25 @@
     function doSet(x, y, color) {
         x >>>= 0;
         y >>>= 0;
-        if(x >= 0 && x < 8 && y >= 0 && y < 8) {
-            screen[x + y * W] = color;
+        if(typeof color === 'string') {
+            color = colorTable[color] || 0;
+        }
+        if(x >= 0 && x < W && y >= 0 && y < H) {
+            screen[x + y * W] = (color|0) & 15;
         }
     }
 
     function doGet(x, y) {
         x >>>= 0;
         y >>>= 0;
-        if(x >= 0 && x < 8 && y >= 0 && y < 8) {
+        if(x >= 0 && x < W && y >= 0 && y < H) {
             return screen[x + y * W];
         }
         return 0;
+    }
+
+    function doGetColor(x, y) {
+        return colorNames[doGet(x, y)];
     }
 
     function doClear(color) {
@@ -237,6 +288,7 @@
     CH = canvas.height;
     window.set = function(x, y, c) { return doSet(x, y, c); };
     window.get = function(x, y) { return doGet(x, y); };
+    window.getColor = function(x, y) { return doGetColor(x, y); };
     window.clear = function(c) { return doClear(c); };
     window.held = function(k) { return doHeld(k); };
     window.pressed = function(k) { return doPressed(k); };

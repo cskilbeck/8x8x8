@@ -1,26 +1,34 @@
 //////////////////////////////////////////////////////////////////////
+
+var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']);
+
+//////////////////////////////////////////////////////////////////////
+// - tetris
+// - standalone player
+// - share button
+// - register 256pixels.net
+// - make it 16 coloursSpace Invaders
+// - voting/rating/comments
+// - telemetry/analytics
+// - ask if they want to save when quitting the editor if changes are unsaved
+//
 // - game list
-//      Make a game private/public
-//      differentiate between my games and others
-//      forking
+//      ? Make a game private/public
 //      paging in game list
 //      make the search text work (timeout on change)
 //      quick search buttons: my games, top games, most played, recently added, recently changed
+//      track status of 'row expanded' by game_id and persist it
+//
 // - user registration/login/forgot password
-//      username, verify password etc
-//      fix login/register promise resolve...
-//      save user options [editor,...?] in the database and as cookies
 //      user profile modal dialog to change username\email\password
-// - voting/rating/comments
-// - telemetry/analytics
-// - editor view/edit mode with forking etc
-// - ask if they want to save when quitting the editor if changes are unsaved
-// - save editor options in user record
-// - get rid of the titlebar
+//      bcrypt password on client before transmission
+//      permission bits
+//      proper session security
 //
-// - edit by game ID rather than game name, so changing the name renames the existing game rather than creating a new one
+//////////////////////////////////////////////////////////////////////
+// \ forking
 //
-//
+//////////////////////////////////////////////////////////////////////
 // + save current source in LocalStorage
 // + web service
 // + save to web service
@@ -43,6 +51,9 @@
 // + get rid of all the local variables outside controllers
 // + make a utility class for all the local functions
 // +    refresh game list on logout
-
-var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']);
-
+// + get rid of the titlebar
+// + edit by game ID rather than game name, so changing the name renames the existing game rather than creating a new one
+// + editor view/edit mode with forking etc [but no forking, user can copy/paste for now]
+// + save user options [editor,...?] in the database and as cookies [just saved in localStorage for now]
+// + differentiate between my games and others
+// + make it 16x16

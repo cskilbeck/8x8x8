@@ -18,18 +18,26 @@ function($scope, $modal, user, ajax) {
     $scope.networkBusy = '';
     $scope.networkIcon = 'glyphicon-ok';
     $scope.user_id = user.id();
+    $scope.showProfileButton = false;
     $scope.usernameMessage = "";
+    $scope.signInClass = 'glyphicon glyphicon-log-in';
 
     $scope.$on('user:updated', function(msg, details) {
         if(details.user_id !== 0) {
             $scope.usernameMessage = 'Signed in as ' + details.user_username;
             $scope.signInMessage = "Sign out";
+            $scope.signInClass = 'glyphicon glyphicon-log-out';
             $scope.reportStatus("Welcome back " + details.user_username);
+            $scope.showProfileButton = true;
+            $scope.$applyAsync();
         }
         else {
             $scope.usernameMessage = '';
             $scope.signInMessage = "Sign In";
+            $scope.signInClass = 'glyphicon glyphicon-log-in';
             $scope.reportStatus("Signed out");
+            $scope.showProfileButton = false;
+            $scope.$applyAsync();
         }
     });
 
@@ -89,8 +97,6 @@ function($scope, $modal, user, ajax) {
         $scope.networkIcon = p ? 'glyphicon-repeat' : 'glyphicon-ok';
     };
 
-    user.refreshSession().then(function() {
-        $scope.$apply();
-    });
+    user.refreshSession();
 }]);
 

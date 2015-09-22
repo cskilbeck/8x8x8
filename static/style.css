@@ -5,8 +5,8 @@ html, body {
 
 #gameFrame {
     border: none;
-    height: 140px;
-    width: 140px;
+    height: 256px;
+    width: 256px;
     margin-top: 20px;
 }
 
@@ -189,7 +189,7 @@ pre {
 .grid_col {
     top: 0;
     bottom: 0;
-    border-right: 1px solid black;
+    border-right: 1px solid #E0E0E0;
 }
 .grid_scroll-x {
     overflow-x: auto;
@@ -201,7 +201,7 @@ pre {
 .grid_header.grid_row {
     height: 50px;
     top: 0;
-    border-bottom: 1px solid black;
+    border-bottom: 1px solid #E0E0E0;
 }
 
 .grid_editorheader.grid_row {
@@ -217,7 +217,7 @@ pre {
 .grid_helpbody.grid_row {
     padding-left: 15px;
     padding-right: 15px;
-    top: 40px;
+    top: 0;
     bottom: 0;
     overflow-y: auto;
 }
@@ -225,21 +225,21 @@ pre {
 .grid_editorbody.grid_row {
     top: 40px;
     bottom: 0;
-    border-top: 1px solid black;
+    border-top: 1px solid #E0E0E0;
 }
 .grid_footer.grid_row {
     height: 50px;
     bottom: 0;
-    border-top: 1px solid black;
+    border-top: 1px solid #E0E0E0;
     padding-top: 10px;
     padding-left: 10px;
 }
 .grid_left.grid_col {
-    width: 80%;
+    width: 70%;
 }
 .grid_right.grid_col {
     right: 0;
-    width: 20%;
+    width: 30%;
 }
 .gly-spin {
     -webkit-animation:  spin 0.5s infinite linear;

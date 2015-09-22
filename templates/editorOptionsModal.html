@@ -1,5 +1,5 @@
 <div class="modal-header">
-    <button type="button" class="close" ng-click='close()' aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <button type="button" class="close" ng-click='cancel()' aria-label="Close"><span aria-hidden="true">&times;</span></button>
     <h4 class="modal-title" id="editorOptionsModalLabel">Editor Options</h4>
 </div>
 <div class="modal-body">
@@ -15,41 +15,66 @@
                 </ul>
             </div>
         </div>
-        <div class='form-group'>
-            <div class='checkbox'>
-                <label>
-                    <input type='checkbox' ng-model='options.options.enableLiveAutocompletion'>Auto complete suggestions
-                </label>
-            </div>
-            <div clas='form-group'>
+        <div class='row'>
+            <div class='col-xs-6'>
                 <div class='checkbox'>
                     <label>
-                        <input type='checkbox' ng-model='options.options.showFoldWidgets'>Code folding
+                        <input type='checkbox' ng-model='options.options.enableLiveAutocompletion' />Auto complete suggestions
                     </label>
                 </div>
             </div>
-            <div clas='form-group'>
+            <div class='col-xs-6'>
                 <div class='checkbox'>
                     <label>
-                        <input type='checkbox' ng-model='options.options.showLineNumbers'>Line numbers
+                        <input type='checkbox' ng-model='options.options.showLineNumbers' />Line numbers
                     </label>
                 </div>
             </div>
-            <div clas='form-group'>
-                <div class='row'>
-                    <div class='col-xs-6'>
-                        <div class='checkbox'>
-                            <label>
-                                <input type='checkbox' ng-model='options.options.showPrintMargin'>Show print margin
-                            </label>
-                        </div>
-                    </div>
-                    <div class='col-xs-6'>
-                        <div ng-show='options.options.showPrintMargin'>
-                            <input type="number" ng-model='options.options.printMargin' name='printMargin' min="30" max="500" class="form-control" placeholder="30-500">
-                        </div>
-                    </div>
+        </div>
+        <div class='row'>
+            <div class='col-xs-6'>
+                <div class='checkbox'>
+                    <label>
+                        <input type='checkbox' ng-model='options.options.showFoldWidgets' />Code folding
+                    </label>
                 </div>
+            </div>
+            <div class='col-xs-6'>
+                <div class='checkbox'>
+                    <label>
+                        <input type='checkbox' ng-model='options.options.displayIndentGuides' />Indent guides
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class='row'>
+            <div class='col-xs-6'>
+                <div class='checkbox'>
+                    <label>
+                        <input type='checkbox' ng-model='options.options.highlightActiveLine' />Highlight current line
+                    </label>
+                </div>
+            </div>
+            <div class='col-xs-6'>
+                <div class='checkbox'>
+                    <label>
+                        <input type='checkbox' ng-model='options.options.highlightGutterLine' />Highlight gutter
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class='row'>
+            <div class='col-xs-4'>
+                <div class='checkbox'>
+                    <label>
+                        <input type='checkbox' ng-model='options.options.showPrintMargin' />Print margin
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class='row'>
+            <div ng-show='options.options.showPrintMargin' class='col-xs-3'>
+                <input type="number" ng-model='options.options.printMargin' name='printMargin' min="30" max="500" class="form-control" placeholder="30-500" />
             </div>
         </div>
     </form>

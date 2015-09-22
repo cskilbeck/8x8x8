@@ -68,9 +68,11 @@ function ($rootScope, $modal, ajax, cookie) {
         },
 
         refreshSession: function() {
-            var data = {
-                    user_session: parseInt(cookie.get('user_session')),
-                    user_id: parseInt(cookie.get('user_userid')),
+            var user_session = cookie.get('user_session') || '0',
+                user_id = cookie.get('user_id') || '0',
+                data = {
+                    user_session: parseInt(user_session),
+                    user_id: parseInt(user_id),
                     user_username: cookie.get('user_username'),
                     user_email: cookie.get('user_email')
                 },
@@ -78,7 +80,7 @@ function ($rootScope, $modal, ajax, cookie) {
 
             // if cookie session is set but different from current one (either because)
 
-            if(data.user_session !== null && data.user_session !== user.session()) {
+            if(!isNaN(data.user_session) && data.user_session !== user.session()) {
                 ajax.get('/api/refreshSession', data)
                 .then(function(result) {
                     result.user_email = data.user_email; // TODO (chs): get user details back from refreshSession
@@ -113,7 +115,7 @@ function ($rootScope, $modal, ajax, cookie) {
 
         update: function(d) {
             details = d;
-            cookie.set('user_userid', details.user_id, 30);
+            cookie.set('user_id', details.user_id, 30);
             cookie.set('user_username', details.user_username, 30);
             cookie.set('user_session', details.user_session, 30);
             cookie.set('user_email', details.user_email, 30);

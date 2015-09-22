@@ -6,6 +6,7 @@
     var editor,
         session,
         source,
+        modulesLoaded = false,
         name,
         game_id,
         editorOptions = {
@@ -15,6 +16,9 @@
                 showFoldWidgets: true,
                 printMargin: 120,
                 showLineNumbers: true,
+                highlightActiveLine: true,
+                highlightGutterLine: true,
+                displayIndentGuides: true,
                 showPrintMargin: false
             }
         };
@@ -25,6 +29,14 @@
         var newGameID = $routeParams.game_id;
 
         $scope.readonly = readonly;
+
+        window.focusEditor = function() {
+            focus();
+            if(editor) {
+                editor.focus();
+                enableEditor(true);
+            }
+        };
 
         // NOTE (chs): the dodgy line offsets are due to 0-based and 1-based differences and the preScript taking 1 line
         function gotoError(msg, line, column) {
@@ -62,23 +74,29 @@
 
         })();
 
+        // TODO (chs): persist the editor object and its loaded modules for when we come back to this View
         editor = ace.edit("editor");
-
-        ace.config.set("modePath", "https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/");
-        ace.config.set("workerPath", "https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/");
-        ace.config.set("themePath", "https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/");
 
         setOptions(editorOptions);
 
-        ace.config.loadModule('ace/ext/language_tools', function(m) {
-            ace.require(['ace/ext/language_tools']);
+        if(!modulesLoaded) {
+            ace.config.set("modePath", "https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/");
+            ace.config.set("workerPath", "https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/");
+            ace.config.set("themePath", "https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/");
+            ace.config.loadModule('ace/ext/language_tools', function(m) {
+                ace.require(['ace/ext/language_tools']);
+                editor.getSession().setMode('ace/mode/javascript');
+                setOptions(editorOptions);
+                modulesLoaded = true;
+            });
+        }
+        else {
             editor.getSession().setMode('ace/mode/javascript');
             setOptions(editorOptions);
-        });
-
+        }
 
         editor.$blockScrolling = Infinity;
-        editor.setReadOnly(readonly);
+        enableEditor(false);
 
         $scope.isWorkUnsaved = function() {
             return !(editor && editor.session && editor.session.getUndoManager().isClean());
@@ -111,16 +129,15 @@
         }
 
         function noGame() {
-            dialog('Game not found', "I can't find game '" + game_id + "'. Would you like to create a new game?", "Yes", "No, go back to games list")
+            dialog.choose('Game not found', "I can't find game '" + game_id + "'. Would you like to create a new game?", "Yes", "No, go back to games list")
             .then(function(result) {
-                if(result) {
-                    $scope.gameName = 'New Game';
-                    game_id = 'new';
-                }
-                else {
-                    session = null;
-                    $location.path('/');
-                }
+                $scope.gameName = 'New Game';
+                game_id = 'new';
+                focusEditor();
+                enableEditor(true);
+            }, function() {
+                session = null;
+                $location.path('/');
             });
         }
 
@@ -138,12 +155,14 @@
                     try {
                         newGameID = parseInt(game_id);
                         if(newGameID) {
+                            enableEditor(false);
                             ajax.get('/api/source', $routeParams, 'Getting game...')
                             .then(function(result){
                                 editor.setValue(result.game_source, -1);
                                 $scope.gameName = result.game_title;
                                 resetUndo();
                                 $scope.$apply();
+                                enableEditor(true);
                             }, function(xhr) {
                                 noGame();
                             });
@@ -161,6 +180,7 @@
                 source = '// Huh?';
                 editor.setValue(source, -1);
                 resetUndo();
+                enableEditor(true);
             }
         }
 
@@ -175,6 +195,21 @@
             // }
         });
 
+        function save() {
+            var data = {
+                game_id: parseInt(game_id),
+                user_id: user.id(),
+                user_session: user.session(),
+                name: $scope.gameName,
+                source: editor.getValue()
+            };
+            ajax.post('/api/save', data, 'Saving ' + data.name, 'Saved ' + data.name, 'Error saving ' + data.name);
+        }
+
+        function enableEditor(enable) {
+            editor.setReadOnly(!enable || readonly);
+        }
+
         // TODO (chs): require session to save game
 
         $scope.saveIt = function() {
@@ -188,23 +223,34 @@
                             name: $scope.gameName,
                             source: editor.getValue()
                         };
-                        ajax.post('/api/create', data, 'Creating ' + data.name, 'Created ' + data.name, 'Error creating ' + data.name);
+                        ajax.post('/api/create', data, 'Creating ' + data.name, 'Created ' + data.name)
+                        .then(function() {
+
+                        }, function(xhr) {
+                            if(xhr.status === 401) {
+                                dialog.choose('Game name already used',
+                                    "'" + data.name + "' already exists, would you like to overwrite it? Warning, this will delete the original and cannot be undone",
+                                    "Yes, overwrite it permanently",
+                                    "No, do nothing")
+                                .then(function() {
+                                    ajax.get('/api/gameid', { user_id: user.id(), name: data.name })
+                                    .then(function(result) {
+                                        // TODO (chs): update the location bar to reflect the new game id
+                                        newGameID = game_id = result.game_id;
+                                        save();
+                                    });
+                                });
+                            }
+                        });
                     }
                     else {
-                        data = {
-                            game_id: parseInt(game_id),
-                            user_id: user.id(),
-                            user_session: user.session(),
-                            name: $scope.gameName,
-                            source: editor.getValue()
-                        };
-                        ajax.post('/api/save', data, 'Saving ' + data.name, 'Saved ' + data.name, 'Error saving ' + data.name);
+                        save();
                     }
                     games.reset();
                 });
             }
             else {
-                dialog('A game needs a name', "Your game has no name - once you've set the name, you can save it", "OK", null)
+                dialog.inform('A game needs a name', "Your game has no name - once you've set the name, you can save it")
                 .then(function() {
                     $("#gameName").focus();
                     $scope.gameName = "New Game";
@@ -242,9 +288,11 @@
                     }
                 }
             }).result.then(function (result) {
+                focusEditor();
                 editorOptions = result;
                 setOptions(editorOptions);
             }, function() {
+                focusEditor();
                 editorOptions = oldOptions;
                 setOptions(editorOptions);
             });
@@ -255,7 +303,12 @@
                 width = editorRect.right - editorRect.left,
                 height = editorRect.bottom - editorRect.top;
             $('#editor').height(height - 1).width(width); // -1 for the border
+            editor.resize();
         }
+
+        $(window).resize(function(e) {
+            inflateEditor();
+        });
 
         function enableKeyBindings() {
             editor.commands.addCommand({
@@ -281,13 +334,6 @@
 
         function disableKeyBindings() {
             editor.commands.commmandKeyBinding = {};
-        }
-
-        function focusEditor() {
-            focus();
-            if(editor) {
-                editor.focus();
-            }
         }
 
         inflateEditor();

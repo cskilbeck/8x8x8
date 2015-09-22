@@ -4,6 +4,12 @@
 </div>
 <div class="modal-body">
     {{options.text}}
+    <form ng-show='options.inputRequired' name="inputForm">
+        <label class='control-label' for='input'>{{options.inputLabel}}</label>
+        <div class='form-group'>
+            <input type="{{options.inputType}}" id='input' placeholder='{{options.inputPlaceholder}}' name='input' class='form-control' ng-model='options.inputText' />
+        </div>
+    </form>
 </div>
 <div class="modal-footer">
     <button class="btn {{options.okclass}}" type="button" ng-click="ok()">{{options.oktext}}</button>

@@ -35,6 +35,7 @@ def get_scripts(block):
 # join the scripts together
 
 def join_scripts(scripts, base_url):
+    print str(len(scripts)) + " scripts:"
     files = []
     for scriptname in scripts:
         url = scriptname
@@ -73,7 +74,6 @@ try:
     html = urllib2.urlopen(url.geturl(), context = context).read()
     name, block, html = get_scriptblock(html)
     scripts = get_scripts(block)
-    print str(len(scripts)) + " scripts:"
     source = join_scripts(scripts, url.scheme + "://" + url.netloc)
     save_file(source, name + '.js')
     minify_script(name + '.js', name + '.min.js')

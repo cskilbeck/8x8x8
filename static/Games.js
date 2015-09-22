@@ -30,9 +30,9 @@ function(ajax, user) {
     var games = {
 
         // get the list of games
-        get: function() {
+        get: function(force) {
             var q = Q.defer();
-            if(list.length === 0) {
+            if(list.length === 0 || force) {
                 ajax.get('/api/list', { user_id: -1 } )
                 .then(function(result) {
                     list = result.games;

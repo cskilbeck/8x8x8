@@ -1,4 +1,6 @@
-mainApp.factory('cookie', function() {
+mainApp.factory('cookie',
+function() {
+    "use strict";
 
     var cookie = {
 

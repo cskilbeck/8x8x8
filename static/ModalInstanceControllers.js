@@ -90,10 +90,15 @@
 
     }]);
 
-    mainApp.controller('DialogModalInstanceController', ['$scope', '$modal', '$modalInstance', 'options',
-    function ($scope, $modal, $modalInstance, options) {
+    mainApp.controller('DialogModalInstanceController', ['$scope', '$modal', '$modalInstance', 'options', '$timeout',
+    function ($scope, $modal, $modalInstance, options, $timeout) {
 
         $scope.options = options;
+
+        // TODO (chs): make input field focus on dialog show work!?
+        $timeout(function() {
+            $('#input').focus();
+        });
 
         $scope.ok = function() {
             $modalInstance.close();

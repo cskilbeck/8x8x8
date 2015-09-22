@@ -36,8 +36,10 @@ urls = (
     '/api/login', 'login',
     '/api/register', 'register',
     '/api/save', 'save',
+    '/api/rename', 'rename',
     '/api/create', 'create',
     '/api/source', 'source',
+    '/api/gameid', 'gameid',
     '/api/count', 'count',
     '/api/delete', 'delete',
     '/api/list', 'list',
@@ -64,11 +66,14 @@ def show(x, m = 'var'):
 def date_handler(obj):
     return obj.isoformat() if hasattr(obj, 'isoformat') else obj
 
+def JSON(x):
+    return json.dumps(x, indent = 4, separators=(',',': '), default = date_handler)
+
 def getJSON(x):
     if debug:
         time.sleep(0.5)  # simulate slow, remote server
     web.header('Content-type', 'application/json')
-    return json.dumps(x, indent = 4, separators=(',',': '), default = date_handler)
+    return JSON(x)
 
 #----------------------------------------------------------------------
 # get a 32 bit random number which is not 0
@@ -222,7 +227,7 @@ class list(Get):
         cur.execute('''SELECT game_id, games.user_id, game_title, game_lastsaved, game_created, user_username
                         FROM games INNER JOIN users ON users.user_id = games.user_id
                         WHERE (%(user_id)s < 0 OR games.user_id = %(user_id)s) AND game_title LIKE %(search)s
-                        ORDER BY game_lastsaved, game_created DESC
+                        ORDER BY game_lastsaved DESC, game_created DESC
                         LIMIT %(length)s OFFSET %(offset)s'''
                     , data)
         return { 'count': cur.rowcount, 'games': cur.fetchall() }
@@ -252,6 +257,20 @@ class source(Get):
         raise web.HTTPError('404 Game not found')
 
 #----------------------------------------------------------------------
+# /api/gameid
+
+class gameid(Get):
+    @checked({
+        'user_id': int,
+        'name': str
+        })
+    def handleGet(self, db, cur, data):
+        cur.execute('''SELECT game_id FROM games WHERE game_title = %(name)s AND user_id = %(user_id)s''', data)
+        if cur.rowcount != 1:
+            raise web.HTTPError('404 Game not found')
+        return cur.fetchone()
+
+#----------------------------------------------------------------------
 # /api/create
 
 class create(Post):
@@ -262,13 +281,31 @@ class create(Post):
         'source': str
         }, True)
     def handlePost(self, db, cur, data):
+        cur.execute('''SELECT game_id FROM games WHERE game_title = %(name)s AND user_id = %(user_id)s''', data)
+        if cur.rowcount != 0:
+            raise web.HTTPError('401 Game name already exists')
         cur.execute('''INSERT INTO games (user_id, game_created, game_lastsaved, game_source, game_title)
                         VALUES (%(user_id)s, NOW(), NOW(), %(source)s, %(name)s)''' , data)
         return { 'created': cur.rowcount }
 
 #----------------------------------------------------------------------
+# /api/rename
+
+class rename(Post):
+    @checked({
+        'user_id': int,
+        'user_session': int,
+        'game_id': int,
+        'name': str
+        }, True)
+    def handlePost(self, db, cur, data):
+        cur.execute('''UPDATE games SET game_lastsaved = NOW(), game_title = %(name)s
+                        WHERE game_id = %(game_id)s AND user_id = %(user_id)s''' , data)
+        return { 'renamed': cur.rowcount }
+
+#----------------------------------------------------------------------
 # /api/save
-# TODO (chs): require session to save game
+# DONE (chs): require session to save game
 
 class save(Post):
     @checked({
@@ -279,7 +316,7 @@ class save(Post):
         'name': str
         }, True)
     def handlePost(self, db, cur, data):
-        cur.execute('''UPDATE games SET user_id = %(user_id)s, game_lastsaved = NOW(), game_source = %(source)s, game_title = %(name)s
+        cur.execute('''UPDATE games SET game_lastsaved = NOW(), game_source = %(source)s, game_title = %(name)s
                         WHERE game_id = %(game_id)s AND user_id = %(user_id)s''' , data)
         return { 'saved': cur.rowcount }
 
@@ -345,6 +382,7 @@ class login(Post):
         'password': str
         })
     def handlePost(self, db, cur, data):
+        pprint.pprint(data)
         result = {}
         data['session'] = getRandomInt()
         cur.execute('''UPDATE users SET user_session = %(session)s WHERE user_email = %(email)s AND user_password=%(password)s''', data)
@@ -384,7 +422,7 @@ class endSession(Get):
     def handleGet(self, db, cur, data):
         cur.execute('''UPDATE users SET user_session = NULL WHERE user_id = %(user_id)s AND user_session = %(user_session)s''', data)
         if cur.rowcount != 1:
-            raise web.HTTPError('404 Session not found')
+            raise web.HTTPError('401 Error terminating session')
         return { 'status': 'ok' }
 
 #----------------------------------------------------------------------

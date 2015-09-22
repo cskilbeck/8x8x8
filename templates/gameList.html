@@ -21,7 +21,7 @@
                     </tr>
                 </thead>
                 <tbody id='results' ng-repeat='g in games'>
-                    <tr data-toggle='collapse' data-target='#row{{$index}}' class='clickable' id='headerRow{{$index}}' aria-expandable='true'>
+                    <tr data-toggle='collapse' data-target='#row{{$index}}' class='clickable' id='headerRow{{$index}}' aria-expandable='true' ng-click='yoink($index, g.game_id)'>
                         <td>{{g.game_title}}</td>
                         <td>{{g.user_username}}</td>
                         <td>{{timer(g.game_lastsaved)}}</td>
@@ -32,7 +32,7 @@
                     </tr>
                     <tr class='hid'>
                         <td colspan='5'>
-                            <div class='accordion-body collapse tableContainer' id='row{{$index}}' row='#headerRow{{$index}}' collapsible aria-expanded='false' style>
+                            <div class='accordion-body collapse tableContainer {{expanded(g.game_id) ? "in" : ""}}' id='row{{$index}}' row='#headerRow{{$index}}' collapsible aria-expanded='{{expanded(g.game_id)}}' style>
                                 <table class='table inner'>
                                     <tbody>
                                         <tr>
@@ -40,6 +40,7 @@
                                                 <a class='btn btn-xs btn-primary' href='/view/{{g.game_id}}'>View &nbsp;<i class='glyphicon glyphicon-info-sign'></i></a>&nbsp;
                                                 <button class='btn btn-xs btn-success' ng-click='playIt(g.game_id)'>Play &nbsp;<i class='glyphicon glyphicon-play'></i></button>&nbsp;
                                                 <span ng-show='user_id===g.user_id'>
+                                                    <a class='btn btn-xs btn-warning' ng-click='rename(g.game_id, g.game_title)'>Rename &nbsp;<i class='glyphicon glyphicon-info-sign'></i></a>&nbsp;
                                                     <a class='btn btn-xs btn-info' href='/edit/{{g.game_id}}'>Edit &nbsp;<i class='glyphicon glyphicon-edit'></i></a>&nbsp;
                                                     <button class='btn btn-xs btn-danger' ng-click='deleteIt(g.game_id, g.game_title)'>Delete &nbsp;<i class='glyphicon glyphicon-trash'></i></button>
                                                 </span>
