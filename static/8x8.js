@@ -144,10 +144,10 @@
             for(x = xm2; x < CW; x += xm) {
                 context.fillStyle = colors[screen[i++] & 15];
                 context.globalAlpha = 0.8;
-                ellipse(context, x, y, xm2 - 1, ym2 - 1, 1.5);
+                ellipse(context, x, y, xm2 - 1, ym2 - 1, 1.75);
                 context.fill();
                 context.globalAlpha = 1.0;
-                ellipse(context, x, y, xm2 - 2, ym2 - 2, 1.5);
+                ellipse(context, x, y, xm2 - 2, ym2 - 2, 1.75);
                 context.fill();
             }
         }

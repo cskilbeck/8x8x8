@@ -2,8 +2,8 @@
 
 var ship = {
         x: 0,
-        y: 6,
-        color: 1,
+        y: 14,
+        color: 'red',
         glow: 0,
         flash: 0,
         speed: 0.25
@@ -46,7 +46,7 @@ function update() {
 function movePlayer() {
     ship.x += (held('left') ? -ship.speed : 0) + (held('right') ? ship.speed : 0);
     if(ship.x < 0) { ship.x = 0; }
-    if(ship.x > 6) { ship.x = 6; }
+    if(ship.x > 14) { ship.x = 14; }
 }
 
 function moveDots() {
@@ -54,13 +54,13 @@ function moveDots() {
     if(time === 0) {
         for(i = 0; i < dots.length; ++i) {
             dots[i].y += 1;
-            if(dots[i].y > 7)
+            if(dots[i].y > 15)
             {
                 dots.pop();
             }
         }
         if((ticks % 5) === 0) {
-            dots.unshift({ x: (Math.random() * 8) >>> 0, y: 0, c: Math.random() > 0.8 ? 6 : 4 });
+            dots.unshift({ x: (Math.random() * 16) >>> 0, y: 0, c: Math.random() > 0.8 ? 'yellow' : 'blue' });
         }
     }
 }
@@ -73,8 +73,8 @@ function checkCollision() {
         i = dots[dots.length - 1];
         dx = i.x >>> 0;
         px = ship.x >>> 0;
-        if(dx >= px && dx < px + 2 && i.y >= 6) {
-            if(i.c === 4) {
+        if(dx >= px && dx < px + 2 && i.y >= 14) {
+            if(i.c === 'blue') {
                 ship.flash = 30;
                 setState(dead);
             }
@@ -84,7 +84,7 @@ function checkCollision() {
                 dots.pop();
                 ++score;
                 ship.glow = 10;
-                ship.color = 2;
+                ship.color = 'green';
             }
         }
     }
@@ -93,13 +93,13 @@ function checkCollision() {
 function drawScore() {
     var i;
     for(i=0; i<score; ++i) {
-        set(i, 7, 5);
+        set(i, 15, 'purple');
     }
 }
 
 function drawPlayer() {
     var dx = ship.x >>> 0;
-    if(--ship.glow === 0) { ship.color = 1; }
+    if(--ship.glow === 0) { ship.color = 'red'; }
     if(ship.flash === 0 || --ship.flash / 4 % 1 !== 0) {
         set(dx, ship.y, ship.color);
         set(dx + 1, ship.y, ship.color);
@@ -111,7 +111,7 @@ function drawPlayer() {
 function drawDots() {
     var i;
     for(i = 0; i < dots.length; ++i) {
-        if(get(dots[i].x, dots[i].y) !== 5) {
+        if(getColor(dots[i].x, dots[i].y) !== 'red') {
             set(dots[i].x, dots[i].y, dots[i].c);
         }
     }

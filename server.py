@@ -286,7 +286,7 @@ class create(Post):
             raise web.HTTPError('401 Game name already exists')
         cur.execute('''INSERT INTO games (user_id, game_created, game_lastsaved, game_source, game_title)
                         VALUES (%(user_id)s, NOW(), NOW(), %(source)s, %(name)s)''' , data)
-        return { 'created': cur.rowcount }
+        return { 'created': cur.rowcount, 'game_id': cur.lastrowid }
 
 #----------------------------------------------------------------------
 # /api/rename

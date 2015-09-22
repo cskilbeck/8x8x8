@@ -1,7 +1,7 @@
 var ship, bullet, invaders, dead;
 
 reset();
-    
+
 function draw(obj) {
     var x, y, s = 0;
     if(obj !== null) {
@@ -15,9 +15,9 @@ function draw(obj) {
 
 function reset() {
     invaders = [];
-    ship = { x: 3, y: 7, color: [3,7,3], width: 3, height: 1 };
+    ship = { x: 3, y: 15, color: ['darkgreen','lightgreen','darkgreen'], width: 3, height: 1 };
     dead = 0;
-    bullet = { x: 0, y: 0, width: 1, height: 1, color: [1], live: false };
+    bullet = { x: 0, y: 0, width: 1, height: 1, color: ['red'], live: false };
 }
 
 function pointIn(p, o) {
@@ -27,7 +27,7 @@ function pointIn(p, o) {
 }
 
 function launchInvader() {
-    invaders.push({ x: -1, y: 0, width: 3, height: 1, color: [4,6,4], xvel: 0.2, yvel: 0 })
+    invaders.push({ x: -1, y: 0, width: 3, height: 1, color: ['lightblue','white','lightblue'], xvel: 0.2, yvel: 0 });
 }
 
 function resetBullet() {
@@ -39,8 +39,8 @@ function resetBullet() {
 }
 
 function updateShip() {
-    var i;
-    var xv = 0;
+    var i,
+        xv = 0;
     if(held('left')) {
         xv -= 0.2;
     }
@@ -51,8 +51,8 @@ function updateShip() {
     if(ship.x < -1) {
         ship.x = -1;
     }
-    if(ship.x >= 6) {
-        ship.x = 6;
+    if(ship.x >= 14) {
+        ship.x = 14;
     }
 }
 
@@ -73,9 +73,9 @@ function updateInvaders() {
     for(i=0; i<invaders.length; ++i) {
         v = invaders[i];
         v.x += v.xvel;
-        if(v.x < -1 || v.x >= 7) {
+        if(v.x < -1 || v.x >= 15) {
             v.y += 1;
-            if(v.y >= 7) {
+            if(v.y >= 15) {
                 dead = 50;
             }
             v.xvel = -v.xvel;
@@ -97,8 +97,10 @@ function checkBullet() {
     if(bullet.live && get(bullet.x, bullet.y) !== 0) {
         for(i=0; i<invaders.length; ++i) {
             v = invaders[i];
-            if(Math.abs((v.y|0) - (bullet.y|0)) < 2) {
-                v.color = [3,7,3];
+            if(Math.abs((v.y|0) - (bullet.y|0)) < 1) {
+                v.x -= 1;
+                v.width = 5;
+                v.color = ['orange', 'yellow', 'white', 'yellow', 'orange'];
                 draw(v);
                 invaders.splice(i,1);
                 bullet.live = false;

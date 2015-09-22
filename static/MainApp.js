@@ -17,12 +17,15 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      make the search text work (timeout on change)
 //      quick search buttons: my games, top games, most played, recently added, recently changed
 //      track status of 'row expanded' by game_id and persist it
+//      highlight color of expanded rows is lost on refresh
 //
 // - user registration/login/forgot password
 //      user profile modal dialog to change username\email\password
 //      bcrypt password on client before transmission
 //      permission bits
 //      proper session security
+//
+// - editor
 //
 //////////////////////////////////////////////////////////////////////
 // \ forking

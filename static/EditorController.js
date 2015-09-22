@@ -224,8 +224,8 @@
                             source: editor.getValue()
                         };
                         ajax.post('/api/create', data, 'Creating ' + data.name, 'Created ' + data.name)
-                        .then(function() {
-
+                        .then(function(result) {
+                            game_id = result.game_id;
                         }, function(xhr) {
                             if(xhr.status === 401) {
                                 dialog.choose('Game name already used',
@@ -236,7 +236,7 @@
                                     ajax.get('/api/gameid', { user_id: user.id(), name: data.name })
                                     .then(function(result) {
                                         // TODO (chs): update the location bar to reflect the new game id
-                                        newGameID = game_id = result.game_id;
+                                        game_id = result.game_id;
                                         save();
                                     });
                                 });
