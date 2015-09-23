@@ -2,16 +2,16 @@
     <button type="button" class="close" ng-click='cancel()' aria-label="Close"><span aria-hidden="true">&times;</span></button>
     <h4 class="modal-title">{{options.banner}}</h4>
 </div>
-<div class="modal-body">
+<form name="inputForm">
+    <div class="modal-body">
     {{options.text}}
-    <form ng-show='options.inputRequired' name="inputForm">
         <label class='control-label' for='input'>{{options.inputLabel}}</label>
-        <div class='form-group'>
+        <div class='form-group' ng-show='options.inputRequired' >
             <input type="{{options.inputType}}" id='input' placeholder='{{options.inputPlaceholder}}' name='input' class='form-control' ng-model='options.inputText' />
         </div>
-    </form>
-</div>
-<div class="modal-footer">
-    <button class="btn {{options.okclass}}" type="button" ng-click="ok()">{{options.oktext}}</button>
-    <button class="btn {{options.cancelclass}}" type="button" ng-click="cancel()">{{options.canceltext}}</button>
-</div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn {{options.okclass}}" type="submit" ng-click="ok()">{{options.oktext}}</button>
+        <button class="btn {{options.cancelclass}}" type="button" ng-click="cancel()">{{options.canceltext}}</button>
+    </div>
+</form>

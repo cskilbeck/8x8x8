@@ -3,13 +3,28 @@
 var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']);
 
 //////////////////////////////////////////////////////////////////////
-// - tetris
+// - voting/rating/comments
+// - home page
+// - fix the get/set APIs for numbers/strings
+// - ask if they want to save when quitting the editor if changes are unsaved
+// - work out how to run it from [azure|aws] on Debian with:
+//      mod_wsgi for REST api
+//      apache for static files
+//      database on another machine
 // - standalone player
 // - share button
 // - register 256pixels.net
-// - voting/rating/comments
 // - telemetry/analytics
-// - ask if they want to save when quitting the editor if changes are unsaved
+//
+// - user registration/login/forgot password
+//      user profile modal dialog to change username\email\password
+//      bcrypt password on client before transmission
+//      permission bits
+//      proper session security
+//
+// - tutorials
+//      tetris
+//      sprites collision
 //
 // - game list
 //      ? Make a game private/public
@@ -18,12 +33,6 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      quick search buttons: my games, top games, most played, recently added, recently changed
 //      track status of 'row expanded' by game_id and persist it
 //      highlight color of expanded rows is lost on refresh
-//
-// - user registration/login/forgot password
-//      user profile modal dialog to change username\email\password
-//      bcrypt password on client before transmission
-//      permission bits
-//      proper session security
 //
 // - editor
 //

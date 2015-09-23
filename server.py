@@ -382,7 +382,6 @@ class login(Post):
         'password': str
         })
     def handlePost(self, db, cur, data):
-        pprint.pprint(data)
         result = {}
         data['session'] = getRandomInt()
         cur.execute('''UPDATE users SET user_session = %(session)s WHERE user_email = %(email)s AND user_password=%(password)s''', data)

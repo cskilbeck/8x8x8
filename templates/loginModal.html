@@ -2,8 +2,8 @@
     <button type="button" class="close" ng-click="cancel()" aria-label="Close"><span aria-hidden="true">&times;</span></button>
     <h4 class="modal-title">Sign in</h4>
 </div>
-<div class="modal-body">
     <form name="loginForm" ng-submit='handleLogin()' novalidate>
+    <div class="modal-body">
         <div class='form-group' ng-class="{'has-error': loginForm.email.$invalid && !loginForm.email.$pristine }">
             <label for='email'>Email</label>
             <input type='email' name="email" class='form-control' ng-model='user.email' required />
@@ -20,10 +20,10 @@
                 <button name='register' type='button' class='btn btn-sm btn-danger'>Reset it</button>
             </div>
         </div>
-    </form>
-</div>
-<div class="modal-footer">
-    <button type="button" class="btn btn-success pull-left" ng-click="showRegistration()">New user? Register</button>
-    <button class="btn btn-primary" type="button" ng-click="ok()" ng-disabled="loginForm.$invalid">OK</button>
-    <button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>
-</div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-success pull-left" ng-click="showRegistration()">New user? Register</button>
+        <button class="btn btn-primary" type="submit" ng-click="ok()" ng-disabled="loginForm.$invalid">OK</button>
+        <button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>
+    </div>
+</form>

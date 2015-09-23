@@ -13,15 +13,15 @@
             <table class='table outer'>
                 <thead class='bg-info'>
                     <tr>
-                        <th width=15%>Game</th>
-                        <th width=35%>User</th>
+                        <th width=25%>Game</th>
+                        <th width=25%>User</th>
                         <th width=15%>Modified</th>
                         <th width=15%>Created</th>
                         <th width=20%>Rating</th>
                     </tr>
                 </thead>
                 <tbody id='results' ng-repeat='g in games'>
-                    <tr data-toggle='collapse' data-target='#row{{$index}}' class='clickable' id='headerRow{{$index}}' aria-expandable='true' ng-click='yoink($index, g.game_id)'>
+                    <tr data-toggle='collapse' data-target='#row{{$index}}' class='clickable' id='headerRow{{$index}}' aria-expandable='true' ng-click='yoink($index, g.game_id)' aria-expanded='{{expanded(g.game_id)}}'>
                         <td>{{g.game_title}}</td>
                         <td>{{g.user_username}}</td>
                         <td>{{timer(g.game_lastsaved)}}</td>

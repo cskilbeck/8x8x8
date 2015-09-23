@@ -12,6 +12,8 @@
         $scope.games = [];
         $scope.user_id = user.id();
 
+        $scope.$emit('pane:loaded', 'games');
+
         function getGames(force) {
             games.get(force).then(function(gameList) {
                 $scope.games = gameList;
@@ -44,7 +46,6 @@
             else {
                 expanded[gameID] = true;
             }
-            console.log(expanded);
         };
 
         $scope.expanded = function(id) {
@@ -65,7 +66,7 @@
         };
 
         $scope.deleteIt = function(id, name) {
-            dialog.choose("Delete " + name + "!?", "Do you really want to delete " + name + "? This action cannot be undone", "Yes, delete it permanently", "No", 'btn-danger', 'btn-default')
+            dialog.choose("Delete " + name + "!?", "Do you really want to PERMANENTLY delete " + name + "? This action cannot be undone", "Yes, delete it", "No", 'btn-danger', 'btn-default')
             .then(function() {
                 games.delete(id).then(getGames);
             });

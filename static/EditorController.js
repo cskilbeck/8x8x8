@@ -30,6 +30,8 @@
 
         $scope.readonly = readonly;
 
+        $scope.$emit('pane:loaded', 'editor');
+
         window.focusEditor = function() {
             focus();
             if(editor) {
@@ -187,6 +189,10 @@
         editor.on('input', function() {
         });
 
+        $("#editor").click(function(e) {
+            focusEditor();
+        });
+
         $scope.$on("$destroy", function(e) {
             // // OK: true
             // // Cancel: false
@@ -210,7 +216,7 @@
             editor.setReadOnly(!enable || readonly);
         }
 
-        // TODO (chs): require session to save game
+        // DONE (chs): require session to save game
 
         $scope.saveIt = function() {
             var data;
@@ -226,6 +232,8 @@
                         ajax.post('/api/create', data, 'Creating ' + data.name, 'Created ' + data.name)
                         .then(function(result) {
                             game_id = result.game_id;
+                            // $location.path('/edit/' + game_id).replace();
+                            // $scope.$apply();
                         }, function(xhr) {
                             if(xhr.status === 401) {
                                 dialog.choose('Game name already used',
@@ -238,6 +246,8 @@
                                         // TODO (chs): update the location bar to reflect the new game id
                                         game_id = result.game_id;
                                         save();
+                                        // $location.path('/edit/' + game_id).replace();
+                                        // $scope.$apply();
                                     });
                                 });
                             }
@@ -260,6 +270,7 @@
         };
 
         $scope.runIt = function() {
+            $scope.$emit('status', '');
             $scope.$emit('play', editor.getValue());
         };
 

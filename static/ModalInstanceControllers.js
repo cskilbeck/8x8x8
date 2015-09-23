@@ -95,9 +95,11 @@
 
         $scope.options = options;
 
-        // TODO (chs): make input field focus on dialog show work!?
-        $timeout(function() {
-            $('#input').focus();
+        // DONE (chs): make input field focus on dialog show work!? [$modal was focusing element 0 in a requestAnimationFrame after the animation]
+        $modalInstance.opened.then(function() {
+            $timeout(function() {
+                $('#input').focus();
+            }, 350);
         });
 
         $scope.ok = function() {

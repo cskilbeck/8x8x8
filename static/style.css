@@ -1,6 +1,14 @@
-html, body {
+html {
     margin: 0;
-    min-width: 740px;
+    min-width: 768px;
+}
+body {
+    margin: 0;
+    min-width: 768px;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
 }
 
 #gameFrame {
@@ -43,6 +51,11 @@ body .modal .modal-dialog {
 
 .masked {
     display: none;
+}
+
+.bigga {
+    min-width: 768px;
+    overflow-x: hidden;
 }
 
 .toolbar {
@@ -211,7 +224,7 @@ pre {
 
 .grid_body.grid_row {
     top: 50px;
-    bottom: 50px;
+    bottom: 40px;
 }
 
 .grid_helpbody.grid_row {
@@ -228,7 +241,7 @@ pre {
     border-top: 1px solid #E0E0E0;
 }
 .grid_footer.grid_row {
-    height: 50px;
+    height: 40px;
     bottom: 0;
     border-top: 1px solid #E0E0E0;
     padding-top: 10px;
@@ -263,6 +276,7 @@ pre {
     display: inline;
 }
 
-.navbar-80 {
-    margin-right: 25px;
+
+.navbar-form.navbar-right.nomargin {
+    margin: 0;
 }

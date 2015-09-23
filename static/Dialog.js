@@ -4,6 +4,7 @@ function($rootScope, $modal) {
 
     function showModal(options) {
         var q = Q.defer();
+
         $modal.open({
             animation: true,
             templateUrl: 'dialogModal.html',

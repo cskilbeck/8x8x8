@@ -22,6 +22,26 @@ function($scope, $modal, user, ajax) {
     $scope.usernameMessage = "";
     $scope.signInClass = 'glyphicon glyphicon-log-in';
 
+    function clearNavBar() {
+        $('.nav.navbar-nav > li').removeClass('active');
+    }
+
+    // $('.nav.navbar-nav > li').on('click', function(e) {
+    //     clearNavbar();
+    //     $(this).addClass('active');
+    // });
+
+    $('#homelink').on('click', function(e) {
+        clearNavBar();
+    });
+
+    $scope.$on('pane:loaded', function(msg, pane) {
+        clearNavBar();
+        $('#nav' + pane).addClass('active');
+    });
+
+    clearNavBar();
+
     $scope.$on('user:updated', function(msg, details) {
         if(details.user_id !== 0) {
             $scope.usernameMessage = 'Signed in as ' + details.user_username;
@@ -85,16 +105,19 @@ function($scope, $modal, user, ajax) {
     $scope.reportError = function(text) {
         $scope.isError = true;
         $scope.status = text;
+        $scope.$applyAsync();
     };
 
     $scope.reportStatus = function(text) {
         $scope.isError = false;
         $scope.status = text;
+        $scope.$applyAsync();
     };
 
     $scope.setInProgress = function(p) {
         $scope.networkBusy = p;
         $scope.networkIcon = p ? 'glyphicon-repeat' : 'glyphicon-ok';
+        $scope.$applyAsync();
     };
 
     user.refreshSession();

@@ -35,7 +35,6 @@ def get_scripts(block):
 # join the scripts together
 
 def join_scripts(scripts, base_url):
-    print str(len(scripts)) + " scripts:"
     files = []
     for scriptname in scripts:
         url = scriptname
@@ -43,7 +42,6 @@ def join_scripts(scripts, base_url):
         if scriptname[0:4].lower() != 'http' and scriptname[0:2] != '//':
             ctx = None
             url = urlparse.urljoin(base_url, scriptname)
-        print url
         files.append(urllib2.urlopen(url, context = ctx).read())
     return ';'.join(files)
 
@@ -52,8 +50,7 @@ def join_scripts(scripts, base_url):
 
 def minify_script(filename, output_filename):
     minifier = '"c:\Program Files (x86)\Microsoft\Microsoft Ajax Minifier\AjaxMinifier.exe"'
-    if subprocess.call('%(minifier)s %(filename)s -o %(output_filename)s' % locals()) != 0:
-        raise Exception("Error minifying " + filename)
+    subprocess.check_output('%(minifier)s %(filename)s -o %(output_filename)s' % locals())
 
 #-----------------------------------------------------------------------------------------------------------------------
 # save a file
@@ -77,7 +74,7 @@ try:
     source = join_scripts(scripts, url.scheme + "://" + url.netloc)
     save_file(source, name + '.js')
     minify_script(name + '.js', name + '.min.js')
-    save_file(html, os.path.split(url.geturl())[1])
+    print html
 
 except Exception, e:
     print str(e)

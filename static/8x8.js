@@ -81,7 +81,7 @@
             pink: 12,
             orange: 13,
             yellow: 14,
-            white: 15  
+            white: 15
         },
         colorNames = [
             "black",

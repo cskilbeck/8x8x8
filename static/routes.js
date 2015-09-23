@@ -5,8 +5,8 @@
     function($routeProvider, $locationProvider) {
 
         $routeProvider.when('/', {
-            templateUrl: 'gameList.html',
-            controller: 'GameListController'
+            templateUrl: 'home.html',
+            controller: 'HomeController'
         }).when('/list', {
             templateUrl: 'gameList.html',
             controller: 'GameListController'
@@ -19,7 +19,8 @@
             controller: 'EditorController',
             resolve: { readonly: function() { return true; } }
         }).when('/help', {
-            templateUrl: 'help.html'
+            templateUrl: 'help.html',
+            controller: 'HelpController'
         }).otherwise({
             redirectTo: '/'
         });

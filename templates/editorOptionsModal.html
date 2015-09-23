@@ -19,7 +19,7 @@
             <div class='col-xs-6'>
                 <div class='checkbox'>
                     <label>
-                        <input type='checkbox' ng-model='options.options.enableLiveAutocompletion' />Auto complete suggestions
+                        <input type='checkbox' ng-model='options.options.enableLiveAutocompletion' />Auto complete
                     </label>
                 </div>
             </div>
@@ -64,16 +64,23 @@
             </div>
         </div>
         <div class='row'>
-            <div class='col-xs-4'>
+            <div class='col-xs-6'>
                 <div class='checkbox'>
                     <label>
                         <input type='checkbox' ng-model='options.options.showPrintMargin' />Print margin
                     </label>
                 </div>
             </div>
+            <div class='col-xs-6'>
+                <div class='checkbox'>
+                    <label>
+                        <input type='checkbox' ng-model='options.options.showGutter' />Show gutter
+                    </label>
+                </div>
+            </div>
         </div>
         <div class='row'>
-            <div ng-show='options.options.showPrintMargin' class='col-xs-3'>
+            <div ng-show='options.options.showPrintMargin' class='col-xs-4'>
                 <input type="number" ng-model='options.options.printMargin' name='printMargin' min="30" max="500" class="form-control" placeholder="30-500" />
             </div>
         </div>
