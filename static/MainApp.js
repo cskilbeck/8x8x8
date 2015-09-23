@@ -3,18 +3,22 @@
 var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']);
 
 //////////////////////////////////////////////////////////////////////
+// - instructions
 // - voting/rating/comments
 // - home page
 // - fix the get/set APIs for numbers/strings
 // - ask if they want to save when quitting the editor if changes are unsaved
+//
 // - work out how to run it from [azure|aws] on Debian with:
 //      mod_wsgi for REST api
 //      apache for static files
 //      database on another machine
-// - standalone player
 // - share button
 // - register 256pixels.net
 // - telemetry/analytics
+//
+// - editor
+//      fix location/url when it's /edit/new and they've saved/created it (should be /edit/game_id)
 //
 // - user registration/login/forgot password
 //      user profile modal dialog to change username\email\password
@@ -69,3 +73,4 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 // + differentiate between my games and others
 // + make it 16x16
 // + make it 16 colours
+// + standalone player

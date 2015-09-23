@@ -5,6 +5,12 @@
         <meta http-equiv='X-UA-Compatible' content='IE=edge'>
         <meta name='viewport' content='width=device-width, initial-scale=1'>
 
+        <meta property='og:url' content='http://256pixels.net'>
+        <meta property='og:type' content='website'>
+        <meta property='og:title' content='256 Pixels'>
+        <meta property='og:description' content='Making games with just 256 pixels'>
+        <meta property='og:image' content='http://256pixels.net/static/brand.png'>
+
         <title>8x8x8</title>
 
         <link rel='stylesheet' href='http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.css'>
@@ -55,6 +61,24 @@
         <script src='/static/GameListController.js'></script>
         <script src='/static/EditorController.js'></script>
         <script src='/static/ModalInstanceControllers.js'></script>
+
+        <script>
+          window.fbAsyncInit = function() {
+            FB.init({
+              appId      : '1709552502606692',
+              xfbml      : true,
+              version    : 'v2.4'
+            });
+          };
+
+          (function(d, s, id){
+             var js, fjs = d.getElementsByTagName(s)[0];
+             if (d.getElementById(id)) {return;}
+             js = d.createElement(s); js.id = id;
+             js.src = "//connect.facebook.net/en_US/sdk.js";
+             fjs.parentNode.insertBefore(js, fjs);
+           }(document, 'script', 'facebook-jssdk'));
+        </script>
 
         <!--ENDSCRIPTBLOCK(all)-->
 

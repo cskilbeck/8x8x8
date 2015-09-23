@@ -39,6 +39,7 @@
                                             <td colspan='5' class='butter'>
                                                 <a class='btn btn-xs btn-primary' href='/view/{{g.game_id}}'>View &nbsp;<i class='glyphicon glyphicon-info-sign'></i></a>&nbsp;
                                                 <button class='btn btn-xs btn-success' ng-click='playIt(g.game_id)'>Play &nbsp;<i class='glyphicon glyphicon-play'></i></button>&nbsp;
+                                                <button class="btn btn-xs btn-default" ng-click='shareIt(g.game_id, g.game_title)'>Share &nbsp;<i class='glyphicon glyphicon-share'></i></button>&nbsp;
                                                 <span ng-show='user_id===g.user_id'>
                                                     <a class='btn btn-xs btn-warning' ng-click='rename(g.game_id, g.game_title)'>Rename &nbsp;<i class='glyphicon glyphicon-info-sign'></i></a>&nbsp;
                                                     <a class='btn btn-xs btn-info' href='/edit/{{g.game_id}}'>Edit &nbsp;<i class='glyphicon glyphicon-edit'></i></a>&nbsp;

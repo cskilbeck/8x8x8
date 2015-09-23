@@ -47,6 +47,7 @@ urls = (
     '/api/endSession', 'endSession',
 
     '/favicon.ico', 'favicon',
+    '/play/(.*)', 'play',
     '/(.*)\.html', 'subPage',
     '/(.*)', 'index'
     )
@@ -449,6 +450,21 @@ class subPage:
             return f.read()
         except:
             raise web.HTTPError('404 File %s.html not found' % (path,))
+
+#----------------------------------------------------------------------
+# play
+
+class play:
+    def GET(self, gameid):
+        try:
+            with closing(opendb()) as db:
+                with closing(db.cursor()) as cur:
+                    cur.execute('''SELECT game_source, game_title FROM games WHERE game_id = %(gameid)s''', locals())
+                    row = cur.fetchone()
+                    return render.play(row['game_source'], row['game_title'])
+        except Exception, e:
+            pprint.pprint(e)
+            raise web.HTTPError('404 Game not found')
 
 #----------------------------------------------------------------------
 

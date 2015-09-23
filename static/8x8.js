@@ -299,6 +299,7 @@
         exception = true;
     };
 
+    // for running it inside frame.html when the source might not have been saved
     if(typeof parent.GameSource !== 'undefined') {
         var script = document.createElement('script');
         var body = document.getElementsByTagName('body')[0];

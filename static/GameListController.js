@@ -29,6 +29,29 @@
             return moment(t).fromNow();
         };
 
+        function fbShare(url, title, descr) {
+            descr = encodeURIComponent(descr);
+            window.open(
+                'https://www.facebook.com/dialog/share?' +
+                    'app_id=224932627603132' +
+                    '&display=popup' +
+                    '&name=' + title +
+                    '&caption=' + descr +
+                    '&description=' + title +
+                    '&href=' + encodeURIComponent(url) +
+                    '&redirect_uri=' + encodeURIComponent('http://make-the-words.com/sharethanks.html'),
+                'Share' + title + ' on Facebook',
+                'toolbar = 0' +
+                    ', location = 0' +
+                    ', personalbar = 0' +
+                    ', status = 0');
+        }
+
+        $scope.shareIt = function(id, name) {
+            console.log("!");
+            fbShare('http://256pixels.net/play/' + id, name, 'I made a game using just 256 pixels! Check it out.', 600, 600);
+        };
+
         $scope.$on('user:updated', function(msg, details) {
             $scope.user_id = user.id();
             getGames();
