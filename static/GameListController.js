@@ -30,21 +30,12 @@
         };
 
         function fbShare(url, title, descr) {
-            descr = encodeURIComponent(descr);
-            window.open(
-                'https://www.facebook.com/dialog/share?' +
-                    'app_id=224932627603132' +
-                    '&display=popup' +
-                    '&name=' + title +
-                    '&caption=' + descr +
-                    '&description=' + title +
-                    '&href=' + encodeURIComponent(url) +
-                    '&redirect_uri=' + encodeURIComponent('http://make-the-words.com/sharethanks.html'),
-                'Share' + title + ' on Facebook',
-                'toolbar = 0' +
-                    ', location = 0' +
-                    ', personalbar = 0' +
-                    ', status = 0');
+            FB.ui({
+              method: 'share',
+              href: url,
+            }, function(response){
+
+            });
         }
 
         $scope.shareIt = function(id, name) {

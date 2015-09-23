@@ -3,18 +3,21 @@
 var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']);
 
 //////////////////////////////////////////////////////////////////////
+// - share button
 // - instructions
 // - voting/rating/comments
 // - home page
-// - fix the get/set APIs for numbers/strings
+// - fix the get/set pixel/color APIs for numbers/strings
 // - ask if they want to save when quitting the editor if changes are unsaved
+// - put everything in the right folder (static/js, static/css, static/html, templates etc)
+// - preload the editor bits somehow
 //
-// - work out how to run it from [azure|aws] on Debian with:
+// - work out how to run it from [azure|aws|digitalocean] on Debian with:
 //      mod_wsgi for REST api
 //      apache for static files
 //      database on another machine
-// - share button
-// - register 256pixels.net
+//      http://256pixels.net
+//      compressed assets
 // - telemetry/analytics
 //
 // - editor
@@ -38,7 +41,8 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      track status of 'row expanded' by game_id and persist it
 //      highlight color of expanded rows is lost on refresh
 //
-// - editor
+// - api
+//      key() instead of pressed() - with N key buffer ( and keyreleased() )
 //
 //////////////////////////////////////////////////////////////////////
 // \ forking
@@ -74,3 +78,4 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 // + make it 16x16
 // + make it 16 colours
 // + standalone player
+// + register 256pixels.net
