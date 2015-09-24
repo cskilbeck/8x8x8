@@ -43,6 +43,10 @@
         canvas,
         editor,
         client,
+        keyPress = [],
+        keyRelease = [],
+        keyHeld = [ false, false, false, false, false ],
+        game_id,
         exception = false,
         keyCount = 0,
         lastkey,
@@ -101,9 +105,6 @@
             "yellow",
             "white"
         ],
-        keyPressed = [ false, false, false, false, false ],
-        keyHeld = [ false, false, false, false, false ],
-        keyReleased = [ false, false, false, false, false ],
         screen = [];
 
     function reportError(e) {
@@ -153,18 +154,6 @@
         }
     }
 
-    function getKey(str, arr) {
-        switch(str.toLowerCase()) {
-            case ' ': return arr[0];
-            case 'space' : return arr[0];
-            case 'left': return arr[1];
-            case 'up': return arr[2];
-            case 'right': return arr[3];
-            case 'down': return arr[4];
-            default: return false;
-        }
-    }
-
     function doSet(x, y, color) {
         x >>>= 0;
         y >>>= 0;
@@ -196,16 +185,44 @@
         }
     }
 
-    function doPressed(key) {
-        return getKey(key, keyPressed);
+    function keyCodeFromName(str) {
+        switch(str.toLowerCase()) {
+            case ' ': return 0;
+            case 'space' : return 0;
+            case 'left': return 1;
+            case 'up': return 2;
+            case 'right': return 3;
+            case 'down': return 4;
+            default: return -1;
+        }
+    }
+
+    function keyNameFromCode(code) {
+        if(code >= 0 && code <= 4) {
+            return ['space', 'left', 'up', 'right', 'down'][code];
+        }
+        else
+        {
+            return '?';
+        }
+    }
+
+    function getKey(code, arr) {
+        return (code >= 0 && code <= arr.length) ? arr[code] : false;
+    }
+
+    function doPressed() {
+        var k = keyPress.shift();
+        return k !== undefined ? keyNameFromCode(k) : false;
     }
 
     function doHeld(key) {
-        return getKey(key, keyHeld);
+        return getKey(keyCodeFromName(key), keyHeld);
     }
 
     function doReleased(key) {
-        return getKey(key, keyReleased);
+        var k = keyRelease.shift();
+        return k ? keyNameFromCode(k) : '';
     }
 
     function getKeyCode(key) {
@@ -238,7 +255,10 @@
             lastkey = e.keyCode;
             key = getKeyCode(e.keyCode);
             if(key !== null) {
-                keyPressed[key] = true;
+                if(keyPress.length >= 20) {
+                    keyPress.shift();
+                }
+                keyPress.push(key);
                 keyHeld[key] = true;
             }
         }
@@ -252,7 +272,10 @@
         var key = getKeyCode(e.keyCode);
         keyCount = lastkey = 0;
         if(key !== null) {
-            keyReleased[key] = true;
+            if(keyRelease.length >= 20) {
+                keyRelease.shift();
+            }
+            keyRelease.push(key);
             keyHeld[key] = false;
         }
     };
@@ -270,10 +293,6 @@
             }
         }
         draw();
-        for(i=0; i<5; ++i) {
-            keyPressed[i] = false;
-            keyReleased[i] = false;
-        }
         if(hasUpdate) {
             requestAnimationFrame(onFrame);
         }
@@ -286,13 +305,13 @@
     context = canvas.getContext('2d');
     CW = canvas.width;
     CH = canvas.height;
-    window.set = function(x, y, c) { return doSet(x, y, c); };
-    window.get = function(x, y) { return doGet(x, y); };
-    window.getColor = function(x, y) { return doGetColor(x, y); };
+    window.setpixel = function(x, y, c) { return doSet(x, y, c); };
+    window.getpixel = function(x, y) { return doGetColor(x, y); };
+    window.getpixeli = function(x, y) { return doGet(x, y); };
     window.clear = function(c) { return doClear(c); };
-    window.held = function(k) { return doHeld(k); };
-    window.pressed = function(k) { return doPressed(k); };
-    window.released = function(k) { return doReleased(k); };
+    window.keyheld = function(k) { return doHeld(k); };
+    window.keypress = function(k) { return doPressed(k); };
+    window.keyrelease = function(k) { return doReleased(k); };
 
     window.onerror = function(message, file, line, column) {
         reportErrorDirect(message, line, column);
@@ -300,21 +319,41 @@
     };
 
     // for running it inside frame.html when the source might not have been saved
-    if(typeof parent.GameSource !== 'undefined') {
+
+    window.takeScreenShow = function() {
+
+    };
+
+    window.init = function(details) {
         var script = document.createElement('script');
         var body = document.getElementsByTagName('body')[0];
+        var name = document.getElementById('gamename');
+        var desc = document.getElementById('gameinstructions');
+        var ssb = document.getElementById('screenShotButton');
         script.type = 'text/javascript';
-        script.innerHTML = parent.GameSource;
+        script.innerHTML = details.source;
+        name.innerHTML = details.name;
+        desc.innerHTML = details.instructions;
+        game_id = details.game_id;  // GLOBAL
         body.appendChild(script);
-    }
 
-    try {
-        client = (typeof ClientScript !== 'undefined') ? new ClientScript() : null;
-    }
-    catch(e) {
-        reportError(e);
-    }
+        try {
+            client = (typeof ClientScript !== 'undefined') ? new ClientScript() : null;
+        }
+        catch(e) {
+            reportError(e);
+        }
 
-    requestAnimationFrame(onFrame);
+        ssb.className = '';
+
+        window.takeScreenShot = function() {
+            parent.window.takeScreenShot(screen, game_id);
+        };
+
+        requestAnimationFrame(onFrame);
+    };
+
+    draw();
+    parent.window.setupFrame();
 
 }());

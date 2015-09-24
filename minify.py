@@ -63,18 +63,16 @@ def save_file(text, filename):
 # main
 
 try:
-    if len(sys.argv) != 2:
-        raise Exception('minify.py <url>')
-
+    host = sys.argv[1] if len(sys.argv) == 2 else 'http://localhost:8080'
     context = ssl._create_unverified_context()
-    url = urlparse.urlparse(sys.argv[1])
+    url = urlparse.urlparse(host)
     html = urllib2.urlopen(url.geturl(), context = context).read()
     name, block, html = get_scriptblock(html)
     scripts = get_scripts(block)
     source = join_scripts(scripts, url.scheme + "://" + url.netloc)
     save_file(source, name + '.js')
     minify_script(name + '.js', name + '.min.js')
-    print html
+    save_file(html, 'index.html')
 
 except Exception, e:
     print str(e)

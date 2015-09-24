@@ -16,9 +16,11 @@ CREATE TABLE `games`(
     user_id INT UNSIGNED NOT NULL,
     game_created DATETIME NOT NULL,
     game_lastsaved DATETIME NOT NULL,
-    game_source LONGBLOB,
+    game_screenshot BINARY(128),
     game_title VARCHAR(32),
     game_instructions VARCHAR(240),
+    game_framerate TINYINT UNSIGNED DEFAULT 0,
+    game_source TEXT,
     UNIQUE KEY game_name (game_title, user_id));
 
 CREATE TABLE `ratings`(

@@ -112,5 +112,32 @@
 
     }]);
 
+    mainApp.controller('GameSettingsModalInstanceController', ['$scope', '$modal', '$modalInstance', 'settings', '$timeout',
+    function($scope, $modal, $modalInstance, settings, $timeout) {
+
+        $scope.frameratenames = [
+            '60 - very fast!',
+            '30 - normal',
+            '20 - slow',
+            '15 - very slow',
+            '10 - glacial'
+        ];
+
+        $scope.settings = settings;
+
+        $scope.setFramerate = function(f) {
+            $scope.settings.framerate = f;
+        };
+
+        $scope.ok = function() {
+            $modalInstance.close($scope.settings);
+        };
+
+        $scope.cancel = function() {
+            $modalInstance.dismiss();
+        };
+
+    }]);
+
 })();
 

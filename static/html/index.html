@@ -9,12 +9,14 @@
         <meta property='og:type' content='website'>
         <meta property='og:title' content='256 Pixels'>
         <meta property='og:description' content='Making games with just 256 pixels'>
-        <meta property='og:image' content='http://256pixels.net/static/brand.png'>
+        <meta property='og:image' content='http://256pixels.net/static/img/brand.png'>
 
         <title>8x8x8</title>
 
+        <!--STYLEBLOCK(style)-->
         <link rel='stylesheet' href='http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.css'>
-        <link rel='stylesheet' href='/static/style.css'>
+        <link rel='stylesheet' href='/static/css/style.css'>
+        <!--ENDSTYLEBLOCK(style)-->
 
         <!--SCRIPTBLOCK(all)-->
 
@@ -41,29 +43,29 @@
         <script src='https://cdnjs.cloudflare.com/ajax/libs/stacktrace.js/0.6.4/stacktrace.js'></script>
 
         <!-- Q -->
-        <script src='/static/Q.js'></script>
+        <script src='/static/js/Q.js'></script>
 
         <!-- Google Analytics -->
-        <script src='/static/ga.js'></script>
+        <script src='/static/js/ga.js'></script>
 
         <!-- Facebook -->
-        <script src='/static/fb.js'></script>
+        <script src='/static/js/fb.js'></script>
 
         <!-- My stuff -->
-        <script src='/static/MainApp.js'></script>
-        <script src='/static/Cookie.js'></script>
-        <script src='/static/Ajax.js'></script>
-        <script src='/static/Dialog.js'></script>
-        <script src='/static/User.js'></script>
-        <script src='/static/Games.js'></script>
-        <script src='/static/Stateful.js'></script>
-        <script src='/static/Routes.js'></script>
-        <script src='/static/MainController.js'></script>
-        <script src='/static/HelpController.js'></script>
-        <script src='/static/HomeController.js'></script>
-        <script src='/static/GameListController.js'></script>
-        <script src='/static/EditorController.js'></script>
-        <script src='/static/ModalInstanceControllers.js'></script>
+        <script src='/static/js/MainApp.js'></script>
+        <script src='/static/js/Cookie.js'></script>
+        <script src='/static/js/Ajax.js'></script>
+        <script src='/static/js/Dialog.js'></script>
+        <script src='/static/js/User.js'></script>
+        <script src='/static/js/Games.js'></script>
+        <script src='/static/js/Stateful.js'></script>
+        <script src='/static/js/Routes.js'></script>
+        <script src='/static/js/MainController.js'></script>
+        <script src='/static/js/HelpController.js'></script>
+        <script src='/static/js/HomeController.js'></script>
+        <script src='/static/js/GameListController.js'></script>
+        <script src='/static/js/EditorController.js'></script>
+        <script src='/static/js/ModalInstanceControllers.js'></script>
 
         <!--ENDSCRIPTBLOCK(all)-->
 
@@ -76,7 +78,7 @@
                     <div class="navbar-header">
                         <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
                             <span class="sr-only">Toggle navigation</span>
-                            <span class="icon-bar"></span>  <!-- make a hamburger -->
+                            <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                         </button>
@@ -107,22 +109,17 @@
                 </div>
             </nav>
             <div class='container'>
-                 <!-- MIDDLE ROW -->
                 <div class="grid_body grid_row">
                     <div class="grid_left grid_col" id='mainPane'>
-                        <!-- MAIN PANE -->
                         <div ng-view>
                         </div>
                     </div>
-                    <!-- RIGHT PANEL : IFRAME HOLDER -->
                     <div class="grid_right grid_col">
                         <div class="content centered">
-                            <iframe id='gameFrame' sandbox='allow-scripts allow-same-origin' src='/static/frame.html'>
-                            </iframe>
+                            <iframe id='gameFrame' sandbox='allow-scripts allow-same-origin' src='/static/html/frame.html'></iframe>
                         </div>
                     </div>
                 </div>
-                <!-- BOTTOM ROW: FOOTER -->
                 <div class="grid_footer grid_row">
                     <div class="content">
                         <span><i id='spinner' ng-class='[ "glyphicon", networkIcon, { "gly-spin": networkBusy } ]'></i>&nbsp;</span>

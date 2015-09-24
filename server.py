@@ -1,4 +1,5 @@
 #----------------------------------------------------------------------
+# TODO (chs): screenshots!
 # TODO (chs): proper login/session thing
 # TODO (chs): bcrypt password
 # TODO (chs): parameter validation: min, max, minlength, maxlength, prepend, append, replace, enums?
@@ -10,6 +11,7 @@
 # DONE (chs): DRY the REST functions
 #----------------------------------------------------------------------
 
+import sys
 import types
 import web
 from contextlib import closing
@@ -24,7 +26,9 @@ import iso8601
 import unicodedata
 import struct
 import os
-import time;
+import time
+import png
+import StringIO
 
 #----------------------------------------------------------------------
 # globals
@@ -33,23 +37,26 @@ app = None
 render = web.template.render('templates/')
 
 urls = (
-    '/api/login', 'login',
-    '/api/register', 'register',
-    '/api/save', 'save',
-    '/api/rename', 'rename',
-    '/api/create', 'create',
-    '/api/source', 'source',
-    '/api/gameid', 'gameid',
-    '/api/count', 'count',
-    '/api/delete', 'delete',
-    '/api/list', 'list',
-    '/api/refreshSession', 'refreshSession',
-    '/api/endSession', 'endSession',
+    '/api/login', 'login',                      # user logging in
+    '/api/register', 'register',                # user registration
+    '/api/refreshSession', 'refreshSession',    # refresh a user session
+    '/api/endSession', 'endSession',            # log out
 
-    '/favicon.ico', 'favicon',
-    '/play/(.*)', 'play',
-    '/(.*)\.html', 'subPage',
-    '/(.*)', 'index'
+    '/api/create', 'create',                    # C creating a new game
+    '/api/source', 'source',                    # R get source, name, instructions of a game
+    '/api/details', 'details',                  # R get details of a game (name, instructions, screenshot)
+    '/api/count', 'count',                      # R search for # of games matching a search term
+    '/api/list', 'list',                        # R get paginated list of games
+    '/api/save', 'save',                        # U saving a game (name and source code)
+    '/api/rename', 'rename',                    # U renaming a game (name)
+    '/api/settings', 'settings',                # U update settings for a game
+    '/api/screenshot', 'screenshot',            # U upload screenshot of a game
+    '/api/delete', 'delete',                    # D delete a game
+
+    '/favicon.ico', 'favicon',                  # get the favicon
+    '/play/(.*)', 'play',                       # get details for play page
+    '/screen/(.*)', 'screen',                   # get screenshot
+    '/(.*)', 'index'                            # serve up a templated page
     )
 
 #----------------------------------------------------------------------
@@ -214,6 +221,12 @@ def checked(paramspec, validateSession = False):
     return wrapper
 
 #----------------------------------------------------------------------
+# make a search term SQLish
+
+def searchTerm(s):
+    return '%' + s.replace('*', '%').replace('.', '_') + '%'
+
+#----------------------------------------------------------------------
 # /api/list
 
 class list(Get):
@@ -224,10 +237,11 @@ class list(Get):
         'offset': { 'default': 0, 'min': 0 }
         })
     def handleGet(self, db, cur, data):
-        data['search'] = '%' + data['search'].replace('*', '%').replace('.', '_') + '%'
+        data['search'] = searchTerm(data['search'])
         cur.execute('''SELECT game_id, games.user_id, game_title, game_lastsaved, game_created, user_username
                         FROM games INNER JOIN users ON users.user_id = games.user_id
-                        WHERE (%(user_id)s < 0 OR games.user_id = %(user_id)s) AND game_title LIKE %(search)s
+                        WHERE (%(user_id)s < 0 OR games.user_id = %(user_id)s)
+                            AND game_title LIKE %(search)s
                         ORDER BY game_lastsaved DESC, game_created DESC
                         LIMIT %(length)s OFFSET %(offset)s'''
                     , data)
@@ -242,8 +256,11 @@ class count(Get):
         'search': ''
         })
     def handleGet(self, db, cur, data):
-        data['search'] = '%' + data['search'].replace('*', '%').replace('.', '_') + '%'
-        cur.execute('SELECT COUNT(*) AS count FROM games WHERE user_id = %(user_id)s AND game_title LIKE %(search)s', data)
+        data['search'] = searchTerm(data['search'])
+        cur.execute('''SELECT COUNT(*) AS count
+                        FROM games
+                        WHERE (%(user_id)s < 0 OR games.user_id = %(user_id)s)
+                            AND game_title LIKE %(search)s''', data)
         return cur.fetchone()
 
 #----------------------------------------------------------------------
@@ -252,7 +269,7 @@ class count(Get):
 class source(Get):
     @checked({ 'game_id': int })
     def handleGet(self, db, cur, data):
-        cur.execute('SELECT game_source, game_title FROM GAMES WHERE game_id=%(game_id)s', data)
+        cur.execute('SELECT game_source, game_title, game_instructions FROM GAMES WHERE game_id=%(game_id)s', data)
         if cur.rowcount == 1:
             return cur.fetchone()
         raise web.HTTPError('404 Game not found')
@@ -282,12 +299,29 @@ class create(Post):
         'source': str
         }, True)
     def handlePost(self, db, cur, data):
-        cur.execute('''SELECT game_id FROM games WHERE game_title = %(name)s AND user_id = %(user_id)s''', data)
+        cur.execute('''SELECT game_id FROM games
+                        WHERE game_title = %(name)s AND user_id = %(user_id)s''', data)
         if cur.rowcount != 0:
             raise web.HTTPError('401 Game name already exists')
         cur.execute('''INSERT INTO games (user_id, game_created, game_lastsaved, game_source, game_title)
                         VALUES (%(user_id)s, NOW(), NOW(), %(source)s, %(name)s)''' , data)
         return { 'created': cur.rowcount, 'game_id': cur.lastrowid }
+
+#----------------------------------------------------------------------
+# /api/settings
+
+class settings(Post):
+    @checked({
+        'user_id': int,
+        'user_session': int,
+        'game_id': int,
+        'framerate': 0,
+        'instructions': ''
+        }, True)
+    def handlePost(self, db, cur, data):
+        cur.execute('''UPDATE games SET game_framerate = %(framerate)s, game_instructions = %(instructions)s
+                        WHERE game_id = %(game_id)s AND user_id = %(user_id)s''', data)
+        return {'settings_saved': cur.rowcount }
 
 #----------------------------------------------------------------------
 # /api/rename
@@ -322,6 +356,21 @@ class save(Post):
         return { 'saved': cur.rowcount }
 
 #----------------------------------------------------------------------
+# /api/screenshot
+
+class screenshot(Post):
+    @checked({
+        'user_id': int,
+        'user_session': int,
+        'screen': str,
+        'game_id': int
+        }, True)
+    def handlePost(self, db, cur, data):
+        cur.execute('''UPDATE games SET game_screenshot = UNHEX(%(screen)s)
+                        WHERE game_id = %(game_id)s AND user_id = %(user_id)s''', data)
+        return {'posted': cur.rowcount }
+
+#----------------------------------------------------------------------
 # /api/delete
 
 # TODO (chs): check user_session!
@@ -333,7 +382,8 @@ class delete(Post):
         'game_id': int
         }, True)
     def handlePost(self, db, cur, data):
-        cur.execute('DELETE FROM games WHERE game_id = %(game_id)s AND user_id = %(user_id)s', data)
+        cur.execute('''DELETE FROM games
+                        WHERE game_id = %(game_id)s AND user_id = %(user_id)s''', data)
         if cur.rowcount == 0:
             raise web.HTTPError('404 Game not found')
         return { 'deleted': cur.rowcount }
@@ -430,26 +480,67 @@ class endSession(Get):
 
 class favicon:
     def GET(self):
-        f = open('static/favicon.ico', 'rb')
-        return f.read()
+        return open('static/favicon.ico', 'rb').read()
 
 #----------------------------------------------------------------------
 # /
 
 class index:
     def GET(self, path):
-        return render.index()
+        return open('static/html/index.html').read()
 
 #----------------------------------------------------------------------
-# /subPage.html - these are not templated!
+# getscreenshot
 
-class subPage:
-    def GET(self, path):
+palette = [ (0x00,0x00,0x00),
+            (0x00,0x80,0x00),
+            (0x00,0xFF,0x00),
+            (0x80,0xFF,0x80),
+            (0x80,0x00,0x00),
+            (0xFF,0x00,0x00),
+            (0xFF,0x80,0x80),
+            (0x00,0x00,0x80),
+            (0x00,0x00,0xFF),
+            (0x00,0xFF,0xFF),
+            (0x80,0x00,0x80),
+            (0xFF,0x00,0xF0),
+            (0xFF,0x80,0xF0),
+            (0xFF,0x80,0x00),
+            (0xFF,0xFF,0x00),
+            (0xFF,0xFF,0xFF) ]
+
+def dim(pixel, scale = 0.75):
+    return tuple([int(i * scale) for i in pixel])
+
+def makeScreenShot(str):
+    global palette
+    row, rows = [], []
+    for i in str:
+        byte = ord(i)
+        b1 = palette[(byte >> 4) & 0xf]
+        b2 = palette[byte & 0xf]
+        row.extend([b1, b1, b1, dim(b1), b2, b2, b2, dim(b2)])
+        if len(row) == 64:
+            rows.extend([row, row, row, [dim(pixel) for pixel in row]])
+            row = []
+    return png.from_array(rows, 'RGB')
+
+class screen:
+    def GET(self, gameid):
         try:
-            f = open('templates/' + path + '.html')
-            return f.read()
-        except:
-            raise web.HTTPError('404 File %s.html not found' % (path,))
+            with closing(opendb()) as db:
+                with closing(db.cursor()) as cur:
+                    cur.execute('''SELECT game_screenshot FROM games WHERE game_id = %(gameid)s''', locals())
+                    if cur.rowcount != 1:
+                        raise web.HTTPError('404 game not found')
+                    row = cur.fetchone()
+                    buf = StringIO.StringIO()
+                    makeScreenShot(row['game_screenshot']).save(buf)
+                    web.header('Content-type', 'image/png')
+                    return buf.getvalue()
+        except Exception, e:
+            pprint.pprint(e)
+            raise
 
 #----------------------------------------------------------------------
 # play

@@ -29,7 +29,7 @@ function ($rootScope, $modal, ajax, cookie) {
             if(details.user_id === 0) {
                 $modal.open({
                     animation: true,
-                    templateUrl: 'loginModal.html',
+                    templateUrl: '/static/html/loginModal.html',
                     controller: 'LoginModalInstanceController',
                     resolve: {
                         user: function () {

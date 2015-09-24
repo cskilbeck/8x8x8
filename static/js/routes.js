@@ -5,21 +5,21 @@
     function($routeProvider, $locationProvider) {
 
         $routeProvider.when('/', {
-            templateUrl: 'home.html',
+            templateUrl: '/static/html/home.html',
             controller: 'HomeController'
         }).when('/list', {
-            templateUrl: 'gameList.html',
+            templateUrl: '/static/html/gameList.html',
             controller: 'GameListController'
         }).when('/edit/:game_id', {
-            templateUrl: 'editor.html',
+            templateUrl: '/static/html/editor.html',
             controller: 'EditorController',
             resolve: { readonly: function() { return false; } }
         }).when('/view/:game_id', {
-            templateUrl: 'editor.html',
+            templateUrl: '/static/html/editor.html',
             controller: 'EditorController',
             resolve: { readonly: function() { return true; } }
         }).when('/help', {
-            templateUrl: 'help.html',
+            templateUrl: '/static/html/help.html',
             controller: 'HelpController'
         }).otherwise({
             redirectTo: '/'

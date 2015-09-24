@@ -2,7 +2,8 @@ mainApp.controller('MainController', ['$scope', '$modal', 'user', 'ajax',
 function($scope, $modal, user, ajax) {
     "use strict";
 
-    var hidden = [
+    var gameDetails = null,
+        hidden = [
             'document', 'window', 'alert', 'parent', 'frames', 'frameElment',
             'history', 'fullScreen', 'innerHeight', 'innerWidth', 'length',
             'location', 'GlobalEventHandlers', 'WindowEventHandlers', 'opener',
@@ -73,12 +74,24 @@ function($scope, $modal, user, ajax) {
         $scope.setInProgress(msg);
     });
 
-    $scope.$on('play', function(e, source) {
+    // TODO (chs): possible race here between 'play' event and window loading (details might change in between, but does it matter?)
+
+    window.setupFrame = function() {
+        var iframe;
+        if(gameDetails !== null) {
+            iframe = document.getElementById('gameFrame');
+            iframe.contentWindow.init(gameDetails);
+            iframe.contentWindow.focus();
+            gameDetails = null;
+        }
+    };
+
+    $scope.$on('play', function(e, details) {
         var iframe = document.getElementById('gameFrame');
         $scope.reportStatus('');
-        window.GameSource = preScript + source + postScript;
-        iframe.src = '/static/frame.html';
-        iframe.contentWindow.focus();
+        details.source = preScript + details.source + postScript;
+        gameDetails = details;
+        iframe.src = '/static/html/frame.html';
     });
 
     window.reportRuntimeError = function(e) {
@@ -118,6 +131,30 @@ function($scope, $modal, user, ajax) {
         $scope.networkBusy = p;
         $scope.networkIcon = p ? 'glyphicon-repeat' : 'glyphicon-ok';
         $scope.$applyAsync();
+    };
+
+    function hex(a) {
+        var i, s = '';
+        for(i in a) {
+            s += (a[i] | 0x10).toString(16).substr(-1);
+        }
+        return s;
+    }
+
+    // screen is an array of 256 numbers which are all 0-15
+    window.takeScreenShot = function(screen, gameid) {
+        user.login()
+        .then(function() {
+            return ajax.post('/api/screenshot', {
+                        user_id: user.id(),
+                        user_session: user.session(),
+                        screen: hex(screen),
+                        game_id: gameid
+                    });
+            })
+        .then(function(result) {
+            $scope.reportStatus("Screenshot saved");
+        });
     };
 
     user.refreshSession();

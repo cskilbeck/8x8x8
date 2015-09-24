@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang='en'>
+    <head>
+        <link rel='stylesheet' href='http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.css'>
+        <style>
+            body {
+                margin: 0;
+                text-align: center;
+                overflow: hidden;
+            }
+            canvas {
+                margin: 0;
+                cursor: default;
+            }
+            #gameinstructions {
+                margin-bottom: 20px;
+            }
+            .hidden {
+                width: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <div>
+            <h4 id='gamename'>&nbsp;</h4>
+        </div>
+        <canvas id='canvas' width='256px' height='256px'></canvas>
+        <div class='well'>
+            <div id='gameinstructions'></div>
+            <div id='screenShotButton' class='hidden'>
+                <button class='btn btn-default' id='screenshot' onclick='takeScreenShot()'>Screenshot &nbsp;<i class='glyphicon glyphicon-camera'></i></button>
+            </div>
+        </div>
+        <script src='/static/js/8x8.js'></script>
+    </body>
+</html>

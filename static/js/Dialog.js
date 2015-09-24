@@ -7,7 +7,7 @@ function($rootScope, $modal) {
 
         $modal.open({
             animation: true,
-            templateUrl: 'dialogModal.html',
+            templateUrl: '/static/html/dialogModal.html',
             controller: 'DialogModalInstanceController',
             resolve: {
                 options: function () {

@@ -14,10 +14,13 @@
 
         $scope.$emit('pane:loaded', 'games');
 
+        $('#refreshButton').tooltip();
+
         function getGames(force) {
             games.get(force).then(function(gameList) {
                 $scope.games = gameList;
                 $scope.$apply();
+                $('[data-toggle="tooltip"]').tooltip();
             });
         }
 
@@ -39,7 +42,6 @@
         }
 
         $scope.shareIt = function(id, name) {
-            console.log("!");
             fbShare('http://256pixels.net/play/' + id, name, 'I made a game using just 256 pixels! Check it out.', 600, 600);
         };
 
@@ -69,6 +71,7 @@
         $scope.rename = function(game_id, game_name) {
             dialog.getText("Rename " + game_name, '', 'New Name', 'New name', game_name)
             .then(function(text) {
+                if(text !== game_name) {
                     // TODO (chs): move this into the games service (and don't refresh games list)
                     ajax.post('/api/rename', {
                         game_id: game_id,
@@ -76,6 +79,7 @@
                         user_session: user.session(),
                         name: text })
                     .then($scope.refreshGameList);
+                }
             });
         };
 
@@ -89,7 +93,7 @@
         $scope.playIt = function(id) {
             ajax.get('/api/source', { game_id: id } )
             .then(function(result) {
-                $scope.$emit('play', result.game_source);
+                $scope.$emit('play', { source: result.game_source, name: result.game_title, instructions: result.game_instructions || "", game_id: id, framerate: result.game_framerate });
             });
         };
 

@@ -1,4 +1,5 @@
 // TODO (chs): allow save undo (or maintain N versions or something)
+// TODO (chs): font face & size in editor options
 
 (function() {
     "use strict";
@@ -9,6 +10,11 @@
         modulesLoaded = false,
         name,
         game_id,
+        framerates = [60, 30, 20, 15, 10],
+        gameSettings = {
+            instructions: '',
+            framerate: 0
+        },
         editorOptions = {
             theme: 'Monokai',
             options: {
@@ -162,6 +168,8 @@
                             .then(function(result){
                                 editor.setValue(result.game_source, -1);
                                 $scope.gameName = result.game_title;
+                                gameSettings.instructions = result.game_instructions || "";
+                                gameSettings.framerate = result.game_framerate || 0;
                                 resetUndo();
                                 $scope.$apply();
                                 enableEditor(true);
@@ -271,7 +279,7 @@
 
         $scope.runIt = function() {
             $scope.$emit('status', '');
-            $scope.$emit('play', editor.getValue());
+            $scope.$emit('play', { source: editor.getValue(), name: $scope.gameName, instructions: gameSettings.instructions, game_id: game_id, framerate: gameSettings.framerate } );
         };
 
         function setOptions(options) {
@@ -290,7 +298,7 @@
             var oldOptions = angular.copy(editorOptions);
             $modal.open({
                 animation: true,
-                templateUrl: 'editorOptionsModal.html',
+                templateUrl: '/static/html/editorOptionsModal.html',
                 controller: 'EditorOptionsModalInstanceController',
                 backdrop: false,
                 resolve: {
@@ -320,6 +328,38 @@
         $(window).resize(function(e) {
             inflateEditor();
         });
+
+        function saveSettings(settings) {
+            gameSettings = settings;
+            user.login()
+            .then(function() {
+                settings.user_id = user.id();
+                settings.user_session = user.session();
+                settings.game_id = game_id;
+                return ajax.post('/api/settings', settings, function(result) {
+                    $scope.gameInstructions = settings.instructions;
+                });
+            });
+        }
+
+        $scope.showSettings = function() {
+            var settings = angular.copy(gameSettings);
+            $modal.open({
+                animation: true,
+                templateUrl: '/static/html/gameSettingsModal.html',
+                controller: 'GameSettingsModalInstanceController',
+                resolve: {
+                    settings: function() {
+                        return settings;
+                    }
+                }
+            }).result.then(function(result) {
+                focusEditor();
+                saveSettings(settings);
+            }, function() {
+                focusEditor();
+            });
+        };
 
         function enableKeyBindings() {
             editor.commands.addCommand({

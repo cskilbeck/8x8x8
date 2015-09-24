@@ -5,7 +5,7 @@
         </div>
         <div class='col-xs-4'>
             <a class='btn btn-sm btn-primary' href='/edit/new'>New Game&nbsp;<i class='glyphicon glyphicon-pencil'></i></a>
-            <button class='btn btn-sm btn-default' ng-click='refreshGameList()'>Refresh&nbsp;<i class='glyphicon glyphicon-refresh'></i></button>
+            <button class='btn btn-sm btn-default' id='refreshButton' data-toggle='tooltip' data-placement='right' title='Refresh' ng-click='refreshGameList()'><i class='glyphicon glyphicon-refresh'></i></button>
         </div>
     </div>
     <div id='gameList'>
@@ -37,13 +37,13 @@
                                     <tbody>
                                         <tr>
                                             <td colspan='5' class='butter'>
-                                                <a class='btn btn-xs btn-primary' href='/view/{{g.game_id}}'>View &nbsp;<i class='glyphicon glyphicon-info-sign'></i></a>&nbsp;
-                                                <button class='btn btn-xs btn-success' ng-click='playIt(g.game_id)'>Play &nbsp;<i class='glyphicon glyphicon-play'></i></button>&nbsp;
-                                                <button class="btn btn-xs btn-default" ng-click='shareIt(g.game_id, g.game_title)'>Share &nbsp;<i class='glyphicon glyphicon-share'></i></button>&nbsp;
-                                                <span ng-show='user_id===g.user_id'>
-                                                    <a class='btn btn-xs btn-warning' ng-click='rename(g.game_id, g.game_title)'>Rename &nbsp;<i class='glyphicon glyphicon-info-sign'></i></a>&nbsp;
-                                                    <a class='btn btn-xs btn-info' href='/edit/{{g.game_id}}'>Edit &nbsp;<i class='glyphicon glyphicon-edit'></i></a>&nbsp;
-                                                    <button class='btn btn-xs btn-danger' ng-click='deleteIt(g.game_id, g.game_title)'>Delete &nbsp;<i class='glyphicon glyphicon-trash'></i></button>
+                                                <a class='btn btn-primary' href='/view/{{g.game_id}}' data-toggle="tooltip" data-placement="top" title="View"><i class='glyphicon glyphicon-zoom-in'></i></a>&nbsp;
+                                                <button class='btn btn-success' ng-click='playIt(g.game_id)' data-toggle="tooltip" data-placement="top" title="Play"><i class='glyphicon glyphicon-play'></i></button>&nbsp;
+                                                <button class="btn btn-default" ng-click='shareIt(g.game_id, g.game_title)' data-toggle="tooltip" data-placement="top" title="Share"><i class='glyphicon glyphicon-share'></i></button>&nbsp;
+                                                <span ng-show='user_id === g.user_id'>
+                                                    <a class='btn btn-warning' ng-click='rename(g.game_id, g.game_title)' data-toggle="tooltip" data-placement="top" title="Rename"><i class='glyphicon glyphicon-info-sign'></i></a>&nbsp;
+                                                    <a class='btn btn-info' href='/edit/{{g.game_id}}' data-toggle="tooltip" data-placement="top" title="Edit"><i class='glyphicon glyphicon-edit'></i></a>&nbsp;
+                                                    <button class='btn btn-danger' ng-click='deleteIt(g.game_id, g.game_title)' data-toggle="tooltip" data-placement="top" title="Delete"><i class='glyphicon glyphicon-trash'></i></button>
                                                 </span>
                                             </td>
                                         </tr>

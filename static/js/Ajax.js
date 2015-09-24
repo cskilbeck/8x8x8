@@ -1,3 +1,6 @@
+// TODO (chs): make it use angular $ajax
+// TODO (chs): make it return the result whether it fails or succeeds, let the caller extract the data
+
 mainApp.factory('ajax', ['$rootScope',
 function($rootScope){
     "use strict";

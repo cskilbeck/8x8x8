@@ -13,9 +13,10 @@ body {
 
 #gameFrame {
     border: none;
-    height: 256px;
     width: 256px;
+    height: 999px;
     margin-top: 20px;
+    overflow: hidden;
 }
 
 .centered {
