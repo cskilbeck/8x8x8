@@ -3,13 +3,11 @@
 var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']);
 
 //////////////////////////////////////////////////////////////////////
-// - make minify.py handle STYLEBLOCKs as well
-// - make minify.py handle multiple SCRIPT/STYLEBLOCKs
 // - ? store screenshots as prebuilt pngs in the database as varbinary - less processing to serve...
 // - mouse/touch support (swipe UDLR & tap)
-// - detect hangs and kill it (possible? with instrumentation via Esprima : for, while, do)
+// - detect hangs and kill it (possible? with instrumentation via Esprima : for, while, do) (but how to keep the source line matched up? sounds hard...)
 // / share button
-// - instructions
+// / instructions
 // / voting/rating/comments
 // - home page
 // / fix the get/set pixel/color APIs for numbers/strings
@@ -51,6 +49,7 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //
 //////////////////////////////////////////////////////////////////////
 // \ forking
+// \ make minify.py handle multiple SCRIPT/STYLEBLOCKs
 //
 //////////////////////////////////////////////////////////////////////
 // + save current source in LocalStorage
@@ -87,3 +86,4 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      + track status of 'row expanded' by game_id and persist it
 // + put everything in the right folder (static/js, static/css, static/html, templates etc)
 // + screenshots - store screen as 256 nibbles in game_screenshot!
+// + make minify.py handle STYLEBLOCKs as well

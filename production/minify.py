@@ -11,31 +11,32 @@
 # TODO (chs): make it replace all the SCRIPTBLOCKs, not just the first one it finds
 #-----------------------------------------------------------------------------------------------------------------------
 
-import sys, urlparse, urllib2, re, pprint, ssl, subprocess, os, contextlib
+import sys, urlparse, urllib2, re, pprint, ssl, subprocess, os, contextlib, string
 
 scriptblock_regex = r'(.*?)<!--\s*SCRIPTBLOCK\s*\((.+?)\)\s*-->(.*)<!--\s*ENDSCRIPTBLOCK\s*\((.+?)\)\s*-->(.*)'
-styleblock_regex = r'(.*?)<!--\s*STYLEBLOCK\s*\((.+?)\)\s*-->(.*)<!--\s*ENDSTYLEBLOCK\s*\((.+?)\)\s*-->(.*)'
-
+script_replace_regex = r'\1<script src="\2.min.js"></script>\5'
 script_regex = r'<script\s*src\s*=\s*["\']\s*(.*?)\s*["\']\s*>\s*<\s*/script\s*>'
-style_regex = r'<link\s*rel\s*=\s*\["\']stylesheet["\']\s*href\s*=\s*["\']\s*(.*?)\s*["\']\s*>'
+
+styleblock_regex = r'(.*?)<!--\s*STYLEBLOCK\s*\((.+?)\)\s*-->(.*)<!--\s*ENDSTYLEBLOCK\s*\((.+?)\)\s*-->(.*)'
+style_replace_regex = r'\1<link rel="stylesheet" href="\2.min.css"></script>\5'
+style_regex = r'<link\s*rel\s*=\s*["\']stylesheet["\']\s*href\s*=\s*["\']\s*(.*?)\s*["\']\s*>'
 
 
 #-----------------------------------------------------------------------------------------------------------------------
 # find the <!--SCRIPTBLOCK(name)-->(.*)<!--ENDSCRIPTBLOCK(name)-->
 
-def get_scriptblock(html):
-    pattern = scriptblock_regex
+def get_scriptblock(html, pattern, replace_pattern):
     regex = re.compile(pattern, re.S|re.I)
     match = re.match(regex, html)
     if match.group(2) != match.group(4):
         raise Exception('Mismatched scriptblock names')
-    return match.group(2), match.group(3), regex.sub(r'\1<script src="\2.min.js"></script>\5', html)
+    return match.group(2), match.group(3), regex.sub(replace_pattern, html)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # extract the script urls
 
-def get_scripts(block):
-    regex = re.compile(script_regex, re.S|re.I)
+def get_scripts(block, pattern):
+    regex = re.compile(pattern, re.S|re.I)
     return re.findall(regex, block)
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -49,7 +50,9 @@ def join_scripts(scripts, base_url):
         if scriptname[0:4].lower() != 'http' and scriptname[0:2] != '//':
             ctx = None
             url = urlparse.urljoin(base_url, scriptname)
-        files.append(urllib2.urlopen(url, context = ctx).read())
+        file = urllib2.urlopen(url, context = ctx).read()
+        print "Got", len(file), "bytes from", url
+        files.append(file)
     return ';'.join(files)
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -64,7 +67,7 @@ def minify_script(filename, output_filename):
 
 def save_file(text, filename):
     with contextlib.closing(open(filename, 'w')) as file:
-        file.write(text)
+        file.write(string.replace(text, '\r\n', '\n'))
 
 #-----------------------------------------------------------------------------------------------------------------------
 # main
@@ -74,11 +77,19 @@ try:
     context = ssl._create_unverified_context()
     url = urlparse.urlparse(host)
     html = urllib2.urlopen(url.geturl(), context = context).read()
-    name, block, html = get_scriptblock(html)
-    scripts = get_scripts(block)
-    source = join_scripts(scripts, url.scheme + "://" + url.netloc)
-    save_file(source, name + '.js')
-    minify_script(name + '.js', name + '.min.js')
+
+    scriptname, scriptblock, html = get_scriptblock(html, scriptblock_regex, script_replace_regex)
+    scripts = get_scripts(scriptblock, script_regex)
+    scriptsource = join_scripts(scripts, url.scheme + "://" + url.netloc)
+
+    stylename, styleblock, html = get_scriptblock(html, styleblock_regex, style_replace_regex)
+    styles = get_scripts(styleblock, style_regex)
+    stylesource = join_scripts(styles, url.scheme + "://" + url.netloc)
+
+    save_file(scriptsource, scriptname + '.js')
+    save_file(stylesource, stylename + '.css')
+    minify_script(scriptname + '.js', scriptname + '.min.js')
+    minify_script(stylename + '.css', stylename + '.min.css')
     save_file(html, 'index.html')
 
 except Exception, e:
