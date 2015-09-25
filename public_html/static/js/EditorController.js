@@ -138,7 +138,7 @@
         }
 
         function noGame() {
-            dialog.choose('Game not found', "I can't find game '" + game_id + "'. Would you like to create a new game?", "Yes", "No, go back to games list")
+            dialog.choose('Game not found', "I can't find game '" + game_id + "'. Would you like to create a new game?", "Yes", "No, go to the games list")
             .then(function(result) {
                 $scope.gameName = 'New Game';
                 game_id = 'new';
@@ -146,7 +146,7 @@
                 enableEditor(true);
             }, function() {
                 session = null;
-                $location.path('/');
+                $location.path('/list');
             });
         }
 

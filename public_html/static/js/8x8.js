@@ -318,11 +318,16 @@
         exception = true;
     };
 
+    function startIt() {
+        try {
+            client = (typeof ClientScript !== 'undefined') ? new ClientScript() : null;
+        }
+        catch(e) {
+            reportError(e);
+        }
+    }
+
     // for running it inside frame.html when the source might not have been saved
-
-    window.takeScreenShow = function() {
-
-    };
 
     window.init = function(details) {
         var script = document.createElement('script');
@@ -337,12 +342,7 @@
         game_id = details.game_id;  // GLOBAL
         body.appendChild(script);
 
-        try {
-            client = (typeof ClientScript !== 'undefined') ? new ClientScript() : null;
-        }
-        catch(e) {
-            reportError(e);
-        }
+        startIt();
 
         ssb.className = '';
 
@@ -354,6 +354,12 @@
     };
 
     draw();
-    parent.window.setupFrame();
+    if(parent.window && typeof parent.window.setupFrame === 'function') {
+        parent.window.setupFrame();
+    }
+    else {
+        startIt();
+        requestAnimationFrame(onFrame);
+    }
 
 }());

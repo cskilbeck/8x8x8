@@ -13,11 +13,18 @@
 
 import sys, urlparse, urllib2, re, pprint, ssl, subprocess, os, contextlib
 
+scriptblock_regex = r'(.*?)<!--\s*SCRIPTBLOCK\s*\((.+?)\)\s*-->(.*)<!--\s*ENDSCRIPTBLOCK\s*\((.+?)\)\s*-->(.*)'
+styleblock_regex = r'(.*?)<!--\s*STYLEBLOCK\s*\((.+?)\)\s*-->(.*)<!--\s*ENDSTYLEBLOCK\s*\((.+?)\)\s*-->(.*)'
+
+script_regex = r'<script\s*src\s*=\s*["\']\s*(.*?)\s*["\']\s*>\s*<\s*/script\s*>'
+style_regex = r'<link\s*rel\s*=\s*\["\']stylesheet["\']\s*href\s*=\s*["\']\s*(.*?)\s*["\']\s*>'
+
+
 #-----------------------------------------------------------------------------------------------------------------------
 # find the <!--SCRIPTBLOCK(name)-->(.*)<!--ENDSCRIPTBLOCK(name)-->
 
 def get_scriptblock(html):
-    pattern = r'(.*?)<!--\s*SCRIPTBLOCK\s*\((.+?)\)\s*-->(.*)<!--\s*ENDSCRIPTBLOCK\s*\((.+?)\)\s*-->(.*)'
+    pattern = scriptblock_regex
     regex = re.compile(pattern, re.S|re.I)
     match = re.match(regex, html)
     if match.group(2) != match.group(4):
@@ -28,7 +35,7 @@ def get_scriptblock(html):
 # extract the script urls
 
 def get_scripts(block):
-    regex = re.compile(r'<script\s*src\s*=\s*["\']\s*(.*?)\s*["\']\s*>\s*<\s*/script\s*>', re.S|re.I)
+    regex = re.compile(script_regex, re.S|re.I)
     return re.findall(regex, block)
 
 #-----------------------------------------------------------------------------------------------------------------------

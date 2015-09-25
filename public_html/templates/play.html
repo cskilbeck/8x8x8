@@ -1,4 +1,4 @@
-$def with (game_source, game_title)
+$def with (game_source, game_title, game_description)
 <!DOCTYPE html>
 <html lang='en'>
     <head>
@@ -10,11 +10,19 @@ $def with (game_source, game_title)
                 font: 20px sans-serif;
                 font-weight: bolder;
             }
+            .instructions {
+                margin-top: 40px;
+                font: 18px sans-serif;
+                font-weight: lighter;
+            }
         </style>
     </head>
     <body>
         $game_title<br><br>
         <canvas id='canvas' width='256px' height='256px'></canvas>
+        <div class='instructions'>
+        $game_description
+        </div>
         <script type='text/javascript'>
             function ClientScript() {
                 "use strict";

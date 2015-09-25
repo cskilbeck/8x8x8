@@ -24,7 +24,7 @@ CREATE TABLE `games`(
     UNIQUE KEY game_name (game_title, user_id));
 
 CREATE TABLE `ratings`(
-	rating_timestamp DATETIME NOT NULL,
+    rating_timestamp DATETIME NOT NULL,
     game_id INT UNSIGNED NOT NULL,
     user_id INT UNSIGNED NOT NULL,
     rating_stars TINYINT UNSIGNED NOT NULL,
@@ -57,12 +57,12 @@ INSERT INTO `games`(
         'instructions!');
 
 INSERT INTO `ratings`(
-		rating_timestamp,
+        rating_timestamp,
         game_id,
         user_id,
         rating_stars)
     VALUES(
-		NOW(),
+        NOW(),
         1,
         1,
         5);
