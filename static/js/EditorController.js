@@ -13,7 +13,8 @@
         framerates = [60, 30, 20, 15, 10],
         gameSettings = {
             instructions: '',
-            framerate: 0
+            framerate: 0,
+            name: ''
         },
         editorOptions = {
             theme: 'Monokai',
@@ -170,6 +171,7 @@
                                 $scope.gameName = result.game_title;
                                 gameSettings.instructions = result.game_instructions || "";
                                 gameSettings.framerate = result.game_framerate || 0;
+                                gameSettings.gameName = result.game_title;
                                 resetUndo();
                                 $scope.$apply();
                                 enableEditor(true);
@@ -343,6 +345,7 @@
         }
 
         $scope.showSettings = function() {
+            gameSettings.gameName = $scope.gameName;
             var settings = angular.copy(gameSettings);
             $modal.open({
                 animation: true,

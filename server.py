@@ -11,24 +11,13 @@
 # DONE (chs): DRY the REST functions
 #----------------------------------------------------------------------
 
-import sys
-import types
-import web
+import sys, types, os, time, datetime, struct
+import web, pprint, json, iso8601, unicodedata
 from contextlib import closing
 import MySQLdb as mdb
 import MySQLdb.cursors
-import pprint
-import bcrypt
-import datetime
-import inspect
-import json
-import iso8601
-import unicodedata
-import struct
-import os
-import time
-import png
-import StringIO
+# import bcrypt
+import png, StringIO
 
 #----------------------------------------------------------------------
 # globals
@@ -534,6 +523,8 @@ class screen:
                     if cur.rowcount != 1:
                         raise web.HTTPError('404 game not found')
                     row = cur.fetchone()
+                    if row['game_screenshot'] is None:
+                        return open('static/img/brand.png', 'rb').read()
                     buf = StringIO.StringIO()
                     makeScreenShot(row['game_screenshot']).save(buf)
                     web.header('Content-type', 'image/png')

@@ -1,6 +1,6 @@
 <div class="modal-header">
     <button type="button" class="close" ng-click='cancel()' aria-label="Close"><span aria-hidden="true">&times;</span></button>
-    <h4 class="modal-title" id="editorOptionsModalLabel">Editor Options</h4>
+    <h4 class="modal-title" id="editorOptionsModalLabel">Settings for {{settings.gameName}}</h4>
 </div>
 <div class="modal-body">
     <form name="editorOptionsForm" novalidate>
@@ -8,7 +8,7 @@
             <label for='theme'>Speed</label>
             <div class="btn-group">
                 <button type="button" id='themeButton' class="btn btn-sm dropdown-toggle" data-toggle="dropdown">
-                    {{frameratenames[settings.framerate]}} <span class="caret"></span>
+                    {{frameratenames[settings.framerate]}}<span class="caret"></span>
                 </button>
                 <ul class="dropdown-menu">
                     <li ng-repeat="f in frameratenames"><a style='cursor: pointer;' ng-click='setFramerate($index);'>{{f.toString()}}</a></li>

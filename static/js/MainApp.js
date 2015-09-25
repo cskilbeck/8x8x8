@@ -3,6 +3,9 @@
 var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']);
 
 //////////////////////////////////////////////////////////////////////
+// - hide screenshot button when it's not your game
+// - get the editor player out of an iframe?
+// - play/pause/slowmo buttons on the editor player
 // - make minify.py handle STYLEBLOCKs as well
 // - make minify.py handle multiple SCRIPT/STYLEBLOCKs
 // - ? store screenshots as prebuilt pngs in the database as varbinary - less processing to serve...
@@ -25,7 +28,7 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      - compressed assets
 // - telemetry/analytics
 //
-// - editor
+// - editor / player
 //      - fix location/url when it's /edit/new and they've saved/created it (should be /edit/game_id)
 //      - game settings (frame rate, instructions)
 //
