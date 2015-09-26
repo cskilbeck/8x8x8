@@ -32,17 +32,15 @@
             return moment(t).fromNow();
         };
 
-        function fbShare(url, title, descr) {
+        $scope.shareIt = function(game) {
             FB.ui({
-              method: 'share',
-              href: url,
-            }, function(response){
-
+                method: 'feed',
+                name: game.game_title,
+                link: 'http://256pixels.net/play/' + game.game_id,
+                picture: 'http://256pixels.net/screen/' + game.game_id,
+                description: game.game_instructions + '\n\n\n',
+                caption: 'I made a game using just 256 pixels!'
             });
-        }
-
-        $scope.shareIt = function(id, name) {
-            fbShare('http://256pixels.net/play/' + id, name, 'I made a game using just 256 pixels! Check it out.', 600, 600);
         };
 
         $scope.$on('user:updated', function(msg, details) {

@@ -1,0 +1,10 @@
+# parameters
+# 1 - local folder
+# 2 - SCP Session name
+
+open %2%
+lcd "%1%"
+synchronize remote public_html /usr/local/www/256pixels.net/public_html
+synchronize remote production /usr/local/www/256pixels.net/production
+close
+exit

@@ -35,7 +35,7 @@ function(ajax, user) {
             if(list.length === 0 || force) {
                 ajax.get('/api/list', { user_id: -1 } )
                 .then(function(result) {
-                    list = result.games;
+                    list = result.games || [];
                     q.resolve(list);
                 }, function(xhr) {
                     q.reject(xhr);

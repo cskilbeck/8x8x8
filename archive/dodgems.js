@@ -44,7 +44,7 @@ function update() {
 }
 
 function movePlayer() {
-    ship.x += (held('left') ? -ship.speed : 0) + (held('right') ? ship.speed : 0);
+    ship.x += (keyheld('left') ? -ship.speed : 0) + (keyheld('right') ? ship.speed : 0);
     if(ship.x < 0) { ship.x = 0; }
     if(ship.x > 14) { ship.x = 14; }
 }
@@ -93,7 +93,7 @@ function checkCollision() {
 function drawScore() {
     var i;
     for(i=0; i<score; ++i) {
-        set(i, 15, 'purple');
+        setpixel(i, 15, 'purple');
     }
 }
 
@@ -101,18 +101,18 @@ function drawPlayer() {
     var dx = ship.x >>> 0;
     if(--ship.glow === 0) { ship.color = 'red'; }
     if(ship.flash === 0 || --ship.flash / 4 % 1 !== 0) {
-        set(dx, ship.y, ship.color);
-        set(dx + 1, ship.y, ship.color);
-        set(dx, ship.y + 1, ship.color);
-        set(dx + 1, ship.y + 1, ship.color);
+        setpixel(dx, ship.y, ship.color);
+        setpixel(dx + 1, ship.y, ship.color);
+        setpixel(dx, ship.y + 1, ship.color);
+        setpixel(dx + 1, ship.y + 1, ship.color);
     }
 }
 
 function drawDots() {
     var i;
     for(i = 0; i < dots.length; ++i) {
-        if(getColor(dots[i].x, dots[i].y) !== 'red') {
-            set(dots[i].x, dots[i].y, dots[i].c);
+        if(getpixel(dots[i].x, dots[i].y) !== 'red') {
+            setpixel(dots[i].x, dots[i].y, dots[i].c);
         }
     }
 }

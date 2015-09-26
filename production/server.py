@@ -12,7 +12,7 @@
 # DONE (chs): screenshots!
 #----------------------------------------------------------------------
 
-import sys, types, os, time, datetime, struct
+import sys, types, os, time, datetime, struct, re
 import web, pprint, json, iso8601, unicodedata
 from contextlib import closing
 import MySQLdb as mdb
@@ -31,7 +31,6 @@ urls = (
     '/register', 'register',                # user registration
     '/refreshSession', 'refreshSession',    # refresh a user session
     '/endSession', 'endSession',            # log out
-
     '/create', 'create',                    # C creating a new game
     '/source', 'source',                    # R get source, name, instructions of a game
     '/details', 'details',                  # R get details of a game (name, instructions, screenshot)
@@ -43,11 +42,10 @@ urls = (
     '/settings', 'settings',                # U update settings for a game
     '/screenshot', 'screenshot',            # U upload screenshot of a game
     '/delete', 'delete',                    # D delete a game
-
-    '/favicon.ico', 'favicon',              # get the favicon
     '/play/(.*)', 'play',                   # get details for play page
     '/screen/(.*)', 'screen',               # get screenshot
-    '/(.*)', 'index'                        # serve up a templated page
+    '/favicon.ico', 'favicon',                  # get the favicon
+    '/(.*)', 'index'                            # serve up a templated page
     )
 
 #----------------------------------------------------------------------
@@ -108,6 +106,8 @@ class Handler:
         return output
 
     def mainHandler(self, handler, *args):
+
+        print handler + " for " + web.ctx.path
 
         if not handler in self.__class__.__dict__:
             raise web.HTTPError('401 Invalid method (%s not supported)' % (handler.upper(),))
@@ -250,7 +250,7 @@ class list(Handler):
         })
     def Get(self):
         self.input['search'] = searchTerm(self.input['search'])
-        self.cur.execute('''SELECT game_id, games.user_id, game_title, game_lastsaved, game_created, user_username
+        self.cur.execute('''SELECT game_id, games.user_id, game_title, game_lastsaved, game_created, user_username, game_instructions
                         FROM games INNER JOIN users ON users.user_id = games.user_id
                         WHERE (%(user_id)s < 0 OR games.user_id = %(user_id)s)
                             AND game_title LIKE %(search)s
@@ -478,14 +478,14 @@ class endSession(Handler):
 
 class favicon:
     def GET(self):
-        return ICON(open('static/favicon.ico', 'rb').read())
+        return ICON(open('favicon.ico', 'rb').read())
 
 #----------------------------------------------------------------------
 # /
 
 class index:
     def GET(self, path):
-        print "HTML!!"
+        print web.ctx.path
         return HTML(open('index.html').read())
 
 #----------------------------------------------------------------------
@@ -541,11 +541,11 @@ class screen(Handler):
 
 class play(Handler):
     def Get(self, game_id):
-        self.cur.execute('''SELECT game_source, game_title, game_instructions FROM games WHERE game_id = %(game_id)s''', locals())
+        self.cur.execute('''SELECT game_id, game_source, game_title, game_instructions FROM games WHERE game_id = %(game_id)s''', locals())
         if self.cur.rowcount == 0:
             raise web.HTTPError('404 Game not found')
         row = self.cur.fetchone()
-        return HTML(render.play(row['game_source'], row['game_title'], row['game_instructions']))
+        return HTML(render.play(row))
 
 #----------------------------------------------------------------------
 
@@ -555,5 +555,5 @@ if __name__ == '__main__':
     app.run()
 else:
     os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../public_html/'))
-    print os.getcwd()
+    web.debug(os.getcwd())
     application = app.wsgifunc()
