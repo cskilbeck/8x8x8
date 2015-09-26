@@ -3,11 +3,17 @@
 var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']);
 
 //////////////////////////////////////////////////////////////////////
-// - ? store screenshots as prebuilt pngs in the database as varbinary - less processing to serve...
+// - screenshots
+//      - store screenshots as prebuilt pngs in the database as varbinary - less processing to serve...
+//      - show screenshots in game list
+//      - update screenshot when it's taken
+// - share button in preview frame
+// - different share text based on whether it's your game or not
+// - 
 // - mouse/touch support (swipe UDLR & tap)
 // - detect hangs and kill it (possible? with instrumentation via Esprima : for, while, do) (but how to keep the source line matched up? sounds hard...)
 // / share button
-// / instructions
+// / instructions/documentation/tooltips/popovers
 // / voting/rating/comments
 // - home page
 // / fix the get/set pixel/color APIs for numbers/strings
