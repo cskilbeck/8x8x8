@@ -36,31 +36,27 @@
                                 <div class='gameinfo'>
                                     <button class='btn btn-success' ng-click='playIt(g.game_id)' data-toggle="tooltip" data-placement="top" title="Play"><i class='glyphicon glyphicon-play'></i></button>&nbsp;
                                     <span ng-show='user_id !== g.user_id'>
-                                        <a class='btn btn-primary' href='/view/{{g.game_id}}'>View source <i class='glyphicon glyphicon-zoom-in'></i></a>&nbsp;
+                                        <a class='btn btn-primary' href='/view/{{g.game_id}}'>View</i></a>&nbsp;
                                     </span>
                                     <span ng-show='user_id === g.user_id'>
                                         <a class='btn btn-primary' href='/edit/{{g.game_id}}'>Edit</a>&nbsp;
                                         <a class='btn btn-warning' ng-click='rename(g.game_id, g.game_title)'>Rename</a>&nbsp;
                                         <button class='btn btn-danger' ng-click='deleteIt(g.game_id, g.game_title)'>Delete</button>
                                     </span>
-                                    <span class='dropdown'>
-                                        <button class="btn btn-default dropdown-toggle" type='button' id='shareMenu' data-toggle='dropdown' aria-haspopup='true' aria-expandable='true'>
-                                            Share
-                                            <span class='caret'></span>
-                                        </button>
-                                        <ul class='dropdown-menu' aria-labelledby='shareMenu'>
-                                            <li><a style='cursor: pointer' ng-click='shareLink(g)'>Link</a>
-                                            <li><a style='cursor: pointer' ng-click='shareIt(g)'>Facebook</a>
-                                            <li><a style='cursor: pointer' ng-click='shareTwitter(g)'>Twitter</a>
-                                        </ul>
+                                    <span>
+                                        <div class='btn-group'>
+                                            <button class="btn btn-default dropdown-toggle" type='button' id='shareMenu' data-toggle='dropdown' aria-haspopup='true' aria-expandable='true'>
+                                                Share
+                                                <span class='caret'></span>
+                                            </button>
+                                            <ul class='dropdown-menu' aria-labelledby='shareMenu'>
+                                                <li><a style='cursor: pointer' ng-click='shareLink(g)'>Link</a>
+                                                <li><a style='cursor: pointer' ng-click='shareIt(g)'>Facebook</a>
+                                                <li><a style='cursor: pointer' ng-click='shareTwitter(g)'>Twitter</a>
+                                            </ul>
+                                        </div>
                                     </span>
-                                    <div>
-                                        Last Saved: {{timer(g.game_lastsaved)}}<br>
-                                        Created: {{timer(g.game_created)}}
-                                    </div>
-                                    <div>
-                                        <span><img src='/screen/{{g.game_id}}'</span>
-                                    </div>
+                                    <span class='pull-right'><img ng-cloak src='{{screen(g)}}'</span>
                                 </div>
                             </div>
                         </td>

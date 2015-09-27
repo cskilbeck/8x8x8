@@ -20,6 +20,7 @@ CREATE TABLE `games`(
     game_title VARCHAR(32),
     game_instructions VARCHAR(240),
     game_framerate TINYINT UNSIGNED DEFAULT 0,
+    game_rating FLOAT NOT NULL DEFAULT 0,
     game_source TEXT,
     UNIQUE KEY game_name (game_title, user_id));
 

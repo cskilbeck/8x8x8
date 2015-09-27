@@ -29,6 +29,8 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      - compressed assets
 // - telemetry/analytics
 //
+// - comments
+//
 // - player
 //      - get it out of an iframe
 //      - edit settings directly in the player (name, instructions, framerate) - no modal

@@ -48,6 +48,22 @@ function($rootScope, $modal) {
                 });
         },
 
+        showText: function(banner, text, label) {
+            return showModal({
+                    banner: banner,
+                    text: '',
+                    oktext: 'OK',
+                    canceltext: null,
+                    okclass: 'btn-primary',
+                    cancelclass: 'masked',
+                    inputRequired: true,
+                    inputType: 'text',
+                    inputText: text,
+                    inputLabel: label,
+                    inputPlaceholder: ''
+                });
+        },
+
         getText: function(banner, text, placeholder, label, initialValue, oktext, canceltext, okclass, cancelclass) {
             return showModal({
                     banner: banner,

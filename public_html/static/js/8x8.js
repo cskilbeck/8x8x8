@@ -55,6 +55,7 @@
         keyCount = 0,
         lastkey,
         frame = 0,
+        frameCounter = 0,
         frameDelay,
         colors = [
             '#000', // black
@@ -290,12 +291,12 @@
     };
 
     function onFrame() {
-        var i, hasUpdate;
+        var hasUpdate;
         if(client && client.updateFunction !== null && !exception) {
             hasUpdate = true;
             if(step || ((frame % frameDelay) === 0 && !paused)) {
                 try {
-                    client.updateFunction(frame);
+                    client.updateFunction(frameCounter++);
                 }
                 catch(e) {
                     exception = true;
@@ -411,6 +412,7 @@
         try {
             client = (typeof ClientScript !== 'undefined') ? new ClientScript() : null;
             frame = 0;
+            frameCounter = 0;
             if(animFrameID) {
                 cancelAnimationFrame(animFrameID);
             }

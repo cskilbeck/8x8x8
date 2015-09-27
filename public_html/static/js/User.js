@@ -40,7 +40,7 @@ function ($rootScope, $modal, ajax, cookie) {
                     if(result.registration === 'required') {
                         $modal.open({
                             animation: true,
-                            templateUrl: 'registerModal.html',
+                            templateUrl: '/static/html/registerModal.html',
                             controller: 'RegisterModalInstanceController',
                             resolve: {
                                 user: function() {

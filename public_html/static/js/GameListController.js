@@ -32,6 +32,14 @@
             return moment(t).fromNow();
         };
 
+        $scope.screen = function(g) {
+            return '/screen/' + g.game_id;
+        };
+
+        $scope.shareLink = function(game) {
+            dialog.showText("Here's a link to '" + game.game_title + "'", 'http://256pixels.net/play/' + game.game_id, 'Link:');
+        };
+
         $scope.shareIt = function(game) {
             FB.ui({
                 method: 'feed',
