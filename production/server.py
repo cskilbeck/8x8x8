@@ -44,8 +44,8 @@ urls = (
     '/delete', 'delete',                    # D delete a game
     '/play/(.*)', 'play',                   # get details for play page
     '/screen/(.*)', 'screen',               # get screenshot
-    '/favicon.ico', 'favicon',                  # get the favicon
-    '/(.*)', 'index'                            # serve up a templated page
+    '/favicon.ico', 'favicon',              # get the favicon
+    '/(.*)', 'index'                        # serve up a templated page
     )
 
 #----------------------------------------------------------------------
@@ -223,7 +223,9 @@ class data(object):
                     result[name] = val
 
             if self.validateSession:
-                slf.cur.execute('SELECT COUNT(*) AS count FROM users WHERE user_id = %(user_id)s AND user_session = %(user_session)s', result)
+                slf.cur.execute('''SELECT COUNT(*) AS count FROM users
+                                    WHERE user_id = %(user_id)s
+                                        AND user_session = %(user_session)s''', result)
                 if slf.cur.fetchone()['count'] != 1:
                     raise web.HTTPError('401 Invalid user session')
 
@@ -251,11 +253,11 @@ class list(Handler):
     def Get(self):
         self.input['search'] = searchTerm(self.input['search'])
         self.cur.execute('''SELECT game_id, games.user_id, game_title, game_lastsaved, game_created, user_username, game_instructions
-                        FROM games INNER JOIN users ON users.user_id = games.user_id
-                        WHERE (%(user_id)s < 0 OR games.user_id = %(user_id)s)
-                            AND game_title LIKE %(search)s
-                        ORDER BY game_lastsaved DESC, game_created DESC
-                        LIMIT %(length)s OFFSET %(offset)s'''
+                            FROM games INNER JOIN users ON users.user_id = games.user_id
+                            WHERE (%(user_id)s < 0 OR games.user_id = %(user_id)s)
+                                AND game_title LIKE %(search)s
+                            ORDER BY game_lastsaved DESC, game_created DESC
+                            LIMIT %(length)s OFFSET %(offset)s'''
                     , self.input)
         return JSON({ 'count': self.cur.rowcount, 'games': self.cur.fetchall() })
 
@@ -270,9 +272,9 @@ class count(Handler):
     def Get(self):
         self.input['search'] = searchTerm(self.input['search'])
         self.cur.execute('''SELECT COUNT(*) AS count
-                        FROM games
-                        WHERE (%(user_id)s < 0 OR games.user_id = %(user_id)s)
-                            AND game_title LIKE %(search)s''', self.input)
+                            FROM games
+                            WHERE (%(user_id)s < 0 OR games.user_id = %(user_id)s)
+                                AND game_title LIKE %(search)s''', self.input)
         return JSON(self.cur.fetchone())
 
 #----------------------------------------------------------------------
@@ -281,7 +283,8 @@ class count(Handler):
 class source(Handler):
     @data({ 'game_id': int })
     def Get(self):
-        self.cur.execute('SELECT game_source, game_title, game_instructions FROM games WHERE game_id=%(game_id)s', self.input)
+        self.cur.execute('''SELECT game_id, user_id, game_created, game_lastsaved, game_title, game_instructions, game_framerate, game_source FROM games
+                            WHERE game_id = %(game_id)s''', self.input)
         if self.cur.rowcount != 1:
             raise web.HTTPError('404 Game not found')
         return JSON(self.cur.fetchone())
@@ -295,7 +298,9 @@ class gameid(Handler):
         'name': str
         })
     def Get(self):
-        self.cur.execute('''SELECT game_id FROM games WHERE game_title = %(name)s AND user_id = %(user_id)s''', self.input)
+        self.cur.execute('''SELECT game_id FROM games
+                            WHERE game_title = %(name)s
+                                AND user_id = %(user_id)s''', self.input)
         if self.cur.rowcount != 1:
             raise web.HTTPError('404 Game not found')
         return JSON(self.cur.fetchone())
@@ -310,7 +315,7 @@ class create(Handler):
         }, True)
     def Post(self):
         self.cur.execute('''SELECT game_id FROM games
-                        WHERE game_title = %(name)s AND user_id = %(user_id)s''', self.input)
+                            WHERE game_title = %(name)s AND user_id = %(user_id)s''', self.input)
         if self.cur.rowcount != 0:
             raise web.HTTPError('401 Game name already exists')
         self.cur.execute('''INSERT INTO games (user_id, game_created, game_lastsaved, game_source, game_title)
@@ -323,12 +328,12 @@ class create(Handler):
 class settings(Handler):
     @data({
         'game_id': int,
-        'framerate': 0,
-        'instructions': ''
+        'game_framerate': 0,
+        'game_instructions': ''
         }, True)
     def Post(self):
-        self.cur.execute('''UPDATE games SET game_framerate = %(framerate)s, game_instructions = %(instructions)s
-                        WHERE game_id = %(game_id)s AND user_id = %(user_id)s''', self.input)
+        self.cur.execute('''UPDATE games SET game_framerate = %(game_framerate)s, game_instructions = %(game_instructions)s
+                            WHERE game_id = %(game_id)s AND user_id = %(user_id)s''', self.input)
         return JSON({'settings_saved': self.cur.rowcount })
 
 #----------------------------------------------------------------------
@@ -341,7 +346,7 @@ class rename(Handler):
         }, True)
     def Post(self):
         self.cur.execute('''UPDATE games SET game_lastsaved = NOW(), game_title = %(name)s
-                        WHERE game_id = %(game_id)s AND user_id = %(user_id)s''' , self.input)
+                            WHERE game_id = %(game_id)s AND user_id = %(user_id)s''' , self.input)
         return JSON({ 'renamed': self.cur.rowcount })
 
 #----------------------------------------------------------------------
@@ -356,7 +361,7 @@ class save(Handler):
         }, True)
     def Post(self):
         self.cur.execute('''UPDATE games SET game_lastsaved = NOW(), game_source = %(source)s, game_title = %(name)s
-                        WHERE game_id = %(game_id)s AND user_id = %(user_id)s''', self.input)
+                            WHERE game_id = %(game_id)s AND user_id = %(user_id)s''', self.input)
         return JSON({ 'saved': self.cur.rowcount })
 
 #----------------------------------------------------------------------
@@ -369,7 +374,8 @@ class screenshot(Handler):
         }, True)
     def Post(self):
         self.cur.execute('''UPDATE games SET game_screenshot = UNHEX(%(screen)s)
-                        WHERE game_id = %(game_id)s AND user_id = %(user_id)s''', self.input)
+                            WHERE game_id = %(game_id)s
+                                AND user_id = %(user_id)s''', self.input)
         return JSON({'posted': self.cur.rowcount })
 
 #----------------------------------------------------------------------
@@ -384,7 +390,8 @@ class delete(Handler):
         }, True)
     def Post(self):
         self.cur.execute('''DELETE FROM games
-                        WHERE game_id = %(game_id)s AND user_id = %(user_id)s''', self.input)
+                            WHERE game_id = %(game_id)s
+                                AND user_id = %(user_id)s''', self.input)
         if self.cur.rowcount == 0:
             raise web.HTTPError('404 Game not found')
         return JSON({ 'deleted': self.cur.rowcount })
@@ -400,18 +407,20 @@ class register(Handler):
         })
     def Post(self):
         result = {}
-        self.cur.execute('SELECT COUNT(*) AS count FROM users WHERE user_email=%(email)s', self.input)
+        self.cur.execute('''SELECT COUNT(*) AS count FROM users
+                            WHERE user_email=%(email)s''', self.input)
         if self.cur.fetchone()['count'] != 0:
             raise web.HTTPError('401 Email already taken')
         else:
-            self.cur.execute('SELECT COUNT(*) AS count FROM users WHERE user_username=%(username)s', self.input)
+            self.cur.execute('''SELECT COUNT(*) AS count FROM users
+                                WHERE user_username=%(username)s''', self.input)
             if self.cur.fetchone()['count'] != 0:
                 raise web.HTTPError('401 Username already taken')
             else:
                 data['session'] = getRandomInt()
                 self.cur.execute('''INSERT INTO users (user_email, user_password, user_username, user_created, user_session)
-                                VALUES (%(email)s, %(password)s, %(username)s, NOW(), %(session)s)
-                                ON DUPLICATE KEY UPDATE user_session = %(session)s, user_id = LAST_INSERT_ID(user_id)''', self.input)
+                                    VALUES (%(email)s, %(password)s, %(username)s, NOW(), %(session)s)
+                                    ON DUPLICATE KEY UPDATE user_session = %(session)s, user_id = LAST_INSERT_ID(user_id)''', self.input)
                 if self.cur.rowcount == 1 or self.cur.rowcount == 2:
                     user_id = self.cur.lastrowid
                     self.cur.execute('SELECT user_session FROM users WHERE user_email = %(email)s', self.input)
@@ -436,10 +445,12 @@ class login(Handler):
     def Post(self):
         result = {}
         self.input['session'] = getRandomInt()
-        self.cur.execute('''UPDATE users SET user_session = %(session)s WHERE user_email = %(email)s AND user_password=%(password)s''', self.input)
+        self.cur.execute('''UPDATE users SET user_session = %(session)s
+                            WHERE user_email = %(email)s AND user_password=%(password)s''', self.input)
         if self.cur.rowcount != 1:
             raise web.HTTPError('401 Incorrect email address or password')
-        self.cur.execute('''SELECT user_id, user_username, user_session, user_email FROM users WHERE user_email = %(email)s''', self.input)
+        self.cur.execute('''SELECT user_id, user_username, user_session, user_email FROM users
+                            WHERE user_email = %(email)s''', self.input)
         if self.cur.rowcount != 1:
             raise web.HTTPError('500 Login error')
         row = self.cur.fetchone()
@@ -456,7 +467,10 @@ class refreshSession(Handler):
         })
     def Get(self):
         self.input['session'] = getRandomInt()
-        self.cur.execute('''UPDATE users SET user_session = %(session)s WHERE user_id = %(user_id)s AND user_username = %(user_username)s AND user_session = %(user_session)s''', self.input)
+        self.cur.execute('''UPDATE users SET user_session = %(session)s
+                            WHERE user_id = %(user_id)s
+                                AND user_username = %(user_username)s
+                                AND user_session = %(user_session)s''', self.input)
         if self.cur.rowcount != 1:
             raise web.HTTPError('404 Session not found')
         self.input['user_session'] = self.input['session']
@@ -468,7 +482,9 @@ class refreshSession(Handler):
 class endSession(Handler):
     @data({}, True)
     def Get(self):
-        self.cur.execute('''UPDATE users SET user_session = NULL WHERE user_id = %(user_id)s AND user_session = %(user_session)s''', self.input)
+        self.cur.execute('''UPDATE users SET user_session = NULL    
+                            WHERE user_id = %(user_id)s
+                                AND user_session = %(user_session)s''', self.input)
         if self.cur.rowcount != 1:
             raise web.HTTPError('401 Error terminating session')
         return JSON({ 'status': 'ok' })
@@ -526,7 +542,8 @@ def makeScreenShot(str):
 
 class screen(Handler):
     def Get(self, game_id):
-        self.cur.execute('''SELECT game_screenshot FROM games WHERE game_id = %(game_id)s''', locals())
+        self.cur.execute('''SELECT game_screenshot FROM games
+                            WHERE game_id = %(game_id)s''', locals())
         if self.cur.rowcount != 1:
             raise web.HTTPError('404 game not found')
         row = self.cur.fetchone()
@@ -541,7 +558,8 @@ class screen(Handler):
 
 class play(Handler):
     def Get(self, game_id):
-        self.cur.execute('''SELECT game_id, game_source, game_title, game_instructions FROM games WHERE game_id = %(game_id)s''', locals())
+        self.cur.execute('''SELECT game_id, game_source, game_title, game_instructions
+                            FROM games WHERE game_id = %(game_id)s''', locals())
         if self.cur.rowcount == 0:
             raise web.HTTPError('404 Game not found')
         row = self.cur.fetchone()

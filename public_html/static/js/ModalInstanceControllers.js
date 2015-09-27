@@ -112,21 +112,25 @@
 
     }]);
 
-    mainApp.controller('GameSettingsModalInstanceController', ['$scope', '$modal', '$modalInstance', 'settings', '$timeout',
-    function($scope, $modal, $modalInstance, settings, $timeout) {
+    mainApp.controller('GameSettingsModalInstanceController', ['$scope', '$modal', '$modalInstance', 'settings', '$timeout', '$rootScope',
+    function($scope, $modal, $modalInstance, settings, $timeout, $rootScope) {
 
         $scope.frameratenames = [
-            '60 - very fast!',
-            '30 - normal',
-            '20 - slow',
-            '15 - very slow',
-            '10 - glacial'
+            '60 - fastest',
+            '30 - fast',
+            '20 - normal',
+            '15 - slow',
+            '12 - slower',
+            '10 - slowest'
         ];
 
         $scope.settings = settings;
+        // console.log("GameSettingsModalInstanceController ==>");
+        // console.log($scope.settings);
 
         $scope.setFramerate = function(f) {
-            $scope.settings.framerate = f;
+            $scope.settings.game_framerate = f;
+            $rootScope.$broadcast('settings', $scope.settings);
         };
 
         $scope.ok = function() {

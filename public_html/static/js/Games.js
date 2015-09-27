@@ -30,7 +30,8 @@ function(ajax, user) {
     var games = {
 
         // get the list of games
-        get: function(force) {
+        // TODO (chs): search term and paging parameters (and respect the cache is they're unchanged - eg coming back to the pane)
+        getlist: function(force) {
             var q = Q.defer();
             if(list.length === 0 || force) {
                 ajax.get('/api/list', { user_id: -1 } )
@@ -44,6 +45,16 @@ function(ajax, user) {
                 q.resolve(list);
             }
             return q.promise;
+        },
+
+        getcount: function(search) {
+            search.text = search.text || '*';
+            search.user_id = search.user_id || -1;
+            return ajax.get('/api/count', search);
+        },
+
+        get: function(id) {
+            return ajax.get('/api/source', { game_id: id });
         },
 
         // re-get the list of games next time someone asks for it

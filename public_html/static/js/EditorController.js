@@ -12,9 +12,9 @@
         game_id,
         framerates = [60, 30, 20, 15, 10],
         gameSettings = {
-            instructions: '',
-            framerate: 0,
-            name: ''
+            game_instructions: '',
+            game_framerate: 0,
+            game_title: ''
         },
         editorOptions = {
             theme: 'Monokai',
@@ -169,9 +169,9 @@
                             .then(function(result){
                                 editor.setValue(result.game_source, -1);
                                 $scope.gameName = result.game_title;
-                                gameSettings.instructions = result.game_instructions || "";
-                                gameSettings.framerate = result.game_framerate || 0;
-                                gameSettings.gameName = result.game_title;
+                                gameSettings.game_instructions = result.game_instructions || "";
+                                gameSettings.game_framerate = result.game_framerate || 0;
+                                gameSettings.game_title = result.game_title;
                                 resetUndo();
                                 $scope.$apply();
                                 enableEditor(true);
@@ -281,7 +281,13 @@
 
         $scope.runIt = function() {
             $scope.$emit('status', '');
-            $scope.$emit('play', { source: editor.getValue(), name: $scope.gameName, instructions: gameSettings.instructions, game_id: game_id, framerate: gameSettings.framerate } );
+            $scope.$emit('play', {
+                game_source: editor.getValue(),
+                game_title: $scope.gameName,
+                game_instructions: gameSettings.game_instructions,
+                game_id: game_id,
+                game_framerate: gameSettings.game_framerate
+            });
         };
 
         function setOptions(options) {
@@ -333,19 +339,18 @@
 
         function saveSettings(settings) {
             gameSettings = settings;
+            $scope.$emit('settings', gameSettings);
             user.login()
             .then(function() {
                 settings.user_id = user.id();
                 settings.user_session = user.session();
                 settings.game_id = game_id;
-                return ajax.post('/api/settings', settings, function(result) {
-                    $scope.gameInstructions = settings.instructions;
-                });
+                ajax.post('/api/settings', settings);
             });
         }
 
         $scope.showSettings = function() {
-            gameSettings.gameName = $scope.gameName;
+            gameSettings.game_title = $scope.gameName;
             var settings = angular.copy(gameSettings);
             $modal.open({
                 animation: true,
@@ -358,6 +363,8 @@
                 }
             }).result.then(function(result) {
                 focusEditor();
+                // console.log("1");
+                // console.log(settings);
                 saveSettings(settings);
             }, function() {
                 focusEditor();

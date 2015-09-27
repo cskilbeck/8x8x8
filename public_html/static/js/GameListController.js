@@ -17,7 +17,7 @@
         $('#refreshButton').tooltip();
 
         function getGames(force) {
-            games.get(force).then(function(gameList) {
+            games.getlist(force).then(function(gameList) {
                 $scope.games = gameList;
                 $scope.$apply();
                 $('[data-toggle="tooltip"]').tooltip();
@@ -91,7 +91,7 @@
         $scope.playIt = function(id) {
             ajax.get('/api/source', { game_id: id } )
             .then(function(result) {
-                $scope.$emit('play', { source: result.game_source, name: result.game_title, instructions: result.game_instructions || "", game_id: id, framerate: result.game_framerate });
+                $scope.$emit('play', result);
             });
         };
 

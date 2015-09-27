@@ -37,12 +37,14 @@
                                     <tbody>
                                         <tr>
                                             <td colspan='5' class='butter'>
-                                                <a class='btn btn-primary' href='/view/{{g.game_id}}' data-toggle="tooltip" data-placement="top" title="View"><i class='glyphicon glyphicon-zoom-in'></i></a>&nbsp;
                                                 <button class='btn btn-success' ng-click='playIt(g.game_id)' data-toggle="tooltip" data-placement="top" title="Play"><i class='glyphicon glyphicon-play'></i></button>&nbsp;
                                                 <button class="btn btn-default" ng-click='shareIt(g)' data-toggle="tooltip" data-placement="top" title="Share"><i class='glyphicon glyphicon-share'></i></button>&nbsp;
+                                                <span ng-show='user_id !== g.user_id'>
+                                                    <a class='btn btn-primary' href='/view/{{g.game_id}}' data-toggle="tooltip" data-placement="top" title="View"><i class='glyphicon glyphicon-zoom-in'></i></a>&nbsp;
+                                                </span>
                                                 <span ng-show='user_id === g.user_id'>
+                                                    <a class='btn btn-primary' href='/edit/{{g.game_id}}' data-toggle="tooltip" data-placement="top" title="Edit"><i class='glyphicon glyphicon-edit'></i></a>&nbsp;
                                                     <a class='btn btn-warning' ng-click='rename(g.game_id, g.game_title)' data-toggle="tooltip" data-placement="top" title="Rename"><i class='glyphicon glyphicon-info-sign'></i></a>&nbsp;
-                                                    <a class='btn btn-info' href='/edit/{{g.game_id}}' data-toggle="tooltip" data-placement="top" title="Edit"><i class='glyphicon glyphicon-edit'></i></a>&nbsp;
                                                     <button class='btn btn-danger' ng-click='deleteIt(g.game_id, g.game_title)' data-toggle="tooltip" data-placement="top" title="Delete"><i class='glyphicon glyphicon-trash'></i></button>
                                                 </span>
                                             </td>

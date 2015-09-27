@@ -21,17 +21,24 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 // - preload the editor bits somehow
 // - fix the docs
 //
-// - work out how to run it from [azure|aws|digitalocean] on Debian with:
-//      - mod_wsgi for REST api
-//      - apache for static files
+// / work out how to run it from [azure|aws|digitalocean] on Debian with:
+//      + mod_wsgi for REST api
+//      + apache for static files
 //      - database on another machine
-//      - http://256pixels.net
+//      + http://256pixels.net
 //      - compressed assets
 // - telemetry/analytics
 //
+// - player
+//      - get it out of an iframe
+//      - edit settings directly in the player (name, instructions, framerate) - no modal
+//      - get rid of run button in editor pane (play button in the player)
+//
 // - editor
 //      - fix location/url when it's /edit/new and they've saved/created it (should be /edit/game_id)
-//      - game settings (frame rate, instructions)
+//      - only save settings when they hit the save button! and get rid of /api/settings
+//      - allow editing settings directly in the player (including name) (get rid of settings dialog)
+//      - get rid of toolbar altogether (options button overlays the editor in top right)
 //
 // - user registration/login/forgot password
 //      - user profile modal dialog to change username\email\password
@@ -93,3 +100,4 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 // + put everything in the right folder (static/js, static/css, static/html, templates etc)
 // + screenshots - store screen as 256 nibbles in game_screenshot!
 // + make minify.py handle STYLEBLOCKs as well
+//      + game settings (frame rate, instructions)

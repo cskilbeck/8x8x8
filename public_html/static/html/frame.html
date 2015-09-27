@@ -27,10 +27,18 @@
         <canvas id='canvas' width='256px' height='256px'></canvas>
         <div class='well'>
             <div id='gameinstructions'></div>
-            <div id='screenShotButton' class='hidden'>
-                <button class='btn btn-default' id='screenshot' onclick='takeScreenShot()'>Screenshot &nbsp;<i class='glyphicon glyphicon glyphicon-screenshot'></i></button>
+            <div class='btn-group' role='group' aria-label='...'>
+                <button type='button' class='btn btn-default' onclick='restart()'><i class='glyphicon glyphicon-fast-backward'></i></button>
+                <button type='button' class='btn btn-default' onclick='pause()'><i id='play' class='glyphicon glyphicon-pause'></i></button>
+                <button type='button' class='btn btn-default' onclick='step()'><i class='glyphicon glyphicon-step-forward'></i></button>
             </div>
+            <p>
+                <div class='btn-group hidden' role='group' aria-label='...' id='screenShotButton'>
+                    <button class='btn btn-default' id='screenshot' onclick='takeScreenShot()'>Screenshot &nbsp;<i class='glyphicon glyphicon-camera'></i></button>
+                </div>
+            </p>
         </div>
         <script src='/static/js/8x8.js'></script>
     </body>
 </html>
+  

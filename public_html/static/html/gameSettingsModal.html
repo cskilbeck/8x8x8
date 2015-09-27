@@ -1,14 +1,14 @@
 <div class="modal-header">
     <button type="button" class="close" ng-click='cancel()' aria-label="Close"><span aria-hidden="true">&times;</span></button>
-    <h4 class="modal-title" id="editorOptionsModalLabel">Settings for {{settings.gameName}}</h4>
+    <h4 class="modal-title">Settings for {{settings.game_title}}</h4>
 </div>
 <div class="modal-body">
     <form name="editorOptionsForm" novalidate>
         <div class='form-group'>
-            <label for='theme'>Speed</label>
+            <label for='speedButton'>Speed</label>
             <div class="btn-group">
-                <button type="button" id='themeButton' class="btn btn-sm dropdown-toggle" data-toggle="dropdown">
-                    {{frameratenames[settings.framerate]}}<span class="caret"></span>
+                <button type="button" name='speedButton' class="btn btn-sm dropdown-toggle" data-toggle="dropdown" data-hover='dropdown'>
+                    {{frameratenames[settings.game_framerate]}} <span class="caret"></span>
                 </button>
                 <ul class="dropdown-menu">
                     <li ng-repeat="f in frameratenames"><a style='cursor: pointer;' ng-click='setFramerate($index);'>{{f.toString()}}</a></li>
@@ -16,8 +16,8 @@
             </div>
         </div>
         <div class='form-group'>
-            <label for='instructions'>Instructions</label>
-            <textarea rows='6' ng-model='settings.instructions' name='instructions' maxlength="240" class="form-control" placeholder="Tell them how to play!" />
+            <label for='game_instructions'>Instructions</label>
+            <textarea rows='6' ng-model='settings.game_instructions' name='game_instructions' maxlength="240" class="form-control" placeholder="Tell them how to play!" />
         </div>
     </form>
 </div>

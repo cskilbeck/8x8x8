@@ -3,6 +3,7 @@ function($scope, $modal, user, ajax) {
     "use strict";
 
     var gameDetails = null,
+        frameDelays = [ 1, 2, 3, 4, 5, 6],
         hidden = [
             'document', 'window', 'alert', 'parent', 'frames', 'frameElment',
             'history', 'fullScreen', 'innerHeight', 'innerWidth', 'length',
@@ -76,10 +77,15 @@ function($scope, $modal, user, ajax) {
 
     // TODO (chs): possible race here between 'play' event and window loading (details might change in between, but does it matter?)
 
+    function frame() {
+        return document.getElementById('gameFrame');        
+    }
+
     window.setupFrame = function() {
-        var iframe;
+        var iframe = frame();
         if(gameDetails !== null) {
-            iframe = document.getElementById('gameFrame');
+            gameDetails.framedelay = frameDelays[gameDetails.game_framerate];
+            gameDetails.game_source = preScript + gameDetails.game_source + postScript;
             iframe.contentWindow.init(gameDetails);
             iframe.contentWindow.focus();
             gameDetails = null;
@@ -87,11 +93,16 @@ function($scope, $modal, user, ajax) {
     };
 
     $scope.$on('play', function(e, details) {
-        var iframe = document.getElementById('gameFrame');
         $scope.reportStatus('');
-        details.source = preScript + details.source + postScript;
         gameDetails = details;
-        iframe.src = '/static/html/frame.html';
+        frame().src = '/static/html/frame.html';
+    });
+
+    $scope.$on('settings', function(e, settings) {
+        // console.log("MainController ==>");
+        // console.log(settings);
+        settings.framedelay = frameDelays[settings.game_framerate];
+        frame().contentWindow.settings(settings);
     });
 
     window.reportRuntimeError = function(e) {

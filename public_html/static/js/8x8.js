@@ -39,9 +39,12 @@
         H = 16,
         CW,
         CH,
+        animFrameID,
         context,
         canvas,
         editor,
+        paused = false,
+        step = false,
         client,
         keyPress = [],
         keyRelease = [],
@@ -51,6 +54,7 @@
         keyCount = 0,
         lastkey,
         frame = 0,
+        frameDelay,
         colors = [
             '#000', // black
             '#080', // dark green
@@ -284,17 +288,23 @@
         var i, hasUpdate;
         if(client && client.updateFunction !== null && !exception) {
             hasUpdate = true;
-            try {
-                client.updateFunction(frame++);
+            if(step || ((frame % frameDelay) === 0 && !paused)) {
+                try {
+                    client.updateFunction(frame);
+                }
+                catch(e) {
+                    exception = true;
+                    reportError(e);
+                }
             }
-            catch(e) {
-                exception = true;
-                reportError(e);
+            if(step || !paused) {
+                ++frame;
             }
+            step = false;
         }
         draw();
         if(hasUpdate) {
-            requestAnimationFrame(onFrame);
+            animFrameID = requestAnimationFrame(onFrame);
         }
         else {
             focusEditor();
@@ -318,39 +328,119 @@
         exception = true;
     };
 
+    // for running it inside frame.html when the source might not have been saved
+
+    function element(id) {
+        return document.getElementById(id);
+    }
+
+    // sigh, no jquery so here's some little bits
+
+    function enable(id, enabled) {
+        //jshint -W041,-W018
+        element(id).disabled = !(enabled != 0); // undefined = true
+        //jshint +W041,+W018
+    }
+
+    function disable(id) {
+        enable(id, false);
+    }
+
+    function setClass(id, c) {
+        element(id).className = c;
+    }
+
+    function addClass(id, a) {
+        var e = element(id),
+            c = e.className;
+        if(c.indexOf(a) === -1) {
+            c += (c.substr(-1) !== ' ') ? ' ' : '';
+            e.className = c + a;
+        }
+    }
+
+    function removeClass(id, c) {
+        var e = element(id),
+            a = e.className.replace(c, '');
+        if(a.substr(-1) === ' ') {
+            a = a.slice(0, -1);
+        }
+        e.className = a;
+    }
+
+    function setPlayButton() {
+        if(paused) {
+            removeClass('play', 'glyphicon-pause');
+            addClass('play', 'glyphicon-play');
+        }
+        else {
+            removeClass('play', 'glyphicon-play');
+            addClass('play', 'glyphicon-pause');
+        }
+    }
+
+    // sigh, bored of forgetting to call this
+
+    function controller(f) {
+        return function() {
+            f();
+            setPlayButton();
+        };
+    }
+
+    window.pause = controller(function() {
+        paused = !paused;
+    });
+
+    window.restart = controller(function() {
+        step = true;
+        startIt();
+    });
+
+    window.step = controller(function() {
+        paused = true;
+        step = true;
+    });
+
     function startIt() {
         try {
             client = (typeof ClientScript !== 'undefined') ? new ClientScript() : null;
+            frame = 0;
+            if(animFrameID) {
+                cancelAnimationFrame(animFrameID);
+            }
+            animFrameID = requestAnimationFrame(onFrame);
         }
         catch(e) {
             reportError(e);
         }
     }
 
-    // for running it inside frame.html when the source might not have been saved
+    window.settings = function(settings) {
+        var desc = document.getElementById('gameinstructions');
+        var name = document.getElementById('gamename');
+        desc.innerHTML = settings.game_instructions;
+        name.innerHTML = settings.game_title;
+        frameDelay = settings.framedelay;
+    };
 
     window.init = function(details) {
         var script = document.createElement('script');
         var body = document.getElementsByTagName('body')[0];
-        var name = document.getElementById('gamename');
-        var desc = document.getElementById('gameinstructions');
         var ssb = document.getElementById('screenShotButton');
         script.type = 'text/javascript';
-        script.innerHTML = details.source;
-        name.innerHTML = details.name;
-        desc.innerHTML = details.instructions;
+        script.innerHTML = details.game_source;
         game_id = details.game_id;  // GLOBAL
+        settings(details);
         body.appendChild(script);
 
-        startIt();
-
-        ssb.className = '';
+        ssb.className = 'btn-group';
 
         window.takeScreenShot = function() {
             parent.window.takeScreenShot(screen, game_id);
         };
 
-        requestAnimationFrame(onFrame);
+        startIt();
     };
 
     draw();
@@ -359,7 +449,6 @@
     }
     else {
         startIt();
-        requestAnimationFrame(onFrame);
     }
 
 }());
