@@ -558,12 +558,13 @@ class screen(Handler):
 
 class play(Handler):
     def Get(self, game_id):
-        self.cur.execute('''SELECT game_id, game_source, game_title, game_instructions
+        self.cur.execute('''SELECT game_id, game_source, game_title, game_instructions, game_framerate
                             FROM games WHERE game_id = %(game_id)s''', locals())
         if self.cur.rowcount == 0:
             raise web.HTTPError('404 Game not found')
         row = self.cur.fetchone()
-        return HTML(render.play(row))
+        html = HTML(render.play(row))
+        return html
 
 #----------------------------------------------------------------------
 

@@ -281,3 +281,12 @@ pre {
 .navbar-form.navbar-right.nomargin {
     margin: 0;
 }
+
+#shareMenu {
+    z-index: 10000;
+}
+
+.gameinfo {
+    min-height: 200px;
+    margin: 10px;
+}

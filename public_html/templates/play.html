@@ -23,6 +23,10 @@ $def with (game)
                 font-weight: lighter;
             }
         </style>
+        <script id='settings' type='text/template'>
+            { "framedelay": $:game['game_framerate'] }
+        </script>
+
     </head>
     <body>
         $game['game_title']<br><br>

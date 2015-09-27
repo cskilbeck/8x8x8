@@ -46,6 +46,7 @@
         paused = false,
         step = false,
         client,
+        inFrame = false,
         keyPress = [],
         keyRelease = [],
         keyHeld = [ false, false, false, false, false ],
@@ -112,11 +113,15 @@
         screen = [];
 
     function reportError(e) {
-        parent.window.reportRuntimeError(e);
+        if(inFrame) {
+            parent.window.reportRuntimeError(e);
+        }
     }
 
     function reportErrorDirect(msg, line, column) {
-        parent.window.reportRuntimeErrorDirect(msg, line, column);
+        if(inFrame) {
+            parent.window.reportRuntimeErrorDirect(msg, line, column);
+        }
     }
 
     function ellipse(ctx, cx, cy, w, h, rounded){
@@ -242,7 +247,7 @@
     }
 
     function focusEditor() {
-        if(parent && parent.window && typeof parent.window.focusEditor === 'function') {
+        if(inFrame) {
             parent.window.focusEditor();
         }
     }
@@ -445,9 +450,11 @@
 
     draw();
     if(parent.window && typeof parent.window.setupFrame === 'function') {
+        inFrame = true;
         parent.window.setupFrame();
     }
     else {
+        frameDelay = JSON.parse(element('settings').innerHTML).framedelay + 1;
         startIt();
     }
 

@@ -33,32 +33,35 @@
                     <tr class='hid'>
                         <td colspan='5'>
                             <div class='accordion-body collapse tableContainer {{expanded(g.game_id) ? "in" : ""}}' id='row{{$index}}' row='#headerRow{{$index}}' collapsible aria-expanded='{{expanded(g.game_id)}}' style>
-                                <table class='table inner'>
-                                    <tbody>
-                                        <tr>
-                                            <td colspan='5' class='butter'>
-                                                <button class='btn btn-success' ng-click='playIt(g.game_id)' data-toggle="tooltip" data-placement="top" title="Play"><i class='glyphicon glyphicon-play'></i></button>&nbsp;
-                                                <button class="btn btn-default" ng-click='shareIt(g)' data-toggle="tooltip" data-placement="top" title="Share"><i class='glyphicon glyphicon-share'></i></button>&nbsp;
-                                                <span ng-show='user_id !== g.user_id'>
-                                                    <a class='btn btn-primary' href='/view/{{g.game_id}}' data-toggle="tooltip" data-placement="top" title="View"><i class='glyphicon glyphicon-zoom-in'></i></a>&nbsp;
-                                                </span>
-                                                <span ng-show='user_id === g.user_id'>
-                                                    <a class='btn btn-primary' href='/edit/{{g.game_id}}' data-toggle="tooltip" data-placement="top" title="Edit"><i class='glyphicon glyphicon-edit'></i></a>&nbsp;
-                                                    <a class='btn btn-warning' ng-click='rename(g.game_id, g.game_title)' data-toggle="tooltip" data-placement="top" title="Rename"><i class='glyphicon glyphicon-info-sign'></i></a>&nbsp;
-                                                    <button class='btn btn-danger' ng-click='deleteIt(g.game_id, g.game_title)' data-toggle="tooltip" data-placement="top" title="Delete"><i class='glyphicon glyphicon-trash'></i></button>
-                                                </span>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Last Saved</td>
-                                            <td>{{timer(g.game_lastsaved)}}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Created</td>
-                                            <td>{{timer(g.game_created)}}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                <div class='gameinfo'>
+                                    <button class='btn btn-success' ng-click='playIt(g.game_id)' data-toggle="tooltip" data-placement="top" title="Play"><i class='glyphicon glyphicon-play'></i></button>&nbsp;
+                                    <span ng-show='user_id !== g.user_id'>
+                                        <a class='btn btn-primary' href='/view/{{g.game_id}}'>View source <i class='glyphicon glyphicon-zoom-in'></i></a>&nbsp;
+                                    </span>
+                                    <span ng-show='user_id === g.user_id'>
+                                        <a class='btn btn-primary' href='/edit/{{g.game_id}}'>Edit</a>&nbsp;
+                                        <a class='btn btn-warning' ng-click='rename(g.game_id, g.game_title)'>Rename</a>&nbsp;
+                                        <button class='btn btn-danger' ng-click='deleteIt(g.game_id, g.game_title)'>Delete</button>
+                                    </span>
+                                    <span class='dropdown'>
+                                        <button class="btn btn-default dropdown-toggle" type='button' id='shareMenu' data-toggle='dropdown' aria-haspopup='true' aria-expandable='true'>
+                                            Share
+                                            <span class='caret'></span>
+                                        </button>
+                                        <ul class='dropdown-menu' aria-labelledby='shareMenu'>
+                                            <li><a style='cursor: pointer' ng-click='shareLink(g.game_id)'>Link</a>
+                                            <li><a style='cursor: pointer' ng-click='shareIt(g.game_id)'>Facebook</a>
+                                            <li><a style='cursor: pointer' ng-click='shareTwitter(g.game_id)'>Twitter</a>
+                                        </ul>
+                                    </span>
+                                    <div>
+                                        Last Saved: {{timer(g.game_lastsaved)}}<br>
+                                        Created: {{timer(g.game_created)}}
+                                    </div>
+                                    <div>
+                                        <span><img src='/screen/{{g.game_id}}'</span>
+                                    </div>
+                                </div>
                             </div>
                         </td>
                     </tr>
