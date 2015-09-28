@@ -50,6 +50,7 @@
         keyPress = [],
         keyRelease = [],
         keyHeld = [ false, false, false, false, false ],
+        keyHeldReal  = [ false, false, false, false, false ],
         game_id,
         exception = false,
         keyCount = 0,
@@ -270,6 +271,7 @@
                 }
                 keyPress.push(key);
                 keyHeld[key] = true;
+                keyHeldReal[key] = true;
             }
         }
         ++keyCount;
@@ -286,12 +288,15 @@
                 keyRelease.shift();
             }
             keyRelease.push(key);
-            keyHeld[key] = false;
+            keyHeldReal[key] = false;
+        }
+        if(e.keyCode in [32, 37, 38, 39, 40]) {
+            e.preventDefault();
         }
     };
 
     function onFrame() {
-        var hasUpdate;
+        var i, hasUpdate;
         if(client && client.updateFunction !== null && !exception) {
             hasUpdate = true;
             if(step || ((frame % frameDelay) === 0 && !paused)) {
@@ -301,6 +306,9 @@
                 catch(e) {
                     exception = true;
                     reportError(e);
+                }
+                for(i in keyHeldReal) {
+                    keyHeld[i] = keyHeldReal[i];
                 }
             }
             if(step || !paused) {
