@@ -3,6 +3,7 @@
 var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']);
 
 //////////////////////////////////////////////////////////////////////
+// - fix screen layout not scrolling games list
 // - screenshots
 //      - store screenshots as prebuilt pngs in the database as varbinary - less processing to serve...
 //      - show screenshots in game list

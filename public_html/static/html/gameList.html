@@ -20,43 +20,63 @@
                         <th width=20%>Rating</th>
                     </tr>
                 </thead>
-                <tbody id='results' ng-repeat='g in games'>
+            </table>
+            <table class='table outer scrollable'>
+                <tbody ng-repeat='g in games'>
                     <tr data-toggle='collapse' data-target='#row{{$index}}' class='clickable' id='headerRow{{$index}}' aria-expandable='true' ng-click='yoink($index, g.game_id)' aria-expanded='{{expanded(g.game_id)}}'>
                         <td>{{g.game_title}}</td>
                         <td>{{g.user_username}}</td>
                         <td>{{timer(g.game_lastsaved)}}</td>
                         <td>{{timer(g.game_created)}}</td>
                         <td>
-                            <i ng-repeat='i in [1,2,3,4,5]' class='{{star(i, 5)}}star glyphicon glyphicon-star'></i>
+                            <i ng-repeat='i in [1,2,3,4,5]' class='{{star(i, g)}}star glyphicon glyphicon-star'></i>
                         </td>
                     </tr>
                     <tr class='hid'>
                         <td colspan='5'>
                             <div class='accordion-body collapse tableContainer {{expanded(g.game_id) ? "in" : ""}}' id='row{{$index}}' row='#headerRow{{$index}}' collapsible aria-expanded='{{expanded(g.game_id)}}' style>
                                 <div class='gameinfo'>
-                                    <button class='btn btn-success' ng-click='playIt(g.game_id)' data-toggle="tooltip" data-placement="top" title="Play"><i class='glyphicon glyphicon-play'></i></button>&nbsp;
-                                    <span ng-show='user_id !== g.user_id'>
-                                        <a class='btn btn-primary' href='/view/{{g.game_id}}'>View</i></a>&nbsp;
-                                    </span>
-                                    <span ng-show='user_id === g.user_id'>
-                                        <a class='btn btn-primary' href='/edit/{{g.game_id}}'>Edit</a>&nbsp;
-                                        <a class='btn btn-warning' ng-click='rename(g.game_id, g.game_title)'>Rename</a>&nbsp;
-                                        <button class='btn btn-danger' ng-click='deleteIt(g.game_id, g.game_title)'>Delete</button>
-                                    </span>
-                                    <span>
-                                        <div class='btn-group'>
-                                            <button class="btn btn-default dropdown-toggle" type='button' id='shareMenu' data-toggle='dropdown' aria-haspopup='true' aria-expandable='true'>
-                                                Share
-                                                <span class='caret'></span>
-                                            </button>
-                                            <ul class='dropdown-menu' aria-labelledby='shareMenu'>
-                                                <li><a style='cursor: pointer' ng-click='shareLink(g)'>Link</a>
-                                                <li><a style='cursor: pointer' ng-click='shareIt(g)'>Facebook</a>
-                                                <li><a style='cursor: pointer' ng-click='shareTwitter(g)'>Twitter</a>
-                                            </ul>
+                                    <div class='row'>
+                                        <div class='col-xs-4'>
+                                            <button class='btn btn-success' ng-click='playIt(g.game_id)' title="Play"><i class='glyphicon glyphicon-play'></i></button>&nbsp;
+                                            <span ng-show='user_id !== g.user_id'>
+                                                <a class='btn btn-primary' href='/view/{{g.game_id}}'>View</i></a>&nbsp;
+                                            </span>
+                                            <span ng-show='user_id === g.user_id'>
+                                                <a class='btn btn-primary' href='/edit/{{g.game_id}}'>Edit</a>&nbsp;
+                                                <a class='btn btn-warning' ng-click='rename(g.game_id, g.game_title)'>Rename</a>&nbsp;
+                                                <button class='btn btn-danger' ng-click='deleteIt(g.game_id, g.game_title)'>Delete</button>
+                                            </span>
                                         </div>
-                                    </span>
-                                    <span class='pull-right'><img ng-cloak src='{{screen(g)}}'</span>
+                                        <div class='col-xs-1'>
+                                            <span>
+                                                <div class='btn-group'>
+                                                    <button class="btn btn-default dropdown-toggle" type='button' id='shareMenu' data-toggle='dropdown' aria-haspopup='true' aria-expandable='true'>
+                                                        Share
+                                                        <span class='caret'></span>
+                                                    </button>
+                                                    <ul class='dropdown-menu' aria-labelledby='shareMenu'>
+                                                        <li><a style='cursor: pointer' ng-click='shareLink(g)'>Link</a>
+                                                        <li><a style='cursor: pointer' ng-click='shareIt(g)'>Facebook</a>
+                                                        <li><a style='cursor: pointer' ng-click='shareTwitter(g)'>Twitter</a>
+                                                    </ul>
+                                                </div>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class='row'>
+                                        &nbsp;
+                                    </div>
+                                    <div class='row'>
+                                        <div class="col-xs-2">
+                                            <img ng-src='/screen/{{g.game_id}}'>
+                                        </div>
+                                        <div class='col-xs-3'>
+                                            <span ng-mouseleave='resetHover(g)'>
+                                                <i ng-repeat='i in [1,2,3,4,5]' ng-mouseover='rateHover(i, g)' ng-click='rateClick(i, g)' class='{{rating(i, g)}}star glyphicon glyphicon-star'></i>
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </td>

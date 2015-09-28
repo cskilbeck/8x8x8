@@ -259,23 +259,30 @@ def searchTerm(s):
 #----------------------------------------------------------------------
 # /api/list
 
+# rating_stars should be 0 for games where this user has not rated the game or user_id < 0
+
 class list(Handler):
     @data({
         'user_id': int,
+        'justmygames': 0,
         'search': '',
         'length': { 'default': 20, 'type': int, 'max': 100, 'min': 1 },
         'offset': { 'default': 0, 'min': 0 }
         })
     def Get(self):
         self.input['search'] = searchTerm(self.input['search'])
-        self.cur.execute('''SELECT game_id, games.user_id, game_title, game_lastsaved, game_created, user_username, game_instructions
-                            FROM games INNER JOIN users ON users.user_id = games.user_id
-                            WHERE (%(user_id)s < 0 OR games.user_id = %(user_id)s)
+        self.cur.execute('''SELECT games.game_id, games.user_id, game_title, game_lastsaved, game_created, user_username, game_instructions, game_rating, rating_stars
+                            FROM games
+                                JOIN users ON users.user_id = games.user_id
+                                LEFT JOIN (SELECT * FROM ratings WHERE user_id = %(user_id)s) AS myratings ON games.game_id = myratings.game_id
+                            WHERE (%(justmygames)s = 0 OR games.user_id = %(user_id)s)
                                 AND game_title LIKE %(search)s
                             ORDER BY game_lastsaved DESC, game_created DESC
                             LIMIT %(length)s OFFSET %(offset)s'''
                     , self.input)
-        return JSON({ 'count': self.cur.rowcount, 'games': self.cur.fetchall() })
+        rows = self.cur.fetchall()
+        web.debug(rows)
+        return JSON({ 'count': self.cur.rowcount, 'games': rows })
 
 #----------------------------------------------------------------------
 # /api/count
@@ -383,16 +390,9 @@ class rate(Handler):
         self.cur.execute('''INSERT INTO ratings (rating_timestamp, game_id, user_id, rating_stars)
                             VALUES(NOW(), %(game_id)s, %(user_id)s, %(rating)s)
                             ON DUPLICATE KEY UPDATE rating_timestamp = NOW(), rating_stars = %(rating)s''', self.input)
-        self.cur.execute('''UPDATE GAMES 
+        self.cur.execute('''UPDATE games 
                             SET game_rating =
-                                SELECT
-                                    (SELECT SUM(rating_stars)
-                                    FROM ratings
-                                    WHERE game_id = %(game_id)s)
-                                /
-                                    (SELECT COUNT(*)
-                                    FROM ratings
-                                    WHERE game_id = %(game_id)s)
+                                (SELECT (SELECT SUM(rating_stars) FROM ratings WHERE game_id = %(game_id)s) / (SELECT COUNT(*) FROM ratings WHERE game_id = %(game_id)s))
                             WHERE game_id = %(game_id)s''', self.input)
         self.cur.execute('''SELECT game_rating
                             FROM games
@@ -472,7 +472,7 @@ class register(Handler):
             if self.cur.fetchone()['count'] != 0:
                 raise web.HTTPError('409 Username already taken')
             else:
-                data['session'] = getRandomInt()
+                self.input['session'] = getRandomInt()
                 self.cur.execute('''INSERT INTO users (user_email, user_password, user_username, user_created, user_session)
                                     VALUES (%(email)s, %(password)s, %(username)s, NOW(), %(session)s)
                                     ON DUPLICATE KEY UPDATE user_session = %(session)s, user_id = LAST_INSERT_ID(user_id)''', self.input)
@@ -485,7 +485,7 @@ class register(Handler):
                         raise web.HTTPError('500 Database error 37')
                     row = self.cur.fetchone()
                     result['user_id'] = user_id
-                    result['user_username'] = data['username']
+                    result['user_username'] = self.input['username']
                     result['user_session'] = row['user_session']
                 else:
                     raise web.HTTPError("401 Can't create account")

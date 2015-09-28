@@ -32,11 +32,14 @@ function(ajax, user) {
         // get the list of games
         // TODO (chs): search term and paging parameters (and respect the cache is they're unchanged - eg coming back to the pane)
         getlist: function(force) {
-            var q = Q.defer();
+            var i, q = Q.defer();
             if(list.length === 0 || force) {
-                ajax.get('/api/list', { user_id: -1 } )
+                ajax.get('/api/list', { user_id: user.id(), justmygames: 0 } )
                 .then(function(result) {
                     list = result.games || [];
+                    for(i in list) {
+                        list[i].hover_rating = list[i].rating_stars || 0;
+                    }
                     q.resolve(list);
                 }, function(xhr) {
                     q.reject(xhr);
@@ -45,6 +48,15 @@ function(ajax, user) {
                 q.resolve(list);
             }
             return q.promise;
+        },
+
+        rate: function(game, rating) {
+            return ajax.post('/api/rate', {
+                user_id: user.id(),
+                user_session: user.session(),
+                game_id: game.game_id,
+                rating: rating
+            });
         },
 
         getcount: function(search) {

@@ -290,3 +290,8 @@ pre {
     min-height: 9em;
     margin: 10px;
 }
+
+.table.outer.scrollable {
+    overflow-x: hidden;
+    overflow-y: scroll;
+}

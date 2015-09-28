@@ -249,7 +249,7 @@
     }
 
     function focusEditor() {
-        if(inFrame) {
+        if(parent.window && typeof parent.window.focusEditor === 'function') {
             parent.window.focusEditor();
         }
     }

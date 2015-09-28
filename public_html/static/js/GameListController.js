@@ -17,15 +17,45 @@
         $('#refreshButton').tooltip();
 
         function getGames(force) {
+            var q = Q.defer();
             games.getlist(force).then(function(gameList) {
                 $scope.games = gameList;
                 $scope.$apply();
                 $('[data-toggle="tooltip"]').tooltip();
+                q.resolve(gameList);
+            }, function(xhr) {
+                q.reject(xhr);
             });
+            return q.promise;
         }
 
-        $scope.star = function(index, score) {
-            return index <= score ? 'yellow' : 'white';
+        $scope.star = function(index, g) {
+            return index <= Math.floor(g.game_rating + 0.25) ? 'yellow' : 'white';  // slightly generous (allow a game to be a 5 which isn't 100% 5 rated)
+        };
+
+        $scope.rating = function(index, g) {
+            return index <= g.hover_rating ? 'yellow' : 'white';
+        };
+
+        $scope.rateHover = function(index, g) {
+            g.hover_rating = index;
+        };
+
+        $scope.resetHover = function(g) {
+            g.hover_rating = g.rating_stars;
+        };
+
+        $scope.rateClick = function(index, g) {
+            var old = g.rating_stars;
+            g.hover_rating = g.rating_stars = index;
+            user.login()
+            .then(
+                function() {
+                    return games.rate(g, index); },
+                function() {
+                    g.hover_rating = g.rating_stars = old;
+                })
+            .then(getGames);
         };
 
         $scope.timer = function(t) {
