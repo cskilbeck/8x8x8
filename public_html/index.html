@@ -74,8 +74,9 @@
 
         <base href='/'>
     </head>
-    <body>
-        <div ng-app='mainApp' ng-controller='MainController' ng-strict-di>
+    <body ng-app='mainApp' ng-controller='MainController' ng-strict-di>
+        <div class='backdropper' ng-show='showBackdropper' ng-click='backdropperClicked()'></div>
+        <div>
             <nav class="navbar navbar-default navbar-fixed-top" role='navigation'>
                 <div class='container-fluid'>
                     <div class="navbar-header">
@@ -124,10 +125,9 @@
                             </div>
                             <iframe id='gameFrame' sandbox='allow-scripts allow-same-origin' src='/static/html/frame.html'></iframe>
                             <div class='well controls'>
-                                <div id='instructions' ng-hide='editingInstructions || 1' ng-click='startEditingInstructions()'>
-                                    {{game.game_instructions}}
-                                </div>
-                                <div id='instructionsTextarea' rows='5' ng-show='editingInstructions || 1' ng-model='newInstructions' ng-blur='finishEditingInstructions()' ng-maxlength='240'>
+                                <div class='instructions' >
+                                    <textarea id='instructionsTextarea' rows='5' ng-disabled='!canEditInstructions' ng-model='game.game_instructions' ng-blur='finishEditingInstructions()' ng-focus='startEditingInstructions()' ng-maxlength='240' ng-class='instructionsEditorClass()'>
+                                    </textarea>
                                 </div>
                                 <div class='btn-group' role='group' aria-label='...'>
                                     <button type='button' class='btn btn-default' id='restartButton' ng-click='restart()'><i class='glyphicon glyphicon-fast-backward'></i></button>

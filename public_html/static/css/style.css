@@ -283,10 +283,6 @@ pre {
     margin: 0;
 }
 
-#shareMenu {
-    z-index: 10000;
-}
-
 .gameinfo {
     min-height: 9em;
     margin: 10px;
@@ -311,12 +307,38 @@ pre {
     display: block;
     overflow: hidden;
     height: 100px;
+    width: 200px;
+    padding: 0;
     margin-bottom: 20px;
 }
 
 #instructionsTextarea {
-    border: 1px solid black;
-    height: 100px;
-    margin-bottom: 20px;
+    height: 100%;
+    width: 100%;
+    position: relative;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    text-align: center;
+    padding: 0;
+    overflow: hidden;
+    resize: none;
+    border: 0;
+    background: transparent;
+    z-index: 1501;
+}
+
+#instructionsTextarea.editing {
     background: white;
+}
+
+.backdropper {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 1500;
+    background: #000;
+    opacity: 0.25;
 }

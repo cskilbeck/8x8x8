@@ -1,5 +1,5 @@
-mainApp.controller('MainController', ['$scope', '$modal', 'user', 'ajax',
-function($scope, $modal, user, ajax) {
+mainApp.controller('MainController', ['$scope', '$modal', 'user', 'ajax', '$rootScope',
+function($scope, $modal, user, ajax, $rootScope) {
     "use strict";
 
     $scope.signInMessage = "Sign In";
@@ -12,6 +12,20 @@ function($scope, $modal, user, ajax) {
     $scope.showProfileButton = false;
     $scope.usernameMessage = "";
     $scope.signInClass = 'glyphicon glyphicon-log-in';
+    $scope.showBackdropper = false;
+
+    $scope.$on('showBackdropper', function() {
+        $scope.showBackdropper = true;
+    });
+
+    $scope.$on('hideBackdropper', function() {
+        $scope.showBackdropper = false;
+    });
+
+    $scope.backdropperClicked = function() {
+        $scope.showBackdropper = false;
+        $rootScope.$emit('backdropperClicked');
+    };
 
     function clearNavBar() {
         $('.nav.navbar-nav > li').removeClass('active');
@@ -92,14 +106,6 @@ function($scope, $modal, user, ajax) {
         $scope.networkIcon = p ? 'glyphicon-repeat' : 'glyphicon-ok';
         $scope.$applyAsync();
     };
-
-    function hex(a) {
-        var i, s = '';
-        for(i in a) {
-            s += (a[i] | 0x10).toString(16).substr(-1);
-        }
-        return s;
-    }
 
     user.refreshSession();
 }]);

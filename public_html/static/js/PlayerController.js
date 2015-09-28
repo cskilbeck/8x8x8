@@ -26,7 +26,7 @@
             user_id: 0
         };
         $scope.editingInstructions = false;
-        $scope.newInstructions = 'DEF';
+        $scope.canEditInstructions = false;
 
         $scope.showScreenshotButton = function() {
             return $scope.game.user_id === user.id();
@@ -62,14 +62,24 @@
         }
 
         $scope.startEditingInstructions = function() {
-            $scope.editingInstructions = true;
-            // $timeout(function() {
-            //     $('#instructionsTextarea').focus();
-            // });
+            if($scope.canEditInstructions) {
+                $scope.editingInstructions = $scope.game.user_id === user.id();
+                $scope.$emit('showBackdropper');
+            }
         };
 
-        $scope.finishEditingInstructions = function() {
+        $scope.$on('backdropperClicked', function() {
+            console.log("!");
             $scope.editingInstructions = false;
+        });
+
+        $scope.finishEditingInstructions = function() {
+            $scope.$emit('hideBackdropper');
+            $scope.editingInstructions = false;
+        };
+
+        $scope.instructionsEditorClass = function() {
+            return $scope.editingInstructions ? 'editing' : '';
         };
 
         $scope.takeScreenShot = function() {
@@ -89,26 +99,29 @@
 
 
         $scope.$on('play', function(e, game) {
-            var body, o, n;
+            var body, o, n, i;
 
-            $scope.game = game;
-            frameWindow = $('#gameFrame')[0].contentWindow;
-            frameDocument = frameWindow.document;
-            body = frameDocument.getElementsByTagName('body')[0];
-            o = frameDocument.getElementById('clientscript');
-            n = frameDocument.createElement('script');
+            if(game) {
+                $scope.canEditInstructions = game.user_id === user.id();
+                $scope.game = game;
+                frameWindow = $('#gameFrame')[0].contentWindow;
+                frameDocument = frameWindow.document;
+                body = frameDocument.getElementsByTagName('body')[0];
+                o = frameDocument.getElementById('clientscript');
+                n = frameDocument.createElement('script');
 
-            frameWindow.clearException();
-            $scope.unpause();
-            $scope.reportStatus('');
-            game.framedelay = frameDelays[game.game_framerate];
-            body.removeChild(o);
-            n.setAttribute('id', 'clientscript');
-            n.innerHTML = preScript + game.game_source + postScript;
-            frameWindow.game = game;
-            body.appendChild(n);
-            $('#gameFrame').focus();
-            frameWindow.startIt(game);
+                frameWindow.clearException();
+                $scope.unpause();
+                $scope.reportStatus('');
+                game.framedelay = frameDelays[game.game_framerate];
+                body.removeChild(o);
+                n.setAttribute('id', 'clientscript');
+                n.innerHTML = preScript + game.game_source + postScript;
+                frameWindow.game = game;
+                body.appendChild(n);
+                $('#gameFrame').focus();
+                frameWindow.startIt(game);
+            }
         });
 
         // sigh, bored of forgetting to call this
