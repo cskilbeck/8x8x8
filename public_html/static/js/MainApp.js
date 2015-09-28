@@ -3,6 +3,7 @@
 var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']);
 
 //////////////////////////////////////////////////////////////////////
+// - run it when editor pane is activated
 // - screenshots
 //      - store screenshots as prebuilt pngs in the database as varbinary - less processing to serve...
 //      - update screenshot when it's taken (add a query parameter to the url)

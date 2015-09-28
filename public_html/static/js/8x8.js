@@ -35,29 +35,18 @@
 (function() {
     "use strict";
 
-    var W = 16,
-        H = 16,
-        CW,
-        CH,
+    var W = 16, H = 16,
+        CW, CH,
         animFrameID,
-        context,
-        canvas,
-        editor,
-        paused = false,
-        step = false,
+        context, canvas,
+        paused = false, step = false,
         client,
-        inFrame = false,
-        keyPress = [],
-        keyRelease = [],
+        keyPress = [], keyRelease = [],
         keyHeld = [ false, false, false, false, false ],
         keyHeldReal  = [ false, false, false, false, false ],
-        game_id,
         exception = false,
-        keyCount = 0,
-        lastkey,
-        frame = 0,
-        frameCounter = 0,
-        frameDelay,
+        keyCount = 0, lastkey,
+        frame = 0, frameCounter = 0, frameDelay,
         colors = [
             '#000', // black
             '#080', // dark green
@@ -303,8 +292,8 @@
                 ++frame;
             }
             step = false;
+            draw();
         }
-        draw();
         if(hasUpdate) {
             animFrameID = requestAnimationFrame(onFrame);
         }
@@ -346,7 +335,6 @@
         try {
             client = (typeof ClientScript !== 'undefined') ? new ClientScript() : null;
             frameDelay = window.game.framedelay;
-            game_id = window.game.game_id;
             frame = 0;
             frameCounter = 0;
             if(animFrameID) {
