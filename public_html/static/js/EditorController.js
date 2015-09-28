@@ -281,12 +281,13 @@
 
         $scope.runIt = function() {
             $scope.$emit('status', '');
-            $scope.$emit('play', {
+            $rootScope.$broadcast('play', {
                 game_source: editor.getValue(),
                 game_title: $scope.gameName,
                 game_instructions: gameSettings.game_instructions,
                 game_id: game_id,
-                game_framerate: gameSettings.game_framerate
+                game_framerate: gameSettings.game_framerate,
+                user_id: user.id()
             });
         };
 

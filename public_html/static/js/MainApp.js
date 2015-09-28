@@ -3,23 +3,18 @@
 var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']);
 
 //////////////////////////////////////////////////////////////////////
-// - fix screen layout not scrolling games list
 // - screenshots
 //      - store screenshots as prebuilt pngs in the database as varbinary - less processing to serve...
-//      - show screenshots in game list
-//      - update screenshot when it's taken
-// - share button in preview frame
-// - different share text based on whether it's your game or not
+//      - update screenshot when it's taken (add a query parameter to the url)
 // - 
 // - mouse/touch support (swipe UDLR & tap)
 // - detect hangs and kill it (possible? with instrumentation via Esprima : for, while, do) (but how to keep the source line matched up? sounds hard...)
 // / share button
 // / instructions/documentation/tooltips/popovers
-// / voting/rating/comments
+// - comments
 // - home page
 // / fix the get/set pixel/color APIs for numbers/strings
 // - ask if they want to save when quitting the editor if changes are unsaved
-// - preload the editor bits somehow
 // - fix the docs
 //
 // / work out how to run it from [azure|aws|digitalocean] on Debian with:
@@ -27,7 +22,7 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      + apache for static files
 //      - database on another machine
 //      + http://256pixels.net
-//      - compressed assets
+//      - compressed assets (editor require() stuff and glyphicons not working)
 // - telemetry/analytics
 //
 // - comments
@@ -36,6 +31,7 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      - get it out of an iframe
 //      - edit settings directly in the player (name, instructions, framerate) - no modal
 //      - get rid of run button in editor pane (play button in the player)
+//      - share button in preview frame
 //
 // - editor
 //      - fix location/url when it's /edit/new and they've saved/created it (should be /edit/game_id)
@@ -58,7 +54,7 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      - paging in game list
 //      - make the search text work (timeout on change)
 //      - quick search buttons: my games, top games, most played, recently added, recently changed
-//      - highlight color of expanded rows is lost on refresh
+//      - game list scrolling broken
 //
 // - api
 //      key() instead of pressed() - with N key buffer ( and keyreleased() )
@@ -104,3 +100,7 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 // + screenshots - store screen as 256 nibbles in game_screenshot!
 // + make minify.py handle STYLEBLOCKs as well
 //      + game settings (frame rate, instructions)
+//      + show screenshots in game list
+//      + highlight color of expanded rows is lost on refresh
+// + voting/rating
+// + different share text based on whether it's your game or not

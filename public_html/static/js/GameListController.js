@@ -5,8 +5,8 @@
 
     var expanded = {};
 
-    mainApp.controller('GameListController', ['$scope', '$routeParams', 'dialog', 'user', 'ajax', 'games',
-    function ($scope, $routeParams, dialog, user, ajax, games) {
+    mainApp.controller('GameListController', ['$scope', '$routeParams', 'dialog', 'user', 'ajax', 'games', '$rootScope',
+    function ($scope, $routeParams, dialog, user, ajax, games, $rootScope) {
 
         $scope.$parent.pane = 'Games';
         $scope.games = [];
@@ -21,7 +21,6 @@
             games.getlist(force).then(function(gameList) {
                 $scope.games = gameList;
                 $scope.$apply();
-                $('[data-toggle="tooltip"]').tooltip();
                 q.resolve(gameList);
             }, function(xhr) {
                 q.reject(xhr);
@@ -76,14 +75,14 @@
                 name: game.game_title,
                 link: 'http://256pixels.net/play/' + game.game_id,
                 picture: 'http://256pixels.net/screen/' + game.game_id,
-                description: game.game_instructions + '\n\n\n',
-                caption: 'I made a game using just 256 pixels!'
+                description: (game.game_instructions || '') + '\n\n\n',
+                caption: (game.user_id === user.id() ? 'I made a' : 'Check out this') + 'game which uses just 256 pixels!'
             });
         };
 
         $scope.$on('user:updated', function(msg, details) {
             $scope.user_id = user.id();
-            getGames();
+            getGames(true);
         });
 
         $scope.refreshGameList = function() {
@@ -129,7 +128,7 @@
         $scope.playIt = function(id) {
             ajax.get('/api/source', { game_id: id } )
             .then(function(result) {
-                $scope.$emit('play', result);
+                $rootScope.$broadcast('play', result);
             });
         };
 

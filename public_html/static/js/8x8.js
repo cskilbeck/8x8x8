@@ -114,18 +114,6 @@
         ],
         screen = [];
 
-    function reportError(e) {
-        if(inFrame) {
-            parent.window.reportRuntimeError(e);
-        }
-    }
-
-    function reportErrorDirect(msg, line, column) {
-        if(inFrame) {
-            parent.window.reportRuntimeErrorDirect(msg, line, column);
-        }
-    }
-
     function ellipse(ctx, cx, cy, w, h, rounded){
         var lx = cx - w,
             rx = cx + w,
@@ -325,6 +313,23 @@
         }
     }
 
+    function reportError(e) {
+        if(parent && parent.window && typeof parent.window.reportRuntimeError === 'function') {
+            parent.window.reportRuntimeError(e);
+        }
+    }
+
+    function reportErrorDirect(msg, line, column) {
+        if(parent && parent.window && typeof parent.window.reportRuntimeErrorDirect === 'function') {
+            parent.window.reportRuntimeErrorDirect(msg, line, column);
+        }
+    }
+
+    window.onerror = function(message, file, line, column) {
+        reportErrorDirect(message, line, column);
+        exception = true;
+    };
+
     canvas = document.getElementById('canvas');
     context = canvas.getContext('2d');
     CW = canvas.width;
@@ -337,88 +342,11 @@
     window.keypress = function(k) { return doPressed(k); };
     window.keyrelease = function(k) { return doReleased(k); };
 
-    window.onerror = function(message, file, line, column) {
-        reportErrorDirect(message, line, column);
-        exception = true;
-    };
-
-    // for running it inside frame.html when the source might not have been saved
-
-    function element(id) {
-        return document.getElementById(id);
-    }
-
-    // sigh, no jquery so here's some little bits
-
-    function enable(id, enabled) {
-        //jshint -W041,-W018
-        element(id).disabled = !(enabled != 0); // undefined = true
-        //jshint +W041,+W018
-    }
-
-    function disable(id) {
-        enable(id, false);
-    }
-
-    function setClass(id, c) {
-        element(id).className = c;
-    }
-
-    function addClass(id, a) {
-        var e = element(id),
-            c = e.className;
-        if(c.indexOf(a) === -1) {
-            c += (c.substr(-1) !== ' ') ? ' ' : '';
-            e.className = c + a;
-        }
-    }
-
-    function removeClass(id, c) {
-        var e = element(id),
-            a = e.className.replace(c, '');
-        if(a.substr(-1) === ' ') {
-            a = a.slice(0, -1);
-        }
-        e.className = a;
-    }
-
-    function setPlayButton() {
-        if(paused) {
-            removeClass('play', 'glyphicon-pause');
-            addClass('play', 'glyphicon-play');
-        }
-        else {
-            removeClass('play', 'glyphicon-play');
-            addClass('play', 'glyphicon-pause');
-        }
-    }
-
-    // sigh, bored of forgetting to call this
-
-    function controller(f) {
-        return function() {
-            f();
-            setPlayButton();
-        };
-    }
-
-    window.pause = controller(function() {
-        paused = !paused;
-    });
-
-    window.restart = controller(function() {
-        step = true;
-        startIt();
-    });
-
-    window.step = controller(function() {
-        paused = true;
-        step = true;
-    });
-
-    function startIt() {
+    window.startIt = function() {
         try {
             client = (typeof ClientScript !== 'undefined') ? new ClientScript() : null;
+            frameDelay = window.game.framedelay;
+            game_id = window.game.game_id;
             frame = 0;
             frameCounter = 0;
             if(animFrameID) {
@@ -429,43 +357,45 @@
         catch(e) {
             reportError(e);
         }
-    }
-
-    window.settings = function(settings) {
-        var desc = document.getElementById('gameinstructions');
-        var name = document.getElementById('gamename');
-        desc.innerHTML = settings.game_instructions;
-        name.innerHTML = settings.game_title;
-        frameDelay = settings.framedelay;
     };
 
-    window.init = function(details) {
-        var script = document.createElement('script');
-        var body = document.getElementsByTagName('body')[0];
-        var ssb = document.getElementById('screenShotButton');
-        script.type = 'text/javascript';
-        script.innerHTML = details.game_source;
-        game_id = details.game_id;  // GLOBAL
-        settings(details);
-        body.appendChild(script);
+    window.togglepause = function() {
+        paused = !paused;
+    };
 
-        ssb.className = 'btn-group';
+    window.unpause = function() {
+        paused = false;
+    };
 
-        window.takeScreenShot = function() {
-            parent.window.takeScreenShot(screen, game_id);
-        };
-
+    window.restart = function() {
+        step = true;
         startIt();
+    };
+
+    window.step = function() {
+        paused = true;
+        step = true;
+    };
+
+    window.isPaused = function() {
+        return paused;
+    };
+
+    window.clearException = function () {
+        screen = [];
+        paused = false;
+        draw();
+        exception = false;
+    };
+
+    window.screen = function() {
+        return screen;
+    };
+
+    window.settings = function(settings) {
+        frameDelay = settings.framedelay;        
     };
 
     draw();
-    if(parent.window && typeof parent.window.setupFrame === 'function') {
-        inFrame = true;
-        parent.window.setupFrame();
-    }
-    else {
-        frameDelay = JSON.parse(element('settings').innerHTML).framedelay + 1;
-        startIt();
-    }
 
 }());

@@ -14,8 +14,9 @@ body {
 #gameFrame {
     border: none;
     width: 256px;
-    height: 999px;
-    margin-top: 20px;
+    height: 256px;
+    margin: 0;
+    padding: 0;
     overflow: hidden;
 }
 
@@ -294,4 +295,27 @@ pre {
 .table.outer.scrollable {
     overflow-x: hidden;
     overflow-y: scroll;
+}
+
+.well.controls {
+    margin: 0 auto;
+    width: 256px;
+}
+
+.row.gametitle {
+    margin-top: 20px;
+    height: 50px;
+}
+
+#instructions {
+    display: block;
+    overflow: hidden;
+    height: 100px;
+    margin-bottom: 20px;
+}
+
+#instructionsTextarea {
+    border: 1px solid black;
+    height: 100px;
+    margin-bottom: 20px;
 }

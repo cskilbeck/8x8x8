@@ -1,44 +1,19 @@
 <!DOCTYPE html>
 <html lang='en'>
     <head>
-        <link rel='stylesheet' href='http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.css'>
         <style>
             body {
                 margin: 0;
-                text-align: center;
+                padding: 0;
+                width: 100%;
+                height: 100%;
                 overflow: hidden;
-            }
-            canvas {
-                margin: 0;
-                cursor: default;
-            }
-            #gameinstructions {
-                margin-bottom: 20px;
-            }
-            .hidden {
-                width: 0;
             }
         </style>
     </head>
     <body>
-        <div>
-            <h4 id='gamename'>&nbsp;</h4>
-        </div>
         <canvas id='canvas' width='256px' height='256px'></canvas>
-        <div class='well'>
-            <div id='gameinstructions'></div>
-            <div class='btn-group' role='group' aria-label='...'>
-                <button type='button' class='btn btn-default' onclick='restart()'><i class='glyphicon glyphicon-fast-backward'></i></button>
-                <button type='button' class='btn btn-default' onclick='pause()'><i id='play' class='glyphicon glyphicon-pause'></i></button>
-                <button type='button' class='btn btn-default' onclick='step()'><i class='glyphicon glyphicon-step-forward'></i></button>
-            </div>
-            <p>
-                <div class='btn-group hidden' role='group' aria-label='...' id='screenShotButton'>
-                    <button class='btn btn-default' id='screenshot' onclick='takeScreenShot()'>Screenshot &nbsp;<i class='glyphicon glyphicon-camera'></i></button>
-                </div>
-            </p>
-        </div>
         <script src='/static/js/8x8.js'></script>
+        <script id='clientscript'>//</script>
     </body>
 </html>
-  

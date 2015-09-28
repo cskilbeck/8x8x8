@@ -53,6 +53,7 @@
 
         <!-- My stuff -->
         <script src='/static/js/MainApp.js'></script>
+
         <script src='/static/js/Cookie.js'></script>
         <script src='/static/js/Ajax.js'></script>
         <script src='/static/js/Dialog.js'></script>
@@ -60,10 +61,12 @@
         <script src='/static/js/Games.js'></script>
         <script src='/static/js/Stateful.js'></script>
         <script src='/static/js/Routes.js'></script>
+
         <script src='/static/js/MainController.js'></script>
         <script src='/static/js/HelpController.js'></script>
         <script src='/static/js/HomeController.js'></script>
         <script src='/static/js/GameListController.js'></script>
+        <script src='/static/js/PlayerController.js'></script>
         <script src='/static/js/EditorController.js'></script>
         <script src='/static/js/ModalInstanceControllers.js'></script>
 
@@ -72,14 +75,6 @@
         <base href='/'>
     </head>
     <body>
-        <div id="fb-root"></div>
-        <script>(function(d, s, id) {
-          var js, fjs = d.getElementsByTagName(s)[0];
-          if (d.getElementById(id)) return;
-          js = d.createElement(s); js.id = id;
-          js.src = "//connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v2.4&appId=1709552502606692";
-          fjs.parentNode.insertBefore(js, fjs);
-        }(document, 'script', 'facebook-jssdk'));</script>
         <div ng-app='mainApp' ng-controller='MainController' ng-strict-di>
             <nav class="navbar navbar-default navbar-fixed-top" role='navigation'>
                 <div class='container-fluid'>
@@ -123,8 +118,28 @@
                         </div>
                     </div>
                     <div class="grid_right grid_col">
-                        <div class="content centered">
+                        <div class="content centered" ng-controller='PlayerController'>
+                            <div class="row gametitle">
+                                <h4>{{game.game_title}}</h4>
+                            </div>
                             <iframe id='gameFrame' sandbox='allow-scripts allow-same-origin' src='/static/html/frame.html'></iframe>
+                            <div class='well controls'>
+                                <div id='instructions' ng-hide='editingInstructions || 1' ng-click='startEditingInstructions()'>
+                                    {{game.game_instructions}}
+                                </div>
+                                <div id='instructionsTextarea' rows='5' ng-show='editingInstructions || 1' ng-model='newInstructions' ng-blur='finishEditingInstructions()' ng-maxlength='240'>
+                                </div>
+                                <div class='btn-group' role='group' aria-label='...'>
+                                    <button type='button' class='btn btn-default' id='restartButton' ng-click='restart()'><i class='glyphicon glyphicon-fast-backward'></i></button>
+                                    <button type='button' class='btn btn-default' id='pauseButton' ng-click='pause()'><i id='play' class='glyphicon glyphicon-pause'></i></button>
+                                    <button type='button' class='btn btn-default' id='stepButton' ng-click='step()'><i class='glyphicon glyphicon-step-forward'></i></button>
+                                </div>
+                                <p>
+                                    <div class='btn-group' ng-show='showScreenshotButton()' role='group' aria-label='...' id='screenShotButton'>
+                                        <button class='btn btn-default' ng-click='takeScreenShot()'>Screenshot &nbsp;<i class='glyphicon glyphicon-camera'></i></button>
+                                    </div>
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
