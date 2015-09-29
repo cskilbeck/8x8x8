@@ -5,8 +5,8 @@
 
     var expanded = {};
 
-    mainApp.controller('GameListController', ['$scope', '$routeParams', 'dialog', 'user', 'ajax', 'games', '$rootScope',
-    function ($scope, $routeParams, dialog, user, ajax, games, $rootScope) {
+    mainApp.controller('GameListController', ['$scope', '$routeParams', 'dialog', 'user', 'ajax', 'gamelist', '$rootScope', 'game',
+    function ($scope, $routeParams, dialog, user, ajax, gamelist, $rootScope, game) {
 
         $scope.$parent.pane = 'Games';
         $scope.games = [];
@@ -16,9 +16,11 @@
 
         $('#refreshButton').tooltip();
 
+        game.editing = false;
+
         function getGames(force) {
             var q = Q.defer();
-            games.getlist(force).then(function(gameList) {
+            gamelist.getlist(force).then(function(gameList) {
                 $scope.games = gameList;
                 $scope.$apply();
                 q.resolve(gameList);
@@ -50,7 +52,7 @@
             user.login()
             .then(
                 function() {
-                    return games.rate(g, index); },
+                    return gamelist.rate(g, index); },
                 function() {
                     g.hover_rating = g.rating_stars = old;
                 })
@@ -107,7 +109,7 @@
             dialog.getText("Rename " + game_name, '', 'New Name', 'New name', game_name)
             .then(function(text) {
                 if(text !== game_name) {
-                    // TODO (chs): move this into the games service (and don't refresh games list)
+                    // TODO (chs): move this into the gamelist service (and don't refresh gamelist)
                     ajax.post('/api/rename', {
                         game_id: game_id,
                         user_id: user.id(),
@@ -121,14 +123,15 @@
         $scope.deleteIt = function(id, name) {
             dialog.choose("Delete " + name + "!?", "Do you really want to PERMANENTLY delete " + name + "? This action cannot be undone", "Yes, delete it", "No", 'btn-danger', 'btn-default')
             .then(function() {
-                games.delete(id).then(getGames);
+                gamelist.delete(id).then(getGames);
             });
         };
 
         $scope.playIt = function(id) {
-            ajax.get('/api/source', { game_id: id } )
+            gamelist.get(id)
             .then(function(result) {
-                $rootScope.$broadcast('play', result);
+                result.editing = false;
+                game.play(result);
             });
         };
 

@@ -24,13 +24,13 @@ function($rootScope){
         func(url, data)
         .done(function(result) {
             setInProgress(false);
-            reportStatus(complete);
+            reportStatus(complete || '');
             $rootScope.$apply();
             q.resolve(result);
         })
         .fail(function(xhr) {
             setInProgress(false);
-            reportError(fail || xhr.statusText);
+            reportError((fail || 'Error:') + ' ' + xhr.statusText);
             $rootScope.$apply();
             q.reject(xhr);
         });

@@ -16,20 +16,16 @@
         preScript = 'function ClientScript(' + hidden.join() + ') { "use strict";\n',
         postScript = '; this.updateFunction = (typeof update === "function") ? update : null; };';
 
-    mainApp.controller('PlayerController', ['$scope', '$modal', '$routeParams', 'user', 'ajax', '$rootScope', 'games', 'dialog', '$location', '$timeout',
-    function($scope, $modal, $routeParams, user, ajax, $rootScope, games, dialog, $location, $timeout) {
+    mainApp.controller('PlayerController', ['$scope', '$modal', '$routeParams', 'user', 'ajax', '$rootScope', 'gamelist', 'dialog', '$location', '$timeout', 'game',
+    function($scope, $modal, $routeParams, user, ajax, $rootScope, gamelist, dialog, $location, $timeout, game) {
 
-        $scope.game = {
-            game_title: 'ABC',
-            game_instructions: 'ABC',
-            game_id: 0,
-            user_id: 0
-        };
-        $scope.editingInstructions = false;
+        $scope.game = game;
         $scope.canEditInstructions = false;
 
         $scope.showScreenshotButton = function() {
-            return $scope.game.user_id === user.id();
+            // console.log($scope.game.user_id);
+            // console.log(user.id());
+            return game.user_id === user.id();
         };
 
         window.reportRuntimeError = function(e) {
@@ -53,66 +49,87 @@
             frameWindow.settings(settings);
         });
 
-        function hex(a) {
-            var i, s = '';
-            for(i in a) {
-                s += (a[i] | 0x10).toString(16).substr(-1);
+        function safecall(fn) {
+            if(typeof fn === 'function') {
+                fn.apply(arguments);
             }
-            return s;
         }
 
-        $scope.startEditingInstructions = function() {
-            if($scope.canEditInstructions) {
-                $scope.editingInstructions = $scope.game.user_id === user.id();
-                $scope.$emit('showBackdropper');
-            }
-        };
+        function safe(fn) {
+            return function() {
+                safecall(fn);
+            };
+        }
 
-        $scope.$on('backdropperClicked', function() {
-            console.log("!");
-            $scope.editingInstructions = false;
+        $scope.$on('highlighter:activate', function(m, name) {
+            switch(name) {
+                case 'title':
+                    $scope.editingTitle = true;
+                    break;
+                case 'instructions':
+                    $scope.editingInstructions = true;
+                    break;
+            }
+            $scope.$applyAsync();
         });
 
-        $scope.finishEditingInstructions = function() {
-            $scope.$emit('hideBackdropper');
-            $scope.editingInstructions = false;
-        };
+        $scope.$on('highlighter:dismiss', function(m, name) {
+            switch(name) {
+                case 'title':
+                    $scope.editingTitle = false;
+                    break;
+                case 'instructions':
+                    $scope.editingInstructions = false;
+                    break;
+            }
+            $scope.$applyAsync();
+        });
 
         $scope.instructionsEditorClass = function() {
-            return $scope.editingInstructions ? 'editing' : '';
+            var c = 'instructionsTextarea';
+            if($scope.editingInstructions) {
+                c += ' editing';
+            }
+            else if($scope.canEditInstructions()) {
+                c += ' editable';
+            }
+            return c;
+        };
+
+        $scope.titleEditorClass = function() {
+            var c = 'gametitle';
+            if($scope.editingTitle) {
+                c += ' editing';
+            }
+            else if($scope.canEditInstructions()) {
+                c += ' editable';
+            }
+            return c;
         };
 
         $scope.takeScreenShot = function() {
-            user.login()
-            .then(function() {
-                return ajax.post('/api/screenshot', {
-                            user_id: user.id(),
-                            user_session: user.session(),
-                            screen: hex(frameWindow.screen()),
-                            game_id: $scope.game.game_id
-                        });
-                })
-            .then(function(result) {
-                $scope.reportStatus("Screenshot saved");
+
+            user.login().then(function() {
+                game.set_screenshot(frameWindow.screen());
             });
         };
 
+        $scope.canEditInstructions = function() {
+            return game.editing && game.user_id === user.id();
+        };
 
         $scope.$on('play', function(e, game) {
             var body, o, n, i;
-
             if(game) {
-                $scope.canEditInstructions = game.user_id === user.id();
                 $scope.game = game;
                 frameWindow = $('#gameFrame')[0].contentWindow;
                 frameDocument = frameWindow.document;
                 body = frameDocument.getElementsByTagName('body')[0];
                 o = frameDocument.getElementById('clientscript');
                 n = frameDocument.createElement('script');
-
-                frameWindow.clearException();
+                safecall(frameWindow.clearException());
                 $scope.unpause();
-                $scope.reportStatus('');
+                $rootScope.$broadcast('status', '');
                 game.framedelay = frameDelays[game.game_framerate];
                 body.removeChild(o);
                 n.setAttribute('id', 'clientscript');
@@ -120,22 +137,22 @@
                 frameWindow.game = game;
                 body.appendChild(n);
                 $('#gameFrame').focus();
-                frameWindow.startIt(game);
+                safecall(frameWindow.startIt(game));
             }
         });
-
-        // sigh, bored of forgetting to call this
 
         function controller(f) {
             return function() {
                 f();
                 if(frameWindow.isPaused()) {
-                    $('#play').removeClass('glyphicon-pause');
-                    $('#play').addClass('glyphicon-play');
+                    $('#play')
+                        .removeClass('glyphicon-pause')
+                        .addClass('glyphicon-play');
                 }
                 else {
-                    $('#play').addClass('glyphicon-pause');
-                    $('#play').removeClass('glyphicon-play');
+                    $('#play')
+                        .addClass('glyphicon-pause')
+                        .removeClass('glyphicon-play');
                 }
             };
         }

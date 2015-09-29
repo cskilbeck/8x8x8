@@ -11,11 +11,6 @@
         name,
         game_id,
         framerates = [60, 30, 20, 15, 10],
-        gameSettings = {
-            game_instructions: '',
-            game_framerate: 0,
-            game_title: ''
-        },
         editorOptions = {
             theme: 'Monokai',
             options: {
@@ -30,12 +25,13 @@
             }
         };
 
-    mainApp.controller('EditorController', ['$scope', '$modal', '$routeParams', 'user', 'readonly', 'ajax', '$rootScope', 'games', 'dialog', '$location',
-    function ($scope, $modal, $routeParams, user, readonly, ajax, $rootScope, games, dialog, $location) {
+    mainApp.controller('EditorController', ['$scope', '$modal', '$routeParams', 'user', 'readonly', 'ajax', '$rootScope', 'gamelist', 'dialog', '$location', 'game',
+    function ($scope, $modal, $routeParams, user, readonly, ajax, $rootScope, gamelist, dialog, $location, game) {
 
         var newGameID = $routeParams.game_id;
 
         $scope.readonly = readonly;
+        $scope.game = game;
 
         $scope.$emit('pane:loaded', 'editor');
 
@@ -70,8 +66,6 @@
 
         $scope.$parent.pane = 'Editor';
 
-        $scope.gameName = '';
-
         (function() {
             var opts = localStorage.getItem('editorOptions');
             if(opts) {
@@ -83,51 +77,53 @@
 
         })();
 
+        startEditor();
+
         // TODO (chs): persist the editor object and its loaded modules for when we come back to this View
-        editor = ace.edit("editor");
+        function startEditor() {
+            editor = ace.edit("editor");
 
-        setOptions(editorOptions);
+            setOptions(editorOptions);
 
-        if(!modulesLoaded) {
-            ace.config.set("modePath", "https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/");
-            ace.config.set("workerPath", "https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/");
-            ace.config.set("themePath", "https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/");
-            ace.config.loadModule('ace/ext/language_tools', function(m) {
-                ace.require(['ace/ext/language_tools']);
+            if(!modulesLoaded) {
+                ace.config.set("modePath", "https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/");
+                ace.config.set("workerPath", "https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/");
+                ace.config.set("themePath", "https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/");
+                ace.config.loadModule('ace/ext/language_tools', function(m) {
+                    ace.require(['ace/ext/language_tools']);
+                    editor.getSession().setMode('ace/mode/javascript');
+                    setOptions(editorOptions);
+                    modulesLoaded = true;
+                });
+            }
+            else {
                 editor.getSession().setMode('ace/mode/javascript');
                 setOptions(editorOptions);
-                modulesLoaded = true;
-            });
+            }
+            editor.$blockScrolling = Infinity;
+            enableEditor(false);
         }
-        else {
-            editor.getSession().setMode('ace/mode/javascript');
-            setOptions(editorOptions);
-        }
-
-        editor.$blockScrolling = Infinity;
-        enableEditor(false);
 
         $scope.isWorkUnsaved = function() {
             return !(editor && editor.session && editor.session.getUndoManager().isClean());
         };
 
-        $scope.validateName = function() {
-            var i,
-                n = '',
-                regex = /[\"\'\:\;\! \?\.\,\-a-zA-Z0-9]*/;
-            for(i in $scope.gameName) {
-                if (regex.test($scope.gameName[i])) {
-                    n += $scope.gameName[i];
-                }
-            }
-            $scope.gameName = n;
-            name = n;
-        };
+        // $scope.validateName = function() {
+        //     var i,
+        //         n = '',
+        //         regex = /[\"\'\:\;\! \?\.\,\-a-zA-Z0-9]*/;
+        //     for(i in $scope.gameName) {
+        //         if (regex.test($scope.gameName[i])) {
+        //             n += $scope.gameName[i];
+        //         }
+        //     }
+        //     $scope.gameName = n;
+        //     name = n;
+        // };
 
         $scope.saveState = function() {
             source = editor.getValue();
             session = editor.getSession();
-            name = $scope.gameName;
             localStorage.setItem('source', source);
             // TODO (chs): roaming options: save it to the database
             return true;
@@ -140,8 +136,8 @@
         function noGame() {
             dialog.choose('Game not found', "I can't find game '" + game_id + "'. Would you like to create a new game?", "Yes", "No, go to the games list")
             .then(function(result) {
-                $scope.gameName = 'New Game';
-                game_id = 'new';
+                game.game_title = 'New game';
+                game.game_id = 'new';
                 focusEditor();
                 enableEditor(true);
             }, function() {
@@ -152,27 +148,24 @@
 
         if(session && newGameID === game_id) {
             editor.setSession(session);
-            $scope.gameName = name;
         }
         else {
             if($routeParams.game_id) {
                 game_id = $routeParams.game_id;
                 if(game_id === 'new') {
-                    $scope.gameName = 'New Game';
+                    game.game_title = 'New Game';
+                    game.game_id = game_id;
                 }
                 else {
                     try {
                         newGameID = parseInt(game_id);
                         if(newGameID) {
                             enableEditor(false);
-                            ajax.get('/api/source', $routeParams, 'Getting game...')
-                            .then(function(result){
+                            game.load(newGameID)
+                            .then(function(result) {
                                 editor.setValue(result.game_source, -1);
-                                $scope.gameName = result.game_title;
-                                gameSettings.game_instructions = result.game_instructions || "";
-                                gameSettings.game_framerate = result.game_framerate || 0;
-                                gameSettings.game_title = result.game_title;
                                 resetUndo();
+                                $scope.runIt();
                                 $scope.$apply();
                                 enableEditor(true);
                             }, function(xhr) {
@@ -204,6 +197,9 @@
         });
 
         $scope.$on("$destroy", function(e) {
+            game.editing = false;
+            $rootScope.$applyAsync();
+            console.log("Exiting editor!");
             // // OK: true
             // // Cancel: false
             // if(!(editor.session.getUndoManager().isClean() || confirm("Changes are not saved, really close the editor?"))) {
@@ -212,14 +208,8 @@
         });
 
         function save() {
-            var data = {
-                game_id: parseInt(game_id),
-                user_id: user.id(),
-                user_session: user.session(),
-                name: $scope.gameName,
-                source: editor.getValue()
-            };
-            ajax.post('/api/save', data, 'Saving ' + data.name, 'Saved ' + data.name, 'Error saving ' + data.name);
+            game.game_source = editor.getValue();
+            game.save();
         }
 
         function enableEditor(enable) {
@@ -230,34 +220,33 @@
 
         $scope.saveIt = function() {
             var data;
-            if($scope.gameName) {
-                user.login().then(function(details) {
-                    if(game_id === 'new') {
-                        data = {
-                            user_id: user.id(),
-                            user_session: user.session(),
-                            name: $scope.gameName,
-                            source: editor.getValue()
-                        };
-                        ajax.post('/api/create', data, 'Creating ' + data.name, 'Created ' + data.name)
+            if(game.game_title.length > 0) {
+                user.login()
+                .then(function(details) {
+                    if(game.game_id === 'new') {
+                        game.create(editor.getValue())
                         .then(function(result) {
                             game_id = result.game_id;
-                            // $location.path('/edit/' + game_id).replace();
-                            // $scope.$apply();
+                            $location.path('/edit/' + game_id);
+                            $scope.$apply();
+                            startEditor();
+                            activateEditor();
                         }, function(xhr) {
-                            if(xhr.status === 401) {
+                            if(xhr.status === 409) {
                                 dialog.choose('Game name already used',
-                                    "'" + data.name + "' already exists, would you like to overwrite it? Warning, this will delete the original and cannot be undone",
+                                    "'" + game.game_title + "' already exists, would you like to overwrite it? Warning, this will delete the original and cannot be undone",
                                     "Yes, overwrite it permanently",
                                     "No, do nothing")
                                 .then(function() {
-                                    ajax.get('/api/gameid', { user_id: user.id(), name: data.name })
+                                    game.find(user.id(), game.get_title())
                                     .then(function(result) {
                                         // TODO (chs): update the location bar to reflect the new game id
                                         game_id = result.game_id;
                                         save();
-                                        // $location.path('/edit/' + game_id).replace();
-                                        // $scope.$apply();
+                                        $location.path('/edit/' + game_id);
+                                        $scope.$apply();
+                                        startEditor();
+                                        activateEditor();
                                     });
                                 });
                             }
@@ -266,29 +255,24 @@
                     else {
                         save();
                     }
-                    games.reset();
+                    gamelist.reset();
                 });
             }
             else {
                 dialog.inform('A game needs a name', "Your game has no name - once you've set the name, you can save it")
                 .then(function() {
-                    $("#gameName").focus();
-                    $scope.gameName = "New Game";
+                    game.game_title = "New Game";
                     $scope.$apply();
+                    $("#game_title").focus();
                 });
             }
         };
 
         $scope.runIt = function() {
             $scope.$emit('status', '');
-            $rootScope.$broadcast('play', {
-                game_source: editor.getValue(),
-                game_title: $scope.gameName,
-                game_instructions: gameSettings.game_instructions,
-                game_id: game_id,
-                game_framerate: gameSettings.game_framerate,
-                user_id: user.id()
-            });
+            game.editing = true;
+            game.game_source = editor.getValue();
+            game.play(game);
         };
 
         function setOptions(options) {
@@ -364,8 +348,6 @@
                 }
             }).result.then(function(result) {
                 focusEditor();
-                // console.log("1");
-                // console.log(settings);
                 saveSettings(settings);
             }, function() {
                 focusEditor();
@@ -398,9 +380,44 @@
             editor.commands.commmandKeyBinding = {};
         }
 
-        inflateEditor();
-        enableKeyBindings();
-        focusEditor();
+        activateEditor();
+
+        function activateEditor() {
+            inflateEditor();
+            enableKeyBindings();
+            focusEditor();
+            game.editing = true;
+        }
+
+        $scope.canDeleteIt = function() {
+            return game_id !== 'new' && game.user_id === user.id() && game.editing;
+        };
+
+        $scope.deleteIt = function() {
+            if($scope.canDeleteIt()) {
+                dialog.choose("Delete " + game.game_title + "!?",
+                    "Do you really want to PERMANENTLY delete " + name + "? This action cannot be undone",
+                    "Yes, delete it",
+                    "No",
+                    'btn-danger',
+                    'btn-default')
+                .then(function() {
+                    return dialog.choose("REALLY delete " + game.game_title + "????",
+                        "Are you quite SURE you want to PERMANENTLY delete " + name + "? This action cannot be undone, at all, ever",
+                        "Yes, delete it",
+                        "No",
+                        'btn-danger',
+                        'btn-default');
+                })
+                .then(function() {
+                    return gamelist.delete(game.game_id);
+                })
+                .then(function() {
+                    gamelist.reset();
+                    $location.path('/list');
+                });
+            }
+        };
 
     }]);
 })();

@@ -3,18 +3,19 @@
 var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']);
 
 //////////////////////////////////////////////////////////////////////
-// - run it when editor pane is activated
+// - rating in player
+// - framerate in player
+// - share button in player
 // - screenshots
 //      - store screenshots as prebuilt pngs in the database as varbinary - less processing to serve...
 //      - update screenshot when it's taken (add a query parameter to the url)
-// - 
+//
 // - mouse/touch support (swipe UDLR & tap)
 // - detect hangs and kill it (possible? with instrumentation via Esprima : for, while, do) (but how to keep the source line matched up? sounds hard...)
 // / share button
 // / instructions/documentation/tooltips/popovers
-// - comments
+//
 // - home page
-// / fix the get/set pixel/color APIs for numbers/strings
 // - ask if they want to save when quitting the editor if changes are unsaved
 // - fix the docs
 //
@@ -28,17 +29,10 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //
 // - comments
 //
-// - player
-//      - get it out of an iframe
-//      - edit settings directly in the player (name, instructions, framerate) - no modal
-//      - get rid of run button in editor pane (play button in the player)
-//      - share button in preview frame
-//
 // - editor
-//      - fix location/url when it's /edit/new and they've saved/created it (should be /edit/game_id)
 //      - only save settings when they hit the save button! and get rid of /api/settings
-//      - allow editing settings directly in the player (including name) (get rid of settings dialog)
 //      - get rid of toolbar altogether (options button overlays the editor in top right)
+//      - get rid of run button in editor pane (play button in the player)
 //
 // - user registration/login/forgot password
 //      - user profile modal dialog to change username\email\password
@@ -58,7 +52,8 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      - game list scrolling broken
 //
 // - api
-//      key() instead of pressed() - with N key buffer ( and keyreleased() )
+//      - key() instead of pressed() - with N key buffer ( and keyreleased() )
+//      / fix the get/set pixel/color APIs for numbers/strings
 //
 //////////////////////////////////////////////////////////////////////
 // \ forking
@@ -105,3 +100,7 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      + highlight color of expanded rows is lost on refresh
 // + voting/rating
 // + different share text based on whether it's your game or not
+// + run it when editor pane is activated
+//      + get player out of an iframe [kinda, the controls are out of it, which is what matters]
+//      + edit settings directly in the player (name, instructions, framerate) - no modal
+//      + fix location/url when it's /edit/new and they've saved/created it (should be /edit/game_id)

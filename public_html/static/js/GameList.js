@@ -1,4 +1,4 @@
-mainApp.factory('games', ['ajax', 'user',
+mainApp.factory('gamelist', ['ajax', 'user',
 function(ajax, user) {
     "use strict";
 

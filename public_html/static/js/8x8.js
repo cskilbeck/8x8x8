@@ -168,6 +168,9 @@
 
     function doClear(color) {
         var i;
+        if(typeof color === 'string') {
+            color = colorTable[color] || 0;
+        }
         for(i=0; i<W*H; ++i) {
             screen[i] = color || 0;
         }
@@ -334,7 +337,9 @@
     window.startIt = function() {
         try {
             client = (typeof ClientScript !== 'undefined') ? new ClientScript() : null;
+            draw();
             frameDelay = window.game.framedelay;
+            step = false;
             frame = 0;
             frameCounter = 0;
             if(animFrameID) {

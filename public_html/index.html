@@ -58,9 +58,11 @@
         <script src='/static/js/Ajax.js'></script>
         <script src='/static/js/Dialog.js'></script>
         <script src='/static/js/User.js'></script>
-        <script src='/static/js/Games.js'></script>
+        <script src='/static/js/GameList.js'></script>
+        <script src='/static/js/Game.js'></script>
         <script src='/static/js/Stateful.js'></script>
         <script src='/static/js/Routes.js'></script>
+        <script src='/static/js/Highlighter.js'></script>
 
         <script src='/static/js/MainController.js'></script>
         <script src='/static/js/HelpController.js'></script>
@@ -75,7 +77,7 @@
         <base href='/'>
     </head>
     <body ng-app='mainApp' ng-controller='MainController' ng-strict-di>
-        <div class='backdropper' ng-show='showBackdropper' ng-click='backdropperClicked()'></div>
+        <div class='backdropper'></div>
         <div>
             <nav class="navbar navbar-default navbar-fixed-top" role='navigation'>
                 <div class='container-fluid'>
@@ -115,20 +117,16 @@
             <div class='container'>
                 <div class="grid_body grid_row">
                     <div class="grid_left grid_col" id='mainPane'>
-                        <div ng-view>
+                        <div ng-view class='mainView'>
                         </div>
                     </div>
                     <div class="grid_right grid_col">
-                        <div class="content centered" ng-controller='PlayerController'>
-                            <div class="row gametitle">
-                                <h4>{{game.game_title}}</h4>
-                            </div>
+                        <div class="content centered player" ng-controller='PlayerController'>
+                            <input name='title' id='game_title' ng-model='game.game_title' ng-disabled='!canEditInstructions()' ng-maxlength='32' ng-class='titleEditorClass()' highlight>
                             <iframe id='gameFrame' sandbox='allow-scripts allow-same-origin' src='/static/html/frame.html'></iframe>
                             <div class='well controls'>
-                                <div class='instructions' >
-                                    <textarea id='instructionsTextarea' rows='5' ng-disabled='!canEditInstructions' ng-model='game.game_instructions' ng-blur='finishEditingInstructions()' ng-focus='startEditingInstructions()' ng-maxlength='240' ng-class='instructionsEditorClass()'>
-                                    </textarea>
-                                </div>
+                                <textarea rows='5' ng-disabled='!canEditInstructions()' ng-model='game.game_instructions' ng-maxlength='240' ng-class='instructionsEditorClass()' highlight name='instructions'>
+                                </textarea>
                                 <div class='btn-group' role='group' aria-label='...'>
                                     <button type='button' class='btn btn-default' id='restartButton' ng-click='restart()'><i class='glyphicon glyphicon-fast-backward'></i></button>
                                     <button type='button' class='btn btn-default' id='pauseButton' ng-click='pause()'><i id='play' class='glyphicon glyphicon-pause'></i></button>

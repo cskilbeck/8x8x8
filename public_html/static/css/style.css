@@ -204,7 +204,6 @@ pre {
 .grid_col {
     top: 0;
     bottom: 0;
-    border-right: 1px solid #E0E0E0;
 }
 .grid_scroll-x {
     overflow-x: auto;
@@ -222,6 +221,7 @@ pre {
 .grid_editorheader.grid_row {
     top: 0px;
     height: 40px;
+    margin-right: 356px;
 }
 
 .grid_body.grid_row {
@@ -241,6 +241,7 @@ pre {
     top: 40px;
     bottom: 0;
     border-top: 1px solid #E0E0E0;
+    margin-right: 356px;
 }
 .grid_footer.grid_row {
     height: 40px;
@@ -249,12 +250,18 @@ pre {
     padding-top: 10px;
     padding-left: 10px;
 }
+
+.mainView {
+    margin-right: 356px;
+}
+
 .grid_left.grid_col {
-    width: 70%;
+    width: 100%;
+    margin-right: 356px;
 }
 .grid_right.grid_col {
     right: 0;
-    width: 30%;
+    width: 356px;
 }
 .gly-spin {
     -webkit-animation:  spin 0.5s infinite linear;
@@ -298,37 +305,65 @@ pre {
     width: 256px;
 }
 
-.row.gametitle {
-    margin-top: 20px;
-    height: 50px;
-}
-
-#instructions {
+.gametitle {
+    text-align: center;
     display: block;
-    overflow: hidden;
-    height: 100px;
-    width: 200px;
-    padding: 0;
+    position: relative;
+    width: 256px;
+    margin-left: 50px;
+    margin-top: 20px;
     margin-bottom: 20px;
+    height: 32px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    background: white;
 }
 
-#instructionsTextarea {
+.content.centered.player {
+    width: 356px;
+    height: 100%;
+    overflow-x: hidden;
+    border-left: 1px solid #E0E0E0;
+}
+
+.grid_right.grid_col {
+    text-align: center;
+}
+
+.instructionsTextarea {
+    display: block;
+    margin-bottom: 20px;
     height: 100%;
     width: 100%;
     position: relative;
-    box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    -webkit-box-sizing: border-box;
     text-align: center;
     padding: 0;
     overflow: hidden;
     resize: none;
     border: 0;
     background: transparent;
-    z-index: 1501;
 }
 
-#instructionsTextarea.editing {
+.instructionsTextarea.editable {
+    border-radius: 5px;
+    border: 1px solid #8DF;
+    background: white;
+}
+
+.gametitle.editable {
+    border-radius: 5px;
+    border: 1px solid #8DF;
+    background: white;
+}
+
+.instructionsTextarea.editing {
+    border-radius: 5px;
+    background: white;
+}
+
+.gametitle.editing {
+    border-radius: 5px;
     background: white;
 }
 
@@ -338,7 +373,7 @@ pre {
     right: 0;
     top: 0;
     bottom: 0;
-    z-index: 1500;
+    z-index: -1;
     background: #000;
-    opacity: 0.25;
+    opacity: 0.666;
 }

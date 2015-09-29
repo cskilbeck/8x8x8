@@ -281,7 +281,6 @@ class list(Handler):
                             LIMIT %(length)s OFFSET %(offset)s'''
                     , self.input)
         rows = self.cur.fetchall()
-        web.debug(rows)
         return JSON({ 'count': self.cur.rowcount, 'games': rows })
 
 #----------------------------------------------------------------------
@@ -335,17 +334,17 @@ class gameid(Handler):
 
 class create(Handler):
     @data({
-        'name': str,
-        'source': str
+        'game_title': str,
+        'game_source': str
         }, True)
     def Post(self):
         self.cur.execute('''SELECT game_id
                             FROM games
-                            WHERE game_title = %(name)s AND user_id = %(user_id)s''', self.input)
+                            WHERE game_title = %(game_title)s AND user_id = %(user_id)s''', self.input)
         if self.cur.rowcount != 0:
-            raise web.HTTPError('401 Game name already exists')
+            raise web.HTTPError('409 Game name already exists')
         self.cur.execute('''INSERT INTO games (user_id, game_created, game_lastsaved, game_source, game_title)
-                            VALUES (%(user_id)s, NOW(), NOW(), %(source)s, %(name)s)''' , self.input)
+                            VALUES (%(user_id)s, NOW(), NOW(), %(game_source)s, %(game_title)s)''' , self.input)
         return JSON({ 'created': self.cur.rowcount, 'game_id': self.cur.lastrowid })
 
 #----------------------------------------------------------------------
@@ -406,12 +405,18 @@ class rate(Handler):
 class save(Handler):
     @data({
         'game_id': int,
-        'source': str,
-        'name': str
+        'game_title': str,
+        'game_instructions': str,
+        'game_framerate': int,
+        'game_source': str
         }, True)
     def Post(self):
         self.cur.execute('''UPDATE games SET
-                            game_lastsaved = NOW(), game_source = %(source)s, game_title = %(name)s
+                                game_lastsaved = NOW(),
+                                game_title = %(game_title)s,
+                                game_instructions = %(game_instructions)s,
+                                game_framerate = %(game_framerate)s,
+                                game_source = %(game_source)s
                             WHERE game_id = %(game_id)s
                                 AND user_id = %(user_id)s''', self.input)
         return JSON({ 'saved': self.cur.rowcount })
