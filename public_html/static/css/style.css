@@ -358,15 +358,26 @@ div#mainfooter.row {
 }
 
 #screenShotButton {
-    margin-top: 20px;
+    margin-top: 10px;
 }
 
 #ratingBlock {
-    margin-top: 20px;
-    margin-bottom: 20px;
+    margin-top: 10px;
+    margin-bottom: 10px;
     cursor: pointer;
 }
 
 #framerateButton {
-    margin-top: 20px;
+    margin-top: 10px;
 }
+
+pre.helpcode {
+    background: white;
+    color: darkred;
+}
+
+.shareblock {
+    margin-bottom: 10px;
+}
+
+.twitter-share-button[style] { vertical-align: text-bottom !important; }

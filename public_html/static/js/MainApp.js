@@ -18,9 +18,13 @@ $(document).ready(function() {
 });
 
 //////////////////////////////////////////////////////////////////////
+// - finish play.html
+//      - share buttons
+//      - link to source
+//      - rating (-> link to source)
+// ? groups of users (and admins) for schools
 // - layout so toolbars don't scroll off the top
-// - rating in player
-// - framerate in player
+// / share button
 // - share button in player
 // - screenshots
 //      - store screenshots as prebuilt pngs in the database as varbinary - less processing to serve...
@@ -28,7 +32,6 @@ $(document).ready(function() {
 //
 // - mouse/touch support (swipe UDLR & tap)
 // - detect hangs and kill it (possible? with instrumentation via Esprima : for, while, do) (but how to keep the source line matched up? sounds hard...)
-// / share button
 // / instructions/documentation/tooltips/popovers
 //
 // - home page
@@ -121,3 +124,5 @@ $(document).ready(function() {
 //      + edit settings directly in the player (name, instructions, framerate) - no modal
 //      + fix location/url when it's /edit/new and they've saved/created it (should be /edit/game_id)
 // + make the instructions line up the same in the editor and player [near enough]
+// + rating in player
+// + framerate in player

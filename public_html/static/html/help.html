@@ -5,15 +5,15 @@
                 <span><h2>Documentation</h2></span>
             </div>
             <div class='col-md-4'>
-                &nbsp;
+                 
             </div>
         </div>
         <div class='row'>
             <div class='container-fluid'>
                 <div class='col-md10'>
-                    8x8x8 Games are played on an 8x8 grid of pixels and can display 8 colors.<br>
-                    The coordinates start at (0,0) in the top left and go to (7,7) in the bottom right.<br>
-                    The keys which can be used are: 'up', 'down', 'left', 'right' and 'space'.<br>
+                    8x8x8 Games are played on an 8x8 grid of pixels and can display 8 colors.
+                    The coordinates start at (0,0) in the top left and go to (7,7) in the bottom right.
+                    The keys which can be used are: 'up', 'down', 'left', 'right' and 'space'.
                     The colors available are:<p>
                     <div class='row'><div class='col-xs-1 col-xs-offset-1' style='height: 1.25em;  width: 1em; background: #000; border: 1px solid black;'></div><div class='col-xs-9'>0 - Black</div></div>
                     <div class='row'><div class='col-xs-1 col-xs-offset-1' style='height: 1.25em;  width: 1em; background: #F00; border: 1px solid black;'></div><div class='col-xs-9'>1 - Red</div></div>
@@ -27,11 +27,11 @@
             </div>
         </div>
         <div class='row'>
-                <br>
+            <br>
         </div>
         <div class='row'>
             <div class='col-md-8'>
-                <strong>Functions:</strong><br><br>
+                <strong>Functions:</strong>
             </div>
         </div>
         <div class='well'>
@@ -39,8 +39,8 @@
                 <div class='col-md-2'><strong>set(x, y, color)</strong></div>
                 <div class='col-md-9'>
                     Set the pixel at x,y to color.<br><br>
-                    <i>This will set the top left pixel to the color cyan</i>
-                    <pre>set(0, 0, 6);</pre></p>
+                    <i>This will set the top left pixel to the color cyan</i><br>
+                    <pre class='helpcode'>set(0, 0, 6);</pre></p>
                 </div>
             </div>
         </div>
@@ -49,9 +49,9 @@
                 <div class='col-md-2'><strong>get(x, y)</strong></div>
                 <div class='col-md-9'>
                     Get the color of the pixel at x,y.<br><br>
-                    <i>This will check if the color of the pixel at (4,5) is yellow</i>
-                    <pre>if(get(4, 5) === 3) {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;// ...<br>
+                    <i>This will check if the color of the pixel at (4,5) is yellow</i><br>
+                    <pre class='helpcode'>if(get(4, 5) === 3) {
+    // ...
 }</pre></p>
                 </div>
             </div>
@@ -60,8 +60,8 @@
             <div class='row'>
                 <div class='col-md-2'><strong>clear(color)</strong></div>
                 <div class='col-md-9'>Set all the pixels to a single color.<br><br>
-                    <i>This will clear all the pixels to black</i>
-                    <pre>clear(0);</pre></p>
+                    <i>This will clear all the pixels to black</i><br>
+                    <pre class='helpcode'>clear(0);</pre></p>
                 </div>
             </div>
         </div>
@@ -69,9 +69,9 @@
             <div class='row'>
                 <div class='col-md-2'><strong>pressed(key)</strong></div>
                 <div class='col-md-9'>Check if key was just pressed.<br><br>
-                    <i>This will check if the space bar was pressed since the last time update() was called</i>
-                    <pre>if(pressed('space')) {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;// ...<br>
+                    <i>This will check if the space bar was pressed since the last time update() was called</i><br>
+                    <pre class='helpcode'>if(pressed('space')) {
+    // ...
 }</pre></p>
                 </div>
             </div>
@@ -80,9 +80,9 @@
             <div class='row'>
                 <div class='col-md-2'><strong>released(key)</strong></div>
                 <div class='col-md-9'>Check if key was just released.<br><br>
-                    <i>This will check if the left key was released since the last time update() was called</i>
-                    <pre>if(released('left')) {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;// ...<br>
+                    <i>This will check if the left key was released since the last time update() was called</i><br>
+                    <pre class='helpcode'>if(released('left')) {
+    // ...
 }</pre></p>
                 </div>
             </div>
@@ -91,9 +91,9 @@
             <div class='row'>
                 <div class='col-md-2'><strong>held(key)</strong></div>
                 <div class='col-md-9'>Check if key is held down.<br><br>
-                    <i>This will check if the up key is currently being pressed</i>
-                    <pre>if(held('up')) {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;// ...<br>
+                    <i>This will check if the up key is currently being pressed</i><br>
+                    <pre class='helpcode'>if(held('up')) {
+    // ...
 }</pre></p>
                 </div>
             </div>
@@ -101,34 +101,35 @@
         <div class='well'>
             <div class='row'>
                 <div class='col-md-2'><strong>update(frame)</strong></div>
-                <div class='col-md-9'>You provide this function, it will be called repeatedly about 60 times every second. The parameter 'frame' is increased by 1 each time the function is called.<br><br>
-                    <i>This is a very simple game</i>
-                    <pre>var x, y, c;<br>
+                <div class='col-md-9'>You provide this function, it will be called repeatedly about 60 times every second.<br>
+                The parameter 'frame' is increased by 1 each time the function is called.<br><br>
+                    <i>This is a very simple game</i><br>
+                    <pre class='helpcode'>var x, y, c;
 
-x = 0;<br>
-y = 0;<br>
-c = 1;<br>
-clear(0);   // code outside functions is run once when game starts<br>
-<br>
-function&nbsp;update(frame)&nbsp;{<br>
-&nbsp; &nbsp; if(held('right'))&nbsp;{<br>
-&nbsp; &nbsp; &nbsp; &nbsp; x&nbsp;=&nbsp;x&nbsp;+&nbsp;1;<br>
-&nbsp; &nbsp; &nbsp; &nbsp; if(x&nbsp;===&nbsp;8)&nbsp;{<br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; clear(0);<br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; x&nbsp;=&nbsp;0;<br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; y&nbsp;=&nbsp;y&nbsp;+&nbsp;1;<br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if(y&nbsp;===&nbsp;8)&nbsp;{<br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; y&nbsp;=&nbsp;0;<br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; }<br>
-&nbsp; &nbsp; &nbsp; &nbsp; }<br>
-&nbsp; &nbsp; }<br>
-&nbsp; &nbsp; if(pressed('space'))&nbsp;{<br>
-&nbsp; &nbsp; &nbsp; &nbsp; c&nbsp;=&nbsp;c&nbsp;+&nbsp;1;<br>
-&nbsp; &nbsp; &nbsp; &nbsp; if(c&nbsp;===&nbsp;8)&nbsp;{<br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; c&nbsp;=&nbsp;1;<br>
-&nbsp; &nbsp; &nbsp; &nbsp; }<br>
-&nbsp; &nbsp; }<br>
-&nbsp; &nbsp; set(x,&nbsp;y,&nbsp;c);<br>
+x = 0;
+y = 0;
+c = 1;
+clear(0);   // code outside functions is run once when game starts
+
+function update(frame) {
+    if(held('right')) {
+        x = x + 1;
+        if(x === 8) {
+            clear(0);
+            x = 0;
+            y = y + 1;
+            if(y === 8) {
+                y = 0;
+            }
+        }
+    }
+    if(pressed('space')) {
+        c = c + 1;
+        if(c === 8) {
+            c = 1;
+        }
+    }
+    set(x, y, c);
 }</pre></p>
                 </div>
             </div>

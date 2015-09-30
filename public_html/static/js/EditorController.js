@@ -147,8 +147,6 @@
             });
         }
 
-        $scope.$on()
-
         if(session && newGameID === game_id) {
             editor.setSession(session);
         }
@@ -171,7 +169,6 @@
                             enableEditor(false);
                             game.load(newGameID)
                             .then(function(result) {
-                                game.getRating();
                                 editor.setValue(result.game_source, -1);
                                 resetUndo();
                                 $scope.runIt();
@@ -425,7 +422,7 @@
                 })
                 .then(function() {
                     gamelist.reset();
-                    $location.path('/list');
+                    $location.path('/list').replace();
                 });
             }
         };

@@ -70,6 +70,9 @@ def stripName(x, len):
 #----------------------------------------------------------------------
 # JSON printer with date support
 
+def correct_date(d):
+    return d - (datetime.datetime.now() - datetime.datetime.utcnow())
+
 def date_handler(obj):
     if hasattr(obj, 'isoformat'):
         delta = datetime.datetime.now() - datetime.datetime.utcnow()
@@ -403,11 +406,13 @@ class rating(Handler):
         'game_id': int
         }, True)
     def Get(self):
+        print self.input
         self.cur.execute('''SELECT rating_stars FROM ratings
                             WHERE user_id = %(user_id)s
                                 AND game_id = %(game_id)s''', self.input)
         if self.cur.rowcount == 0:
-            raise web.HTTPError('404 user {user_id} has not rated {game_id}' % self.cur.input)
+            #raise web.HTTPError('404 user %(user_id)d has not rated game %(game_id)d' % self.input)
+            return JSON({ 'rating_stars': 0 })  # meaning not yet rated by this user
         return JSON(self.cur.fetchone())
 
 #----------------------------------------------------------------------
@@ -466,7 +471,7 @@ class screenshot(Handler):
         }, True)
     def Post(self):
         self.cur.execute('''UPDATE games
-                            SET game_screenshot = UNHEX(%(screen)s)
+                            SET game_screenshot = UNHEX(%(screen)s), game_lastsaved = NOW()
                             WHERE game_id = %(game_id)s
                                 AND user_id = %(user_id)s''', self.input)
         return JSON({'posted': self.cur.rowcount })
@@ -649,11 +654,13 @@ class screen(Handler):
         if self.cur.rowcount != 1:
             raise web.HTTPError('404 game not found')
         row = self.cur.fetchone()
-        if row['game_screenshot'] is None:
-            return PNG(open('static/img/brand.png', 'rb').read())
+        if row['game_screenshot'] is not None:
+            screen = row['game_screenshot']
+        else:
+            screen = ['0' for x in xrange(128)]
         buf = StringIO.StringIO()
-        makeScreenShot(row['game_screenshot']).save(buf)
-        web.http.lastmodified(row['game_lastsaved'])
+        makeScreenShot(screen).save(buf)
+        web.http.lastmodified(correct_date(row['game_lastsaved']))
         return PNG(buf.getvalue())
 
 #----------------------------------------------------------------------

@@ -1,11 +1,11 @@
 <div>
     <div class='row toolbar'>
-        <div class='col-xs-4'>
-            <input id='gameSearch' type='text' class='form-control input-sm' placeholder='Search' maxlength=32 />
+        <div class='col-xs-2'>
+            <button class='btn btn-sm btn-default' id='refreshButton' ng-click='refreshGameList()'><i class='glyphicon glyphicon-refresh'></i></button>
+            <a class='btn btn-sm btn-primary' href='/edit/new'>New Game</a>
         </div>
-        <div class='col-xs-4'>
-            <a class='btn btn-sm btn-primary' href='/edit/new'>New Game&nbsp;<i class='glyphicon glyphicon-pencil'></i></a>
-            <button class='btn btn-sm btn-default' id='refreshButton' data-toggle='tooltip' data-placement='right' title='Refresh' ng-click='refreshGameList()'><i class='glyphicon glyphicon-refresh'></i></button>
+        <div class='col-xs-5 pull-right'>
+            <input id='gameSearch' type='text' class='form-control input-sm' placeholder='Search' maxlength=32 />
         </div>
     </div>
     <div id='games'>

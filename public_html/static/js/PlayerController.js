@@ -59,8 +59,12 @@
             $scope.$applyAsync();
         };
 
+        $scope.showRating = function(g) {
+            return g.game_id !== 0;
+        };
+
         $scope.rating = function(index, g) {
-            return g.game_id && index <= g.hover_rating ? 'yellow' : 'white';
+            return (index <= g.hover_rating ? 'yellow' : 'white') + 'star glyphicon glyphicon-star';
         };
 
         $scope.rateHover = function(index, g) {
@@ -98,6 +102,39 @@
             }
         };
 
+        $scope.shareIt = function(game) {
+            FB.ui({
+                method: 'feed',
+                name: game.game_title,
+                link: 'http://256pixels.net/play/' + game.game_id,
+                picture: 'http://256pixels.net/screen/' + game.game_id,
+                description: (game.game_instructions || '') + '\n\n\n',
+                caption: (game.user_id === user.id() ? 'I made a' : 'Check out this') + 'game which uses just 256 pixels!'
+            });
+        };
+
+        function updateTwitterButton(g) {
+            $('#twitterButton').html('<a href="https://twitter.com/share"' +
+                                            ' class="twitter-share-button"' +
+                                            ' data-url="http://256pixels.net/play/' + g.game_id + '"' +
+                                            ' data-size="default"' +
+                                            ' data-via="256_Pixels"' +
+                                            ' data-text="'+ g.game_title+'\nNice little game using just 256 Pixels\n"' +
+                                            ' data-count="none"></a>');
+            twttr.widgets.load();
+        }
+        $scope.tweetText = function(game) {
+            return "Check out this nice little 256 Pixel game: " + game.game_title;
+        };
+
+        $scope.tweetURL = function(game) {
+            return "http://256pixels.net/play/" + game.game_id;
+        };
+
+        $scope.tweet = function(game) {
+            return "https://twitter.com/intent/tweet";
+        };
+
         function frame() {
             return document.getElementById('gameFrame');
         }
@@ -115,6 +152,7 @@
                     rating_user = user.id();
                     rating_game = game.game_id;
                     $scope.$applyAsync();
+                }, function() {
                 });
             }
         }
@@ -213,6 +251,7 @@
                 frameWindow.game = game;
                 safecall(frameWindow.startIt);
                 refreshRating();
+                updateTwitterButton(game);
             }
         });
 
