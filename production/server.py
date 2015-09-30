@@ -12,7 +12,7 @@
 # DONE (chs): screenshots!
 #----------------------------------------------------------------------
 
-import sys, types, os, time, datetime, struct, re
+import sys, types, os, time, datetime, struct, re, random
 import web, pprint, json, iso8601, unicodedata
 from contextlib import closing
 import MySQLdb as mdb
@@ -289,7 +289,6 @@ class list(Handler):
         })
     def Get(self):
         self.input['search'] = searchTerm(self.input['search'])
-        print "Data: " + pprint.pformat(self.input)
         self.cur.execute('''SELECT games.game_id, games.user_id, game_title, game_lastsaved, game_created, user_username, game_instructions, game_rating, rating_stars
                             FROM games
                                 JOIN users ON users.user_id = games.user_id
@@ -301,7 +300,6 @@ class list(Handler):
                             LIMIT %(length)s OFFSET %(offset)s'''
                     , self.input)
         rows = self.cur.fetchall()
-        print len(rows), "rows returned"
         return JSON({ 'count': len(rows), 'games': rows })
 
 #----------------------------------------------------------------------
@@ -406,7 +404,6 @@ class rating(Handler):
         'game_id': int
         }, True)
     def Get(self):
-        print self.input
         self.cur.execute('''SELECT rating_stars FROM ratings
                             WHERE user_id = %(user_id)s
                                 AND game_id = %(game_id)s''', self.input)
@@ -657,7 +654,7 @@ class screen(Handler):
         if row['game_screenshot'] is not None:
             screen = row['game_screenshot']
         else:
-            screen = ['0' for x in xrange(128)]
+            screen = ''.join(random.choice('0123456789ABCDEF') for _ in xrange(128))
         buf = StringIO.StringIO()
         makeScreenShot(screen).save(buf)
         web.http.lastmodified(correct_date(row['game_lastsaved']))

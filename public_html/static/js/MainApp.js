@@ -18,6 +18,7 @@ $(document).ready(function() {
 });
 
 //////////////////////////////////////////////////////////////////////
+// - ALL games editable, only require login when you try and save it
 // - finish play.html
 //      - share buttons
 //      - link to source
