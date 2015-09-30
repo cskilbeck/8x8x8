@@ -59,6 +59,14 @@ def show(x, m = 'var'):
         print m + ": " + pprint.pformat(x)
 
 #----------------------------------------------------------------------
+
+nameregex = re.compile('[^0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!\? \n\.\,''\"\:\;\$\*\(\)\-\+\=\_\[\]\{\}`\@\#\%\^\&\/]')
+
+def stripName(x, len):
+    global nameregex
+    return re.sub(nameregex, '', x)[:len]
+
+#----------------------------------------------------------------------
 # JSON printer with date support
 
 def date_handler(obj):
@@ -416,6 +424,8 @@ class save(Handler):
         'game_source': str
         }, True)
     def Post(self):
+        self.input['game_instructions'] = stripName(self.input['game_instructions'], 240)
+        self.input['game_title'] = stripName(self.input['game_title'], 32)
         self.cur.execute('''UPDATE games SET
                                 game_lastsaved = NOW(),
                                 game_title = %(game_title)s,
@@ -633,10 +643,8 @@ class play(Handler):
         self.cur.execute('''SELECT game_id, game_source, game_title, game_instructions, game_framerate
                             FROM games WHERE game_id = %(game_id)s''', locals())
         if self.cur.rowcount == 0:
-            raise web.HTTPError('404 Game not found')
-        row = self.cur.fetchone()
-        html = HTML(render.play(row))
-        return html
+            return HTML(render.nogame(game_id))
+        return HTML(render.play(self.cur.fetchone()))
 
 #----------------------------------------------------------------------
 

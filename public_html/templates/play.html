@@ -1,48 +1,74 @@
 $def with (game)
+$code
+    def id():
+        return game['game_id']
+
+    def framerate():
+        return game['game_framerate'] + 1
+
+    def title():
+        return game['game_title']
+
+    def instructions():
+        return game['game_instructions'].replace('\n', '<br>')
+
+    def description():
+        return game['game_instructions'].replace('\n', ' ')
+
+    def source():
+        return game['game_source']
 <!DOCTYPE html>
 <html lang='en'>
     <head>
-        <meta property="og:url"          content="http://256pixels.net/play/$game['game_id']" />
-        <meta property="og:title"        content="$game['game_title']">
-        <meta property="og:description"  content="$game['game_instructions']">
+        <meta property="og:url"          content="http://256pixels.net/play/$id()" />
+        <meta property="og:title"        content="$title()">
+        <meta property="og:description"  content="$description()">
         <meta property="og:site_name"    content="256 Pixels">
-        <meta property="og:image"        content="http://256pixels.net/screen/$game['game_id']">
+        <meta property="og:image"        content="http://256pixels.net/screen/$id()">
         <meta property="og:image:width"  content="32">
         <meta property="og:image:height" content="32">
         <meta property="fb:app_id"       content="1709552502606692">
 
+        <title>$title()</title>
+
         <style>
             body {
-                margin: 16px;
                 text-align: center;
                 overflow: hidden;
+                display: block;
+                margin-top: 20px;
+                margin-left: auto;
+                margin-right: auto;
                 font: 20px sans-serif;
                 font-weight: bolder;
+                width: 256px;
             }
-            .instructions {
+            #instructions {
                 margin-top: 40px;
-                font: 18px sans-serif;
+                font: 14px sans-serif;
                 font-weight: lighter;
             }
         </style>
-        <script id='settings' type='text/template'>
-            { "framedelay": $:game['game_framerate'] }
+        <script type='text/javascript'>
+            window.game = { "frameDelay": $framerate() }
         </script>
 
     </head>
     <body>
-        $game['game_title']<br><br>
+        <div>
+        $title()<br>
+        <br>
+        </div>
         <canvas id='canvas' width='256px' height='256px'></canvas>
-        <div class='instructions'>
-        $game['game_instructions']
+        <div id='instructions'>
+        $:instructions()
         </div>
         <script type='text/javascript'>
             function ClientScript() {
                 "use strict";
-$:game['game_source']
-                this.updateFunction = (typeof update === "function") ? update : null;
-            };
+$:source()
+            ;this.$$updateFunction = typeof update === "function" ? update : null; };
         </script>
-        <script src='/static/js/8x8.js'></script>
+        <script src='http://256pixels.net/static/js/8x8.js'></script>
     </body>
 </html>

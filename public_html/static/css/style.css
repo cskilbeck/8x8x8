@@ -216,8 +216,9 @@ table.table {
     margin: 10px;
 }
 
-.well.controls {
-    margin: 0 auto;
+.controls {
+    margin: auto;
+    margin-top: 20px;
     width: 256px;
 }
 

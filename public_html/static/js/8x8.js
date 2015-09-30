@@ -103,6 +103,21 @@
         ],
         screen = [];
 
+    function reset() {
+        screen = [];
+        paused = false;
+        step = false;
+        keyPress = [];
+        keyRelease = [];
+        keyHeld = [ false, false, false, false, false ];
+        keyHeldReal  = [ false, false, false, false, false ];
+        exception = false;
+        keyCount = 0;
+        lastkey = 0;
+        frame = 0;
+        frameCounter = 0;
+    }
+
     function ellipse(ctx, cx, cy, w, h, rounded){
         var lx = cx - w,
             rx = cx + w,
@@ -277,11 +292,11 @@
 
     function onFrame() {
         var i, hasUpdate;
-        if(client && client.updateFunction !== null && !exception) {
+        if(client && client.$updateFunction && !exception) {
             hasUpdate = true;
             if(step || ((frame % frameDelay) === 0 && !paused)) {
                 try {
-                    client.updateFunction(frameCounter++);
+                    client.$updateFunction(frameCounter++);
                 }
                 catch(e) {
                     exception = true;
@@ -336,10 +351,10 @@
 
     window.startIt = function() {
         try {
-            screen = [];
+            reset();
             client = (typeof ClientScript !== 'undefined') ? new ClientScript() : null;
             draw();
-            frameDelay = window.game.framedelay;
+            frameDelay = window.game && window.game.frameDelay;
             step = false;
             frame = 0;
             frameCounter = 0;
@@ -376,13 +391,10 @@
     };
 
     window.clearException = function () {
-        screen = [];
-        paused = false;
-        draw();
-        exception = false;
+        reset();
     };
 
-    window.screen = function() {
+    window.getscreen = function() {
         return screen;
     };
 
@@ -391,5 +403,6 @@
     };
 
     draw();
+    startIt();
 
 }());

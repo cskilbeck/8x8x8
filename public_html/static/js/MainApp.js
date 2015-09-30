@@ -18,6 +18,7 @@ $(document).ready(function() {
 });
 
 //////////////////////////////////////////////////////////////////////
+// - make the instructions line up the same in the editor and player
 // - rating in player
 // - framerate in player
 // - share button in player

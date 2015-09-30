@@ -14,7 +14,7 @@
             'performance', 'screen'
         ],
         preScript = 'function ClientScript(' + hidden.join() + ') { "use strict";\n',
-        postScript = '; this.updateFunction = (typeof update === "function") ? update : null; };';
+        postScript = ';this.$updateFunction = typeof update === "function" ? update : null; };';
 
     mainApp.controller('PlayerController', ['$scope', '$modal', '$routeParams', 'user', 'ajax', '$rootScope', 'gamelist', 'dialog', '$location', '$timeout', 'game',
     function($scope, $modal, $routeParams, user, ajax, $rootScope, gamelist, dialog, $location, $timeout, game) {
@@ -26,6 +26,12 @@
             // console.log($scope.game.user_id);
             // console.log(user.id());
             return game.user_id === user.id();
+        };
+
+        $scope.checkText = function() {
+            var r = /[^0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!\? \n\.\,''\"\:\;\$\*\(\)\-\+\=\_\[\]\{\}`\@\#\%\^\&\/]/;
+            $scope.game.game_instructions = $scope.game.game_instructions.replace(r, '').substring(0, 240);
+            $scope.game.game_title = $scope.game.game_title.replace(r, '').substring(0, 32);
         };
 
         window.reportRuntimeError = function(e) {
@@ -48,18 +54,6 @@
             settings.framedelay = frameDelays[settings.game_framerate];
             frameWindow.settings(settings);
         });
-
-        function safecall(fn) {
-            if(typeof fn === 'function') {
-                fn.apply(arguments);
-            }
-        }
-
-        function safe(fn) {
-            return function() {
-                safecall(fn);
-            };
-        }
 
         $scope.$on('highlighter:activate', function(m, name) {
             switch(name) {
@@ -110,13 +104,25 @@
         $scope.takeScreenShot = function() {
 
             user.login().then(function() {
-                game.set_screenshot(frameWindow.screen());
+                game.set_screenshot(frameWindow.getscreen());
             });
         };
 
         $scope.canEditInstructions = function() {
             return game.editing && game.user_id === user.id();
         };
+
+        function safe(fn) {
+            return function() {
+                safecall(fn);
+            };
+        }
+
+        function safecall(fn) {
+            if(typeof fn === 'function') {
+                fn.apply(arguments);
+            }
+        }
 
         $scope.$on('play', function(e, game) {
             var body, o, n, i;
@@ -127,17 +133,17 @@
                 body = frameDocument.getElementsByTagName('body')[0];
                 o = frameDocument.getElementById('clientscript');
                 n = frameDocument.createElement('script');
-                safecall(frameWindow.clearException());
+                safecall(frameWindow.clearException);
                 $scope.unpause();
                 $rootScope.$broadcast('status', '');
-                game.framedelay = frameDelays[game.game_framerate];
+                game.frameDelay = frameDelays[game.game_framerate];
                 body.removeChild(o);
                 n.setAttribute('id', 'clientscript');
                 n.innerHTML = preScript + game.game_source + postScript;
-                frameWindow.game = game;
                 body.appendChild(n);
                 $('#gameFrame').focus();
-                safecall(frameWindow.startIt(game));
+                frameWindow.game = game;
+                safecall(frameWindow.startIt);
             }
         });
 
