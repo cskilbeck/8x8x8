@@ -105,8 +105,6 @@
 
     function reset() {
         screen = [];
-        paused = false;
-        step = false;
         keyPress = [];
         keyRelease = [];
         keyHeld = [ false, false, false, false, false ];
@@ -355,9 +353,6 @@
             client = (typeof ClientScript !== 'undefined') ? new ClientScript() : null;
             draw();
             frameDelay = window.game && window.game.frameDelay;
-            step = false;
-            frame = 0;
-            frameCounter = 0;
             if(animFrameID) {
                 cancelAnimationFrame(animFrameID);
             }
@@ -366,6 +361,10 @@
         catch(e) {
             reportError(e);
         }
+    };
+
+    window.setFrameDelay = function(f) {
+        frameDelay = f;
     };
 
     window.togglepause = function() {

@@ -36,6 +36,7 @@ urls = (
     '/details', 'details',                  # R get details of a game (name, instructions, screenshot)
     '/count', 'count',                      # R search for # of games matching a search term
     '/list', 'list',                        # R get paginated list of games
+    '/rating', 'rating',                    # R get what rating a user gave a game
     '/save', 'save',                        # U saving a game (name and source code)
     '/rate', 'rate',                        # U set a rating per user
     '/rename', 'rename',                    # U renaming a game (name)
@@ -213,7 +214,7 @@ class data(object):
                     val = unicodedata.normalize('NFKD', val).encode('ascii','ignore')
                 if deftype == type:
                     if val is None:
-                        raise ValueError('Missing parameter %s' % (name,))
+                        raise web.HTTPError('401 Missing parameter %s' % (name,))
                     try:
                         val = default(val)
                     except TypeError:
@@ -272,11 +273,12 @@ def searchTerm(s):
 #----------------------------------------------------------------------
 # /api/list
 
-# rating_stars should be 0 for games where this user has not rated the game or user_id < 0
+# rating_stars should be 0 for games where this user has not rated the game 
 
 class list(Handler):
     @data({
-        'user_id': int,
+        'user_id': 0,
+        'game_id': 0,
         'justmygames': 0,
         'search': '',
         'length': { 'default': 20, 'type': int, 'max': 100, 'min': 1 },
@@ -284,17 +286,20 @@ class list(Handler):
         })
     def Get(self):
         self.input['search'] = searchTerm(self.input['search'])
+        print "Data: " + pprint.pformat(self.input)
         self.cur.execute('''SELECT games.game_id, games.user_id, game_title, game_lastsaved, game_created, user_username, game_instructions, game_rating, rating_stars
                             FROM games
                                 JOIN users ON users.user_id = games.user_id
                                 LEFT JOIN (SELECT * FROM ratings WHERE user_id = %(user_id)s) AS myratings ON games.game_id = myratings.game_id
                             WHERE (%(justmygames)s = 0 OR games.user_id = %(user_id)s)
-                                AND game_title LIKE %(search)s
+                                AND (%(game_id)s = 0 OR games.game_id = %(game_id)s)
+                                AND (game_title LIKE %(search)s)
                             ORDER BY game_lastsaved DESC, game_created DESC
                             LIMIT %(length)s OFFSET %(offset)s'''
                     , self.input)
         rows = self.cur.fetchall()
-        return JSON({ 'count': self.cur.rowcount, 'games': rows })
+        print len(rows), "rows returned"
+        return JSON({ 'count': len(rows), 'games': rows })
 
 #----------------------------------------------------------------------
 # /api/count
@@ -389,6 +394,21 @@ class rename(Handler):
                             WHERE game_id = %(game_id)s
                                 AND user_id = %(user_id)s''' , self.input)
         return JSON({ 'renamed': self.cur.rowcount })
+
+#----------------------------------------------------------------------
+# /api/rate
+
+class rating(Handler):
+    @data({
+        'game_id': int
+        }, True)
+    def Get(self):
+        self.cur.execute('''SELECT rating_stars FROM ratings
+                            WHERE user_id = %(user_id)s
+                                AND game_id = %(game_id)s''', self.input)
+        if self.cur.rowcount == 0:
+            raise web.HTTPError('404 user {user_id} has not rated {game_id}' % self.cur.input)
+        return JSON(self.cur.fetchone())
 
 #----------------------------------------------------------------------
 # /api/rate
@@ -624,7 +644,7 @@ def makeScreenShot(str):
 
 class screen(Handler):
     def Get(self, game_id):
-        self.cur.execute('''SELECT game_screenshot FROM games
+        self.cur.execute('''SELECT game_screenshot, game_lastsaved FROM games
                             WHERE game_id = %(game_id)s''', locals())
         if self.cur.rowcount != 1:
             raise web.HTTPError('404 game not found')
@@ -633,6 +653,7 @@ class screen(Handler):
             return PNG(open('static/img/brand.png', 'rb').read())
         buf = StringIO.StringIO()
         makeScreenShot(row['game_screenshot']).save(buf)
+        web.http.lastmodified(row['game_lastsaved'])
         return PNG(buf.getvalue())
 
 #----------------------------------------------------------------------

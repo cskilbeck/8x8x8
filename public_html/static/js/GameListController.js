@@ -16,8 +16,6 @@
 
         $('#refreshButton').tooltip();
 
-        game.editing = false;
-
         function getGames(force) {
             var q = Q.defer();
             gamelist.getlist(force).then(function(gameList) {
@@ -30,41 +28,16 @@
             return q.promise;
         }
 
-        $scope.star = function(index, g) {
-            return index <= Math.floor(g.game_rating + 0.25) ? 'yellow' : 'white';  // slightly generous (allow a game to be a 5 which isn't 100% 5 rated)
-        };
-
-        $scope.rating = function(index, g) {
-            return index <= g.hover_rating ? 'yellow' : 'white';
-        };
-
-        $scope.rateHover = function(index, g) {
-            g.hover_rating = index;
-        };
-
-        $scope.resetHover = function(g) {
-            g.hover_rating = g.rating_stars;
-        };
-
-        $scope.rateClick = function(index, g) {
-            var old = g.rating_stars;
-            g.hover_rating = g.rating_stars = index;
-            user.login()
-            .then(
-                function() {
-                    return gamelist.rate(g, index); },
-                function() {
-                    g.hover_rating = g.rating_stars = old;
-                })
-            .then(getGames);
-        };
-
         $scope.timer = function(t) {
             return moment(t).fromNow();
         };
 
         $scope.screen = function(g) {
             return '/screen/' + g.game_id;
+        };
+
+        $scope.star = function(index, g) {
+            return index <= Math.floor(g.game_rating + 0.25) ? 'yellow' : 'white';  // slightly generous (allow a game to be a 5 which isn't 100% 5 rated)
         };
 
         $scope.shareLink = function(game) {
@@ -110,22 +83,17 @@
             .then(function(text) {
                 if(text !== game_name) {
                     // TODO (chs): move this into the gamelist service (and don't refresh gamelist)
-                    ajax.post('/api/rename', {
+                    ajax.post('rename', {
                         game_id: game_id,
-                        user_id: user.id(),
-                        user_session: user.session(),
                         name: text })
                     .then($scope.refreshGameList);
                 }
             });
         };
 
-        $scope.deleteIt = function(id, name) {
-            dialog.choose("Delete " + name + "!?", "Do you really want to PERMANENTLY delete " + name + "? This action cannot be undone", "Yes, delete it", "No", 'btn-danger', 'btn-default')
-            .then(function() {
-                gamelist.delete(id).then(getGames);
-            });
-        };
+        $scope.$on('gamerated', function() {
+            $scope.$apply();
+        });
 
         $scope.playIt = function(id) {
             gamelist.get(id)

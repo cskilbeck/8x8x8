@@ -5,6 +5,8 @@
         step,
         frameWindow,
         frameDocument,
+        rating_user = 0,
+        rating_game = 0,
         frameDelays = [ 1, 2, 3, 4, 5, 6],
         gameDetails,
         hidden = [
@@ -21,10 +23,21 @@
 
         $scope.game = game;
         $scope.canEditInstructions = false;
+        $scope.frameratenames = [
+            '60 - fastest',
+            '30 - fast',
+            '20 - normal',
+            '15 - slow',
+            '12 - slower',
+            '10 - slowest'
+        ];
+
+        $scope.setFramerate = function(f) {
+            game.game_framerate = f;
+            frameWindow.setFrameDelay(f + 1);
+        };
 
         $scope.showScreenshotButton = function() {
-            // console.log($scope.game.user_id);
-            // console.log(user.id());
             return game.user_id === user.id();
         };
 
@@ -46,13 +59,68 @@
             $scope.$applyAsync();
         };
 
+        $scope.rating = function(index, g) {
+            return g.game_id && index <= g.hover_rating ? 'yellow' : 'white';
+        };
+
+        $scope.rateHover = function(index, g) {
+            if(g.game_id) {
+                g.hover_rating = index;
+            }
+        };
+
+        $scope.resetHover = function(g) {
+            if(g.game_id) {
+                g.hover_rating = g.rating_stars;
+            }
+        };
+
+        $scope.rateClick = function(index, g) {
+            if(g.game_id) {
+                var old = g.rating_stars;
+                g.hover_rating = g.rating_stars = index;
+                user.login()
+                .then(
+                    function() {
+                        return gamelist.rate(g, index);
+                    },
+                    function() {
+                        g.hover_rating = g.rating_stars = old;
+                    })
+                .then(
+                    function() {
+                        return gamelist.refreshOne(g.game_id);
+                    })
+                .then(
+                    function() {
+                        $rootScope.$broadcast('gamerated');
+                    });
+            }
+        };
+
         function frame() {
             return document.getElementById('gameFrame');
         }
 
-        $scope.$on('settings', function(e, settings) {
-            settings.framedelay = frameDelays[settings.game_framerate];
-            frameWindow.settings(settings);
+        function refreshRating() {
+            if(!user.isLoggedIn()) {
+            }
+            else if(!game.game_id) {
+            }
+            else if(rating_user == user.id() && rating_game == game.game_id) {
+            }
+            else {
+                game.getRating()
+                .then(function(result) {
+                    rating_user = user.id();
+                    rating_game = game.game_id;
+                    $scope.$applyAsync();
+                });
+            }
+        }
+
+        $scope.$on('user:updated', function() {
+            refreshRating();
         });
 
         $scope.$on('highlighter:activate', function(m, name) {
@@ -144,6 +212,7 @@
                 $('#gameFrame').focus();
                 frameWindow.game = game;
                 safecall(frameWindow.startIt);
+                refreshRating();
             }
         });
 

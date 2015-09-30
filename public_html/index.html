@@ -132,14 +132,35 @@
             <div class='controls'>
                 <textarea ng-change='checkText()' rows='5' ng-disabled='!canEditInstructions()' ng-model='game.game_instructions' ng-class='instructionsEditorClass()' highlight name='instructions'>
                 </textarea>
+                <div id='ratingBlock'>
+                    <span ng-mouseleave='resetHover(game)'>
+                        <i ng-repeat='i in [1,2,3,4,5]' ng-mouseover='rateHover(i, game)' ng-click='rateClick(i, game)' class='{{rating(i, game)}}star glyphicon glyphicon-star'></i>
+                    </span>
+                </div>
                 <div class='btn-group' role='group' aria-label='...'>
                     <button type='button' class='btn btn-default' id='restartButton' ng-click='restart()'><i class='glyphicon glyphicon-fast-backward'></i></button>
                     <button type='button' class='btn btn-default' id='pauseButton' ng-click='pause()'><i id='play' class='glyphicon glyphicon-pause'></i></button>
                     <button type='button' class='btn btn-default' id='stepButton' ng-click='step()'><i class='glyphicon glyphicon-step-forward'></i></button>
                 </div>
-                <br>
-                <div class='btn-group' ng-show='showScreenshotButton()' role='group' aria-label='...' id='screenShotButton'>
-                    <button class='btn btn-default' ng-click='takeScreenShot()'>Screenshot &nbsp;<i class='glyphicon glyphicon-camera'></i></button>
+                <div ng-show='canEditInstructions()'>
+                    <div id='screenShotButton'>
+                        <button class='btn btn-default' ng-click='takeScreenShot()'>Screenshot &nbsp;<i class='glyphicon glyphicon-camera'></i></button>
+                    </div>
+                    <div id='framerateButton'>
+                        <div class='form-group'>
+                            <div>
+                                <label for='speedButton'>Speed</label>
+                            </div>
+                            <div class="btn-group">
+                                <button type="button" name='speedButton' class="btn btn-sm dropdown-toggle" data-toggle="dropdown" data-hover='dropdown'>
+                                    {{frameratenames[game.game_framerate]}} <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li ng-repeat="f in frameratenames"><a style='cursor: pointer;' ng-click='setFramerate($index);'>{{f.toString()}}</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -34,7 +34,7 @@ function(ajax, user) {
         getlist: function(force) {
             var i, q = Q.defer();
             if(list.length === 0 || force) {
-                ajax.get('/api/list', { user_id: user.id(), justmygames: 0 } )
+                ajax.get('list', { user_id: user.id(), justmygames: 0 } )
                 .then(function(result) {
 
                     list = result.games || [];
@@ -51,10 +51,32 @@ function(ajax, user) {
             return q.promise;
         },
 
+        refreshOne: function(id) {
+            var g = findByIndex(id),
+                q = Q.defer();
+            if(g)
+            {
+                ajax.get('list', { justmygames: 0, game_id: id, user_id: 0 })
+                .then(function(result) {
+                    if(result.count == 1) {
+                        list[g.index] = result.games[0];
+                        q.resolve(result[0]);
+                    }
+                    else {
+                        q.reject();
+                    }
+                }, function(xhr) {
+                    q.reject();
+                });
+            }
+            else {
+                q.reject();
+            }
+            return q.promise;
+        },
+
         rate: function(game, rating) {
-            return ajax.post('/api/rate', {
-                user_id: user.id(),
-                user_session: user.session(),
+            return ajax.post('rate', {
                 game_id: game.game_id,
                 rating: rating
             });
@@ -63,11 +85,22 @@ function(ajax, user) {
         getcount: function(search) {
             search.text = search.text || '*';
             search.user_id = search.user_id || -1;
-            return ajax.get('/api/count', search);
+            return ajax.get('count', search);
         },
 
         get: function(id) {
-            return ajax.get('/api/source', { game_id: id });
+            var g, q = Q.defer();
+            ajax.get('source', { game_id: id })
+            .then(function(result) {
+                g = findByIndex(id);
+                if(g) {
+                    result.hover_rating = result.rating_stars = g.game.rating_stars;
+                }
+                q.resolve(result);
+            }, function(xhr) {
+                q.reject(xhr);
+            });
+            return q.promise; 
         },
 
         // re-get the list of games next time someone asks for it
@@ -79,7 +112,7 @@ function(ajax, user) {
         delete: function(game_id) {
             var g,
                 q = Q.defer();
-            ajax.post('/api/delete', { user_id: user.id(), user_session: user.session(), game_id: game_id })
+            ajax.post('delete', { game_id: game_id })
             .then(function(result) {
                 g = findByIndex(game_id);
                 if(g !== null) {

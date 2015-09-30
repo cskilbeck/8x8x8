@@ -18,7 +18,7 @@ $(document).ready(function() {
 });
 
 //////////////////////////////////////////////////////////////////////
-// - make the instructions line up the same in the editor and player
+// - layout so toolbars don't scroll off the top
 // - rating in player
 // - framerate in player
 // - share button in player
@@ -120,3 +120,4 @@ $(document).ready(function() {
 //      + get player out of an iframe [kinda, the controls are out of it, which is what matters]
 //      + edit settings directly in the player (name, instructions, framerate) - no modal
 //      + fix location/url when it's /edit/new and they've saved/created it (should be /edit/game_id)
+// + make the instructions line up the same in the editor and player [near enough]

@@ -8,7 +8,7 @@
         $scope.user.failed = false;
 
         $scope.ok = function () {
-            ajax.post('/api/login', user, 'Logging in ' + user.email + '...')
+            ajax.post('login', user, 'Logging in ' + user.email + '...')
             .then(function(result) {
                 $scope.user.failed = false;
                 $modalInstance.close(result);
@@ -38,7 +38,7 @@
         $scope.ok = function () {
 
             $scope.user.failed = false;
-            ajax.post('/api/register', $scope.user, 'Registering...')
+            ajax.post('register', $scope.user, 'Registering...')
             .then(function done(result) {
                 $modalInstance.close(result);
             }, function fail(xhr) {
@@ -125,8 +125,6 @@
         ];
 
         $scope.settings = settings;
-        // console.log("GameSettingsModalInstanceController ==>");
-        // console.log($scope.settings);
 
         $scope.setFramerate = function(f) {
             $scope.settings.game_framerate = f;

@@ -35,6 +35,7 @@
 
         $scope.$emit('pane:loaded', 'editor');
 
+
         window.focusEditor = function() {
             focus();
             if(editor) {
@@ -146,6 +147,8 @@
             });
         }
 
+        $scope.$on()
+
         if(session && newGameID === game_id) {
             editor.setSession(session);
         }
@@ -158,11 +161,17 @@
                 }
                 else {
                     try {
-                        newGameID = parseInt(game_id);
+                        try {
+                            newGameID = parseInt(game_id);
+                        }
+                        catch(e) {
+                            newGameID = 0;
+                        }
                         if(newGameID) {
                             enableEditor(false);
                             game.load(newGameID)
                             .then(function(result) {
+                                game.getRating();
                                 editor.setValue(result.game_source, -1);
                                 resetUndo();
                                 $scope.runIt();
@@ -199,7 +208,6 @@
         $scope.$on("$destroy", function(e) {
             game.editing = false;
             $rootScope.$applyAsync();
-            console.log("Exiting editor!");
             // // OK: true
             // // Cancel: false
             // if(!(editor.session.getUndoManager().isClean() || confirm("Changes are not saved, really close the editor?"))) {
@@ -328,10 +336,8 @@
             $scope.$emit('settings', gameSettings);
             user.login()
             .then(function() {
-                settings.user_id = user.id();
-                settings.user_session = user.session();
                 settings.game_id = game_id;
-                ajax.post('/api/settings', settings);
+                ajax.post('settings', settings);
             });
         }
 
