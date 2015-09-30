@@ -109,7 +109,7 @@
                 link: 'http://256pixels.net/play/' + game.game_id,
                 picture: 'http://256pixels.net/screen/' + game.game_id,
                 description: (game.game_instructions || '') + '\n\n\n',
-                caption: (game.user_id === user.id() ? 'I made a' : 'Check out this') + 'game which uses just 256 pixels!'
+                caption: (game.user_id === user.id() ? 'I made a' : 'Check out this') + ' game which uses just 256 pixels!'
             });
         };
 

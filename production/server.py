@@ -654,10 +654,10 @@ class screen(Handler):
         if row['game_screenshot'] is not None:
             screen = row['game_screenshot']
         else:
-            screen = ''.join(random.choice('0123456789ABCDEF') for _ in xrange(128))
+            screen = os.urandom(128)
+            web.http.lastmodified(correct_date(datetime.datetime.now()))
         buf = StringIO.StringIO()
         makeScreenShot(screen).save(buf)
-        web.http.lastmodified(correct_date(row['game_lastsaved']))
         return PNG(buf.getvalue())
 
 #----------------------------------------------------------------------
