@@ -2,6 +2,21 @@
 
 var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']);
 
+$(document).ready(function() {
+
+    function onsize() {
+        var w = window.innerHeight,
+            h = document.getElementById('mainheader').clientHeight,
+            f = document.getElementById('mainfooter').clientHeight;
+        document.getElementById('maincontent').style.height = ((w - h - f) / w * 100) + '%';
+    }
+
+    onsize();
+
+    $(window).resize(onsize);
+
+});
+
 //////////////////////////////////////////////////////////////////////
 // - rating in player
 // - framerate in player

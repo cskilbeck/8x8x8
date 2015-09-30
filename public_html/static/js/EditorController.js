@@ -311,10 +311,11 @@
         };
 
         function inflateEditor() {
-            var editorRect = $("#editorContainer")[0].getBoundingClientRect(),
+            var editorRect = $("#maincontainer")[0].getBoundingClientRect(),
+                tbh = $('#editorToolbar')[0].clientHeight,
                 width = editorRect.right - editorRect.left,
-                height = editorRect.bottom - editorRect.top;
-            $('#editor').height(height - 1).width(width); // -1 for the border
+                height = (editorRect.bottom - editorRect.top) - tbh;
+            $('#editor').height(height - 1).width(width - 1); // -1 for the border
             editor.resize();
         }
 
@@ -391,6 +392,10 @@
 
         $scope.canDeleteIt = function() {
             return game_id !== 'new' && game.user_id === user.id() && game.editing;
+        };
+
+        $scope.canSaveIt = function() {
+            return game_id === 'new' || game.user_id === user.id() && game.editing;
         };
 
         $scope.deleteIt = function() {

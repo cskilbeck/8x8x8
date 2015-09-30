@@ -36,6 +36,7 @@ function(ajax, user) {
             if(list.length === 0 || force) {
                 ajax.get('/api/list', { user_id: user.id(), justmygames: 0 } )
                 .then(function(result) {
+
                     list = result.games || [];
                     for(i in list) {
                         list[i].hover_rating = list[i].rating_stars || 0;
@@ -88,21 +89,6 @@ function(ajax, user) {
             }, function(xhr) {
                 q.reject();
             });
-            return q.promise;
-        },
-
-        // TODO (chs): make these update the database!
-
-        rename: function(game_id, name) {
-            var g = findByIndex(game_id),
-                q = Q.defer();
-            if(g !== null) {
-                g.game.name = name;
-                q.resolve();
-            }
-            else {
-                q.reject();
-            }
             return q.promise;
         },
 

@@ -336,6 +336,7 @@
 
     window.startIt = function() {
         try {
+            screen = [];
             client = (typeof ClientScript !== 'undefined') ? new ClientScript() : null;
             draw();
             frameDelay = window.game.framedelay;

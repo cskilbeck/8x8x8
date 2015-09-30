@@ -35,8 +35,6 @@
             game_id: 0,
             user_id: 0,
             user_session: 0,
-            game_created: new Date(),
-            game_lastsaved: new Date(),
             game_title: '',
             game_instructions: '',
             game_framerate: 0,

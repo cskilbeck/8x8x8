@@ -1,14 +1,12 @@
 html {
     margin: 0;
     min-width: 768px;
+    overflow: hidden;
 }
 body {
     margin: 0;
-    min-width: 768px;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
+    padding: 0;
+    height: 100%;
 }
 
 #gameFrame {
@@ -31,10 +29,6 @@ body {
 #editor {
     margin: 0;
     padding: 0;
-    height: 200px;
-}
-
-#mainPane {
 }
 
 .errorLine {
@@ -66,6 +60,8 @@ body .modal .modal-dialog {
     padding-left: 10px;
     padding-right: 10px;
     height: 40px;
+    width: 100%;
+    margin-right: 300px;
 }
 
 .whitestar {
@@ -98,6 +94,14 @@ body .modal .modal-dialog {
     padding: 0;
 }
 
+#gamesheader {
+    margin-right: 300px;
+    background: magenta;
+}
+
+.table.outer.scrollable {
+}
+
 table.table {
     table-layout: fixed;
 }
@@ -105,17 +109,14 @@ table.table {
 .clickable {
     cursor: pointer;
     background-color: #F5F5F5;
-    overflow: hidden;
 }
 
 .clickable:hover {
     background-color: #E8E8E8;
-    overflow: hidden;
 }
 
 .clickable[aria-expanded="true"] {
     background-color: #dff0d8;
-    overflow: hidden;
 }
 
 .clickable[aria-expanded="true"]:hover {
@@ -126,7 +127,6 @@ table.table {
     padding-top: 2px;
     padding-bottom: 2px;
     border: none;
-    overflow: hidden;
 }
 
 .table.outer >tbody >tr.hid > td {
@@ -155,7 +155,6 @@ table.table {
 
 .table.inner >tbody >tr >td {
     border: none;
-    overflow: hidden;
     padding-left: 20px;
     padding-right: 4px;
     padding-top: 0px;
@@ -183,86 +182,8 @@ table.table {
     margin-bottom: 0px;
 }
 
-pre {
-    background: white;
-    color: DarkRed;
-    overflow-x: auto;
-    white-space: nowrap;
-}
-
 /* GRID LAYOUT */
 
-.grid_row, .grid_col {
-    overflow: hidden;
-    position: absolute;
-}
-
-.grid_row {
-    left: 0;
-    right: 0;
-}
-.grid_col {
-    top: 0;
-    bottom: 0;
-}
-.grid_scroll-x {
-    overflow-x: auto;
-}
-.grid_scroll-y {
-    overflow-y: auto;
-}
-
-.grid_header.grid_row {
-    height: 50px;
-    top: 0;
-    border-bottom: 1px solid #E0E0E0;
-}
-
-.grid_editorheader.grid_row {
-    top: 0px;
-    height: 40px;
-    margin-right: 356px;
-}
-
-.grid_body.grid_row {
-    top: 50px;
-    bottom: 40px;
-}
-
-.grid_helpbody.grid_row {
-    padding-left: 15px;
-    padding-right: 15px;
-    top: 0;
-    bottom: 0;
-    overflow-y: auto;
-}
-
-.grid_editorbody.grid_row {
-    top: 40px;
-    bottom: 0;
-    border-top: 1px solid #E0E0E0;
-    margin-right: 356px;
-}
-.grid_footer.grid_row {
-    height: 40px;
-    bottom: 0;
-    border-top: 1px solid #E0E0E0;
-    padding-top: 10px;
-    padding-left: 10px;
-}
-
-.mainView {
-    margin-right: 356px;
-}
-
-.grid_left.grid_col {
-    width: 100%;
-    margin-right: 356px;
-}
-.grid_right.grid_col {
-    right: 0;
-    width: 356px;
-}
 .gly-spin {
     -webkit-animation:  spin 0.5s infinite linear;
     -moz-animation:     spin 0.5s infinite linear;
@@ -295,11 +216,6 @@ pre {
     margin: 10px;
 }
 
-.table.outer.scrollable {
-    overflow-x: hidden;
-    overflow-y: scroll;
-}
-
 .well.controls {
     margin: 0 auto;
     width: 256px;
@@ -310,7 +226,7 @@ pre {
     display: block;
     position: relative;
     width: 256px;
-    margin-left: 50px;
+    margin-left: 25px;
     margin-top: 20px;
     margin-bottom: 20px;
     height: 32px;
@@ -318,6 +234,12 @@ pre {
     font-weight: bold;
     border: none;
     background: white;
+    padding: 1px;
+}
+
+.pane {
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 .content.centered.player {
@@ -325,10 +247,6 @@ pre {
     height: 100%;
     overflow-x: hidden;
     border-left: 1px solid #E0E0E0;
-}
-
-.grid_right.grid_col {
-    text-align: center;
 }
 
 .instructionsTextarea {
@@ -339,6 +257,7 @@ pre {
     position: relative;
     text-align: center;
     padding: 0;
+    padding: 1px;
     overflow: hidden;
     resize: none;
     border: 0;
@@ -348,12 +267,14 @@ pre {
 .instructionsTextarea.editable {
     border-radius: 5px;
     border: 1px solid #8DF;
+    padding: 0px;
     background: white;
 }
 
 .gametitle.editable {
     border-radius: 5px;
     border: 1px solid #8DF;
+    padding: 0px;
     background: white;
 }
 
@@ -376,4 +297,61 @@ pre {
     z-index: -1;
     background: #000;
     opacity: 0.666;
+}
+
+
+div#mainheader {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50px;
+    z-index: 100;
+}
+div#mainfooter {
+    position: absolute;
+    bottom: 0;
+    right: 0px;
+    left: 0px;
+    height: 50px;
+    border-top: 1px solid #DDD;
+}
+div#mainsidebar {
+    position: absolute;
+    top: 50px;
+    right: 0px;
+    width: 300px;
+    bottom: 50px;
+    overflow: hidden;
+}
+div#maincontainer {
+    position: absolute;
+    top: 50px;
+    bottom: 50px;
+    left: 0;
+    right: 300px;
+    border-right: 1px solid #DDD;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+div#maincontent {
+}
+
+#editorPane {
+    height: 400px;
+}
+
+.statusBar {
+    margin-left: 20px;
+    margin-top: 20px;
+}
+
+div#mainfooter.row {
+    padding-top: 15px;
+    padding-left: 40px;
+}
+
+#networkIndicator {
+    width: 2em;
 }

@@ -11,7 +11,7 @@ function($scope, $modal, user, ajax, $rootScope) {
     $scope.user_id = user.id();
     $scope.showProfileButton = false;
     $scope.usernameMessage = "";
-    $scope.signInClass = 'glyphicon glyphicon-log-in';
+    $scope.signInClass = '';
     $scope.showBackdropper = false;
 
     $scope.$on('showBackdropper', function() {
@@ -51,7 +51,7 @@ function($scope, $modal, user, ajax, $rootScope) {
         if(details.user_id !== 0) {
             $scope.usernameMessage = 'Signed in as ' + details.user_username;
             $scope.signInMessage = "Sign out";
-            $scope.signInClass = 'glyphicon glyphicon-log-out';
+            $scope.signInClass = '';
             $scope.reportStatus("Welcome back " + details.user_username);
             $scope.showProfileButton = true;
             $scope.$applyAsync();
@@ -59,7 +59,7 @@ function($scope, $modal, user, ajax, $rootScope) {
         else {
             $scope.usernameMessage = '';
             $scope.signInMessage = "Sign In";
-            $scope.signInClass = 'glyphicon glyphicon-log-in';
+            $scope.signInClass = '';
             $scope.reportStatus("Signed out");
             $scope.showProfileButton = false;
             $scope.$applyAsync();

@@ -62,7 +62,12 @@ def show(x, m = 'var'):
 # JSON printer with date support
 
 def date_handler(obj):
-    return obj.isoformat() if hasattr(obj, 'isoformat') else obj
+    if hasattr(obj, 'isoformat'):
+        delta = datetime.datetime.now() - datetime.datetime.utcnow()
+        hh,mm = divmod((delta.days * 24*60*60 + delta.seconds + 30) // 60, 60)
+        return "%s%+03d%02d" % (obj.isoformat(), hh, mm)
+    else:
+        return obj;
 
 #----------------------------------------------------------------------
 # get a 32 bit random number which is not 0
