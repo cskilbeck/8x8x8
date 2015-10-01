@@ -147,70 +147,12 @@
             });
         }
 
-        if(session && newGameID === game_id) {
-            editor.setSession(session);
-        }
-        else {
-            if($routeParams.game_id) {
-                game_id = $routeParams.game_id;
-                if(game_id === 'new') {
-                    game.game_title = 'New Game';
-                    game.game_id = game_id;
-                }
-                else {
-                    try {
-                        try {
-                            newGameID = parseInt(game_id);
-                        }
-                        catch(e) {
-                            newGameID = 0;
-                        }
-                        if(newGameID) {
-                            enableEditor(false);
-                            game.load(newGameID)
-                            .then(function(result) {
-                                editor.setValue(result.game_source, -1);
-                                resetUndo();
-                                $scope.runIt();
-                                $scope.$apply();
-                                enableEditor(true);
-                            }, function(xhr) {
-                                noGame();
-                            });
-                        }
-                        else {
-                            noGame();
-                        }
-                    }
-                    catch(e) {
-                        noGame();
-                    }
-                }
-            }
-            else {
-                source = '// Huh?';
-                editor.setValue(source, -1);
-                resetUndo();
-                enableEditor(true);
-            }
-        }
-
-        editor.on('input', function() {
-        });
-
-        $("#editor").click(function(e) {
-            focusEditor();
-        });
-
-        $scope.$on("$destroy", function(e) {
-            game.editing = false;
-            $rootScope.$applyAsync();
-            // // OK: true
-            // // Cancel: false
-            // if(!(editor.session.getUndoManager().isClean() || confirm("Changes are not saved, really close the editor?"))) {
-            //     e.preventDefault(); // this doesn't work for $destroy because it's a broadcast message
-            // }
-        });
+        $scope.runIt = function() {
+            $scope.$emit('status', '');
+            game.editing = true;
+            game.game_source = editor.getValue();
+            game.play(game);
+        };
 
         function save() {
             game.game_source = editor.getValue();
@@ -273,13 +215,6 @@
             }
         };
 
-        $scope.runIt = function() {
-            $scope.$emit('status', '');
-            game.editing = true;
-            game.game_source = editor.getValue();
-            game.play(game);
-        };
-
         function setOptions(options) {
             if(editor) {
                 editor.setTheme('ace/theme/' + options.theme.toLowerCase());
@@ -287,10 +222,6 @@
                 localStorage.setItem('editorOptions', JSON.stringify(editorOptions));
             }
         }
-
-        $scope.$on('options', function(e, options) {
-            setOptions(options);
-        });
 
         $scope.showOptions = function() {
             var oldOptions = angular.copy(editorOptions);
@@ -323,10 +254,6 @@
             $('#editor').height(height - 1).width(width - 1); // -1 for the border
             editor.resize();
         }
-
-        $(window).resize(function(e) {
-            inflateEditor();
-        });
 
         function saveSettings(settings) {
             gameSettings = settings;
@@ -384,8 +311,6 @@
             editor.commands.commmandKeyBinding = {};
         }
 
-        activateEditor();
-
         function activateEditor() {
             inflateEditor();
             enableKeyBindings();
@@ -426,6 +351,88 @@
                 });
             }
         };
+
+        if(session && newGameID === game_id) {
+            editor.setSession(session);
+            $scope.runIt();
+        }
+        else {
+            if($routeParams.game_id) {
+                game_id = $routeParams.game_id;
+                if(game_id === 'new') {
+                    game.game_title = 'New Game';
+                    game.game_instructions = '';
+                    game.game_source = '';
+                    game.rating_stars = 0;
+                    game.hover_rating = 0;
+                    game.game_rating = 0;
+                    game.game_id = game_id;
+                    $scope.runIt();
+                }
+                else {
+                    try {
+                        try {
+                            newGameID = parseInt(game_id);
+                        }
+                        catch(e) {
+                            newGameID = 0;
+                        }
+                        if(newGameID) {
+                            enableEditor(false);
+                            game.load(newGameID)
+                            .then(function(result) {
+                                editor.setValue(result.game_source, -1);
+                                resetUndo();
+                                $scope.runIt();
+                                $scope.$apply();
+                                enableEditor(true);
+                            }, function(xhr) {
+                                noGame();
+                            });
+                        }
+                        else {
+                            noGame();
+                        }
+                    }
+                    catch(e) {
+                        noGame();
+                    }
+                }
+            }
+            else {
+                source = '// Huh?';
+                editor.setValue(source, -1);
+                resetUndo();
+                enableEditor(true);
+            }
+        }
+
+        editor.on('input', function() {
+        });
+
+        $("#editor").click(function(e) {
+            focusEditor();
+        });
+
+        $scope.$on("$destroy", function(e) {
+            game.editing = false;
+            $rootScope.$applyAsync();
+            // // OK: true
+            // // Cancel: false
+            // if(!(editor.session.getUndoManager().isClean() || confirm("Changes are not saved, really close the editor?"))) {
+            //     e.preventDefault(); // this doesn't work for $destroy because it's a broadcast message
+            // }
+        });
+
+        $scope.$on('options', function(e, options) {
+            setOptions(options);
+        });
+
+        $(window).resize(function(e) {
+            inflateEditor();
+        });
+
+        activateEditor();
 
     }]);
 })();

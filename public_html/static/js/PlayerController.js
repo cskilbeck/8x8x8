@@ -32,6 +32,26 @@
             '10 - slowest'
         ];
 
+
+        function format(fmt) {
+            var args = Array.prototype.slice.call(arguments, 1);
+            return fmt.replace(/{(\d+)}/g, function(match, number) {
+                return typeof args[number] !== 'undefined' ? args[number] : match;
+            });
+        }
+
+        function twitterURL(game) {
+            return format("https://twitter.com/intent/tweet?{0}", $.param({
+                    text: format("{0}\nNice little game made with just 256 pixels!\n", game.game_title),
+                    url: format("http://256pixels.net/play/{0}", game.game_id),
+                    via: "@256_Pixels"
+                }));
+        }
+
+        $scope.shareTwitter = function(game) {
+            window.open(twitterURL(game), "_blank", "height=400,width=600,status=no,toolbar=no");
+        };
+
         $scope.setFramerate = function(f) {
             game.game_framerate = f;
             frameWindow.setFrameDelay(f + 1);
@@ -64,7 +84,7 @@
         };
 
         $scope.rating = function(index, g) {
-            return (index <= g.hover_rating ? 'yellow' : 'white') + 'star glyphicon glyphicon-star';
+            return (index <= g.hover_rating ? 'yellow' : 'white') + 'star fa fa-2x fa-star';
         };
 
         $scope.rateHover = function(index, g) {
@@ -113,16 +133,6 @@
             });
         };
 
-        function updateTwitterButton(g) {
-            $('#twitterButton').html('<a href="https://twitter.com/share"' +
-                                            ' class="twitter-share-button"' +
-                                            ' data-url="http://256pixels.net/play/' + g.game_id + '"' +
-                                            ' data-size="default"' +
-                                            ' data-via="256_Pixels"' +
-                                            ' data-text="'+ g.game_title+'\nNice little game using just 256 Pixels\n"' +
-                                            ' data-count="none"></a>');
-            twttr.widgets.load();
-        }
         $scope.tweetText = function(game) {
             return "Check out this nice little 256 Pixel game: " + game.game_title;
         };
@@ -145,6 +155,8 @@
             else if(!game.game_id) {
             }
             else if(rating_user == user.id() && rating_game == game.game_id) {
+            }
+            else if(isNaN(parseInt(game.game_id))) {
             }
             else {
                 game.getRating()
@@ -230,6 +242,38 @@
             }
         }
 
+        function controller(f) {
+            return function() {
+                f();
+                if(frameWindow.isPaused()) {
+                    $('#play')
+                        .removeClass('fa-pause')
+                        .addClass('fa-play');
+                }
+                else {
+                    $('#play')
+                        .addClass('fa-pause')
+                        .removeClass('fa-play');
+                }
+            };
+        }
+
+        $scope.unpause = controller(function() {
+            frameWindow.unpause();
+        });
+
+        $scope.pause = controller(function() {
+            frameWindow.togglepause();
+        });
+
+        $scope.restart = controller(function() {
+            frameWindow.restart();
+        });
+
+        $scope.step = controller(function() {
+            frameWindow.step();
+        });
+
         $scope.$on('play', function(e, game) {
             var body, o, n, i;
             if(game) {
@@ -251,40 +295,7 @@
                 frameWindow.game = game;
                 safecall(frameWindow.startIt);
                 refreshRating();
-                updateTwitterButton(game);
             }
-        });
-
-        function controller(f) {
-            return function() {
-                f();
-                if(frameWindow.isPaused()) {
-                    $('#play')
-                        .removeClass('glyphicon-pause')
-                        .addClass('glyphicon-play');
-                }
-                else {
-                    $('#play')
-                        .addClass('glyphicon-pause')
-                        .removeClass('glyphicon-play');
-                }
-            };
-        }
-
-        $scope.unpause = controller(function() {
-            frameWindow.unpause();
-        });
-
-        $scope.pause = controller(function() {
-            frameWindow.togglepause();
-        });
-
-        $scope.restart = controller(function() {
-            frameWindow.restart();
-        });
-
-        $scope.step = controller(function() {
-            frameWindow.step();
         });
 
     }]);

@@ -364,6 +364,9 @@ div#mainfooter.row {
 #ratingBlock {
     margin-top: 10px;
     margin-bottom: 10px;
+}
+
+.linky {
     cursor: pointer;
 }
 
@@ -379,5 +382,3 @@ pre.helpcode {
 .shareblock {
     margin-bottom: 10px;
 }
-
-.twitter-share-button[style] { vertical-align: text-bottom !important; }

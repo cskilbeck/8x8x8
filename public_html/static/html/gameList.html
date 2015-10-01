@@ -1,7 +1,7 @@
 <div>
     <div class='row toolbar'>
         <div class='col-xs-2'>
-            <button class='btn btn-sm btn-default' id='refreshButton' ng-click='refreshGameList()'><i class='glyphicon glyphicon-refresh'></i></button>
+            <button class='btn btn-sm btn-default' id='refreshButton' ng-click='refreshGameList()'><i class='fa fa-refresh'></i></button>
             <a class='btn btn-sm btn-primary' href='/edit/new'>New Game</a>
         </div>
         <div class='col-xs-5 pull-right'>
@@ -29,7 +29,7 @@
                         <td>{{timer(g.game_lastsaved)}}</td>
                         <td>{{timer(g.game_created)}}</td>
                         <td>
-                            <i ng-repeat='i in [1,2,3,4,5]' class='{{star(i, g)}}star glyphicon glyphicon-star'></i>
+                            <i ng-repeat='i in [1,2,3,4,5]' class='{{star(i, g)}}star fa fa-star'></i>
                         </td>
                     </tr>
                     <tr class='hid'>
@@ -38,7 +38,7 @@
                                 <div class='gameinfo'>
                                     <div class='row'>
                                         <div class='col-xs-4'>
-                                            <button class='btn btn-success' ng-click='playIt(g.game_id)' title="Play"><i class='glyphicon glyphicon-play'></i></button>&nbsp;
+                                            <button class='btn btn-success' ng-click='playIt(g.game_id)' title="Play"><i class='fa fa-play'></i></button>&nbsp;
                                             <span ng-show='user_id !== g.user_id'>
                                                 <a class='btn btn-primary' href='/view/{{g.game_id}}'>View</i></a>&nbsp;
                                             </span>

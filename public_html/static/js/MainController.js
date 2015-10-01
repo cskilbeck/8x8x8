@@ -7,7 +7,7 @@ function($scope, $modal, user, ajax, $rootScope) {
     $scope.status = '';
     $scope.isError = false;
     $scope.networkBusy = '';
-    $scope.networkIcon = 'glyphicon-ok';
+    $scope.networkIcon = 'fa-check';
     $scope.user_id = user.id();
     $scope.showProfileButton = false;
     $scope.usernameMessage = "";
@@ -103,7 +103,7 @@ function($scope, $modal, user, ajax, $rootScope) {
 
     $scope.setInProgress = function(p) {
         $scope.networkBusy = p;
-        $scope.networkIcon = p ? 'glyphicon-repeat' : 'glyphicon-ok';
+        $scope.networkIcon = p ? 'fa-refresh' : 'fa-check';
         $scope.$applyAsync();
     };
 

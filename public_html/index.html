@@ -15,6 +15,7 @@
 
         <!--STYLEBLOCK(style)-->
         <link rel='stylesheet' href='http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.css'>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.css">
         <link rel='stylesheet' href='/static/css/style.css'>
         <!--ENDSTYLEBLOCK(style)-->
 
@@ -111,7 +112,7 @@
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                         </button>
-                        <a id='homelink' class="navbar-brand" href="/"><i class='glyphicon glyphicon-home'></i>&nbsp;&nbsp;256 Pixels</a>
+                        <a id='homelink' class="navbar-brand" href="/"><i class='fa fa-home'></i>&nbsp;&nbsp;256 Pixels</a>
                     </div>
                     <div id="navbar" class="navbar-collapse collapse">
                         <ul class="nav navbar-nav">
@@ -139,7 +140,7 @@
 
         <!-- footer -->
         <div id='mainfooter' class='row'>
-            <span id='networkIndicator'><i id='spinner' ng-class='[ "glyphicon", networkIcon, { "gly-spin": networkBusy } ]'></i>&nbsp;</span>
+            <span id='networkIndicator'><i id='spinner' ng-class='[ "fa", networkIcon, { "fa-spin": networkBusy } ]'></i>&nbsp;</span>
             <span id='statusBar' ng-class='{ statusError: isError }'>{{status}}</span>
         </div>
 
@@ -152,24 +153,24 @@
                 </textarea>
                 <div ng-show='showRating(game)' class='shareblock'>
                     <div id='ratingBlock'>
-                        <span ng-mouseleave='resetHover(game)'>
+                        <span ng-mouseleave='resetHover(game)' class='linky'>
                             <i ng-repeat='i in [1,2,3,4,5]' ng-mouseover='rateHover(i, game)' ng-click='rateClick(i, game)' class='{{rating(i, game)}}'></i>
                         </span>
                     </div>
                     <div>
-                        <div class="fb-share-button" onclick=";" ng-click='shareIt(game)' data-layout="button"></div>
-                        <a id='twitterButton'></a>
+                        <a ng-click='shareIt(game)'><i class="fa fa-2x fa-facebook-square"></i></a>
+                        <a ng-click='shareTwitter(game)'><i class="fa fa-2x fa-twitter-square"></i></a>
                     </div>
                 </div>
                 <div class='btn-group' role='group' aria-label='...' ng-show='canEditInstructions()'>
-                    <button type='button' class='btn btn-default' id='restartButton' ng-click='restart()'><i class='glyphicon glyphicon-fast-backward'></i></button>
-                    <button type='button' class='btn btn-default' id='pauseButton' ng-click='pause()'><i id='play' class='glyphicon glyphicon-pause'></i></button>
-                    <button type='button' class='btn btn-default' id='stepButton' ng-click='step()'><i class='glyphicon glyphicon-step-forward'></i></button>
+                    <button type='button' class='btn btn-default' id='restartButton' ng-click='restart()'><i class='fa fa-lg fa-fast-backward'></i></button>
+                    <button type='button' class='btn btn-default' id='pauseButton' ng-click='pause()'><i id='play' class='fa fa-lg fa-pause'></i></button>
+                    <button type='button' class='btn btn-default' id='stepButton' ng-click='step()'><i class='fa fa-lg fa-step-forward'></i></button>
                 </div>
                 <div ng-show='canEditInstructions()'>
                     <div id='framerateButton'>
                         <div class='form-group'>
-                        <button class='btn btn-default' ng-click='takeScreenShot()'><i class='glyphicon glyphicon-camera'></i></button>
+                        <button class='btn btn-default' ng-click='takeScreenShot()'><i class='fa fa-lg fa-camera'></i></button>
                             &nbsp;
                             <div class="btn-group">
                                 <button type="button" name='speedButton' class="btn btn-sm dropdown-toggle" data-toggle="dropdown" data-hover='dropdown'>

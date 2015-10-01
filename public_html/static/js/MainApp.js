@@ -19,38 +19,32 @@ $(document).ready(function() {
 
 //////////////////////////////////////////////////////////////////////
 // - ALL games editable, only require login when you try and save it
+// - layout so toolbars don't scroll off the top
 // - finish play.html
 //      - share buttons
 //      - link to source
 //      - rating (-> link to source)
-// ? groups of users (and admins) for schools
-// - layout so toolbars don't scroll off the top
-// / share button
-// - share button in player
 // - screenshots
 //      - store screenshots as prebuilt pngs in the database as varbinary - less processing to serve...
 //      - update screenshot when it's taken (add a query parameter to the url)
-//
 // - mouse/touch support (swipe UDLR & tap)
+// - home page
+// - fix the docs
+// - ask if they want to save when quitting the editor if changes are unsaved
+//
+// ? groups of users (and admins) for schools
+//
 // - detect hangs and kill it (possible? with instrumentation via Esprima : for, while, do) (but how to keep the source line matched up? sounds hard...)
 // / instructions/documentation/tooltips/popovers
 //
-// - home page
-// - ask if they want to save when quitting the editor if changes are unsaved
-// - fix the docs
-//
 // / work out how to run it from [azure|aws|digitalocean] on Debian with:
-//      + mod_wsgi for REST api
-//      + apache for static files
 //      - database on another machine
-//      + http://256pixels.net
 //      - compressed assets (editor require() stuff and glyphicons not working)
 // - telemetry/analytics
 //
 // - comments
 //
 // - editor
-//      - only save settings when they hit the save button! and get rid of /api/settings
 //      - get rid of toolbar altogether (options button overlays the editor in top right)
 //      - get rid of run button in editor pane (play button in the player)
 //
@@ -69,10 +63,8 @@ $(document).ready(function() {
 //      - paging in game list
 //      - make the search text work (timeout on change)
 //      - quick search buttons: my games, top games, most played, recently added, recently changed
-//      - game list scrolling broken
 //
 // - api
-//      - key() instead of pressed() - with N key buffer ( and keyreleased() )
 //      / fix the get/set pixel/color APIs for numbers/strings
 //
 //////////////////////////////////////////////////////////////////////
@@ -127,3 +119,11 @@ $(document).ready(function() {
 // + make the instructions line up the same in the editor and player [near enough]
 // + rating in player
 // + framerate in player
+//      + mod_wsgi for REST api
+//      + apache for static files
+//      + http://256pixels.net
+//      + only save settings when they hit the save button! and get rid of /api/settings
+//      + game list scrolling broken
+//      + key() instead of pressed() - with N key buffer ( and keyreleased() )
+// + share button
+//      + share button in player
