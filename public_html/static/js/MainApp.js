@@ -2,32 +2,16 @@
 
 var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']);
 
-$(document).ready(function() {
-
-    function onsize() {
-        var w = window.innerHeight,
-            h = document.getElementById('mainheader').clientHeight,
-            f = document.getElementById('mainfooter').clientHeight;
-        document.getElementById('maincontent').style.height = ((w - h - f) / w * 100) + '%';
-    }
-
-    onsize();
-
-    $(window).resize(onsize);
-
-});
-
 //////////////////////////////////////////////////////////////////////
-// - ALL games editable, only require login when you try and save it
-// - layout so toolbars don't scroll off the top
-// - finish play.html
-//      - share buttons
-//      - link to source
-//      - rating (-> link to source)
+// - player
+//      - player share buttons
+//      - player link to source
+//      - player rating (-> link to source)
+//      - player mouse/touch support (swipe UDLR & tap)
+//      - player in mobile browsers
 // - screenshots
 //      - store screenshots as prebuilt pngs in the database as varbinary - less processing to serve...
 //      - update screenshot when it's taken (add a query parameter to the url)
-// - mouse/touch support (swipe UDLR & tap)
 // - home page
 // - fix the docs
 // - ask if they want to save when quitting the editor if changes are unsaved
@@ -127,3 +111,5 @@ $(document).ready(function() {
 //      + key() instead of pressed() - with N key buffer ( and keyreleased() )
 // + share button
 //      + share button in player
+// + ALL games editable, only require login when you try and save it [actually done now]
+// + layout so toolbars don't scroll off the top [an ongoing nightmare]

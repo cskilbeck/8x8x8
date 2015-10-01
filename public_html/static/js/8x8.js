@@ -335,6 +335,12 @@
         exception = true;
     };
 
+    window.onload = function() {
+        if(parent && parent.window && typeof parent.window.frameIsLoaded === 'function') {
+            parent.window.frameIsLoaded();
+        }
+    };
+
     canvas = document.getElementById('canvas');
     context = canvas.getContext('2d');
     CW = canvas.width;

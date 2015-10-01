@@ -1,20 +1,21 @@
 (function() {
     "use strict";
 
-    mainApp.controller('LoginModalInstanceController', ['$scope', '$modal', '$modalInstance', 'user', 'ajax',
-    function ($scope, $modal, $modalInstance, user, ajax) {
+    mainApp.controller('LoginModalInstanceController', ['$scope', '$modal', '$modalInstance', 'details', 'ajax', 'user',
+    function ($scope, $modal, $modalInstance, details, ajax, user) {
 
-        $scope.user = user;
-        $scope.user.failed = false;
+        $scope.details = details;
+        $scope.details.failed = false;
 
         $scope.ok = function () {
-            ajax.post('login', user, 'Logging in ' + user.email + '...')
+            user.dologin($scope.details)
             .then(function(result) {
-                $scope.user.failed = false;
+                $scope.details.failed = false;
                 $modalInstance.close(result);
-                reportStatus(result.user_username + " signed in");
+                ajax.reportStatus(user.user_username + " signed in");
             }, function(xhr) {
-                $scope.user.failed = true;
+                ajax.reportError('Login failed');
+                $scope.details.failed = true;
                 $scope.$apply();
             });
         };
@@ -28,22 +29,22 @@
         };
     }]);
 
-    mainApp.controller('RegisterModalInstanceController', ['$scope', '$modal', '$modalInstance', 'user', 'ajax',
-    function ($scope, $modal, $modalInstance, user, ajax) {
+    mainApp.controller('RegisterModalInstanceController', ['$scope', '$modal', '$modalInstance', 'details', 'ajax',
+    function ($scope, $modal, $modalInstance, details, ajax) {
 
-        $scope.user = user;
-        $scope.message = 'Please fill in all required fields';
-        $scope.user.failed = false;
+        $scope.details = details;
+        $scope.message = 'Fill in required fields...';
+        $scope.details.failed = false;
 
         $scope.ok = function () {
 
-            $scope.user.failed = false;
-            ajax.post('register', $scope.user, 'Registering...')
+            $scope.details.failed = false;
+            user.register($scope.details)
             .then(function done(result) {
                 $modalInstance.close(result);
             }, function fail(xhr) {
                 $scope.message = xhr.statusText;
-                $scope.user.failed = true;
+                $scope.details.failed = true;
                 $scope.$apply();
             });
         };
@@ -53,7 +54,7 @@
         };
 
         $scope.passmatch = function() {
-            return $scope.user.password === $scope.user.password2;
+            return $scope.details.password === $scope.details.password2;
         };
     }]);
 

@@ -15,13 +15,30 @@ function ($rootScope, $modal, ajax, cookie) {
                 return details.user_id !== 0;
             },
 
-            login: function () {
+            register: function(details) {
+                return ajax.post('register', details, 'Registering...');
+            },
+
+            dologin: function(details) {
+                var q = Q.defer();
+                ajax.post('login', details, 'Logging in ' + details.email + '...')
+                .then(function(result) {
+                    console.log(result);
+                    q.resolve(result);
+                }, function(xhr) {
+                    q.reject(xhr);
+                });
+                return q.promise;
+            },
+
+            login: function (message) {
                 var loginDetails =  {
                     username: '',
                     email: '',
                     password: '',
                     password2: '',
-                    failed: false
+                    failed: false,
+                    msg: message || "Sign In"
                 };
 
                 var q = Q.defer();
@@ -31,7 +48,7 @@ function ($rootScope, $modal, ajax, cookie) {
                         templateUrl: '/static/html/loginModal.html',
                         controller: 'LoginModalInstanceController',
                         resolve: {
-                            user: function () {
+                            details: function () {
                                 return loginDetails;
                             }
                         }
@@ -42,7 +59,7 @@ function ($rootScope, $modal, ajax, cookie) {
                                 templateUrl: '/static/html/registerModal.html',
                                 controller: 'RegisterModalInstanceController',
                                 resolve: {
-                                    user: function() {
+                                    details: function() {
                                         return loginDetails;
                                     }
                                 }
@@ -103,10 +120,10 @@ function ($rootScope, $modal, ajax, cookie) {
                 var q = Q.defer();
                 ajax.get('endSession', { user_id: details.user_id, user_session: details.user_session }, 'Logging ' + details.user_username + ' out...')
                 .then(function() {
-                    user.update({user_id: 0});
+                    user.update({user_id: 0, user_session: 0});
                     q.resolve();
                 }, function() {
-                    user.update({user_id: 0});
+                    user.update({user_id: 0, user_session: 0});
                     q.reject();
                 });
                 return q.promise;

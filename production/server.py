@@ -127,6 +127,9 @@ class Handler:
 
         print handler + " for " + web.ctx.path
 
+        # TODO (chs): fix this and make it work with cloudflare
+        web.header('Access-Control-Allow-Origin', '*')
+
         if not handler in self.__class__.__dict__:
             raise web.HTTPError('401 Invalid method (%s not supported)' % (handler.upper(),))
 
@@ -324,8 +327,9 @@ class count(Handler):
 class source(Handler):
     @data({ 'game_id': int })
     def Get(self):
-        self.cur.execute('''SELECT game_id, user_id, game_created, game_lastsaved, game_title, game_instructions, game_framerate, game_source
+        self.cur.execute('''SELECT game_id, users.user_id, user_username, game_created, game_lastsaved, game_title, game_instructions, game_framerate, game_source
                             FROM games
+                                JOIN users ON users.user_id = games.user_id
                             WHERE game_id = %(game_id)s''', self.input)
         if self.cur.rowcount != 1:
             raise web.HTTPError('404 Game not found')
@@ -354,7 +358,9 @@ class gameid(Handler):
 class create(Handler):
     @data({
         'game_title': str,
-        'game_source': str
+        'game_source': str,
+        'game_instructions': '',
+        'game_framerate': int
         }, True)
     def Post(self):
         self.cur.execute('''SELECT game_id
@@ -362,8 +368,8 @@ class create(Handler):
                             WHERE game_title = %(game_title)s AND user_id = %(user_id)s''', self.input)
         if self.cur.rowcount != 0:
             raise web.HTTPError('409 Game name already exists')
-        self.cur.execute('''INSERT INTO games (user_id, game_created, game_lastsaved, game_source, game_title)
-                            VALUES (%(user_id)s, NOW(), NOW(), %(game_source)s, %(game_title)s)''' , self.input)
+        self.cur.execute('''INSERT INTO games (user_id, game_created, game_lastsaved, game_source, game_title, game_instructions, game_framerate)
+                            VALUES (%(user_id)s, NOW(), NOW(), %(game_source)s, %(game_title)s, %(game_instructions)s, %(game_framerate)s)''' , self.input)
         return JSON({ 'created': self.cur.rowcount, 'game_id': self.cur.lastrowid })
 
 #----------------------------------------------------------------------

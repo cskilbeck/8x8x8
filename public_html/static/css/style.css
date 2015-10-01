@@ -55,6 +55,7 @@ body .modal .modal-dialog {
 }
 
 .toolbar {
+    white-space: nowrap;
     padding-top: 5px;
     padding-bottom: 5px;
     padding-left: 10px;
@@ -62,6 +63,12 @@ body .modal .modal-dialog {
     height: 40px;
     width: 100%;
     margin-right: 300px;
+    overflow: hidden;
+}
+
+#gameSearch {
+    display: inline-block;
+    width: 20em;
 }
 
 .whitestar {
@@ -80,9 +87,6 @@ body .modal .modal-dialog {
 .close.closeButton {
     color: white;
     opacity: 1;
-}
-
-.pane {
 }
 
 .background {
@@ -182,26 +186,6 @@ table.table {
     margin-bottom: 0px;
 }
 
-/* GRID LAYOUT */
-
-.gly-spin {
-    -webkit-animation:  spin 0.5s infinite linear;
-    -moz-animation:     spin 0.5s infinite linear;
-    -o-animation:       spin 0.5s infinite linear;
-    animation:          spin 0.5s infinite linear;
-}
-@-moz-keyframes     spin {  000% { -moz-transform: rotate(000deg); }
-                            100% { -moz-transform: rotate(359deg); } }
-
-@-webkit-keyframes  spin {  000% { -webkit-transform: rotate(000deg); }
-                            100% { -webkit-transform: rotate(359deg); } }
-
-@-o-keyframes       spin {  000% { -o-transform: rotate(000deg); }
-                            100% { -o-transform: rotate(359deg); } }
-
-@keyframes          spin {  000% { -webkit-transform: rotate(000deg); transform: rotate(000deg); }
-                            100% { -webkit-transform: rotate(359deg); transform: rotate(359deg); } }
-
 .help-block.inline {
     display: inline;
 }
@@ -213,7 +197,10 @@ table.table {
 
 .gameinfo {
     min-height: 9em;
-    margin: 10px;
+    margin-left: 10px;
+    margin-right: 15px;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 .controls {
@@ -229,7 +216,7 @@ table.table {
     width: 256px;
     margin-left: 25px;
     margin-top: 20px;
-    margin-bottom: 20px;
+    margin-bottom: 5px;
     height: 32px;
     font-size: 16px;
     font-weight: bold;
@@ -238,9 +225,11 @@ table.table {
     padding: 1px;
 }
 
-.pane {
-    overflow-x: hidden;
-    overflow-y: auto;
+#byline {
+    margin-left: 25px;
+    width: 256px;
+    margin-top: 5px;
+    margin-bottom: 10px;
 }
 
 .content.centered.player {
@@ -306,41 +295,82 @@ div#mainheader {
     top: 0;
     left: 0;
     right: 0;
-    height: 50px;
-    z-index: 100;
 }
-div#mainfooter {
-    position: absolute;
-    bottom: 0;
-    right: 0px;
-    left: 0px;
-    height: 50px;
-    border-top: 1px solid #DDD;
+
+#navbar {
 }
+
 div#mainsidebar {
     position: absolute;
     top: 50px;
     right: 0px;
     width: 300px;
     bottom: 50px;
-    overflow: hidden;
+    overflow: auto;
+    border-left: 1px solid #e7e7e7;
 }
-div#maincontainer {
+
+div#mainfooter {
+    position: absolute;
+    bottom: 0;
+    right: 0px;
+    left: 0px;
+    height: 50px;
+    border-top: 1px solid #e7e7e7;
+}
+
+div.maincontainer {
     position: absolute;
     top: 50px;
     bottom: 50px;
     left: 0;
     right: 300px;
-    border-right: 1px solid #DDD;
+}
+
+div#games {
+    height: 37px;
+    overflow: hidden;
+    background: #E0E0E0;
+}
+
+div#gameslist {
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    top: 77px;
+    left: 0;
+    right: 0;
+    bottom: 0;
     overflow-y: auto;
-    overflow-x: hidden;
 }
 
-div#maincontent {
+div#editorContainer {
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    top: 40px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow-y: auto;
 }
 
-#editorPane {
-    height: 400px;
+div#helpcontainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow-y: auto;
+}
+
+div#homecontainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow-y: auto;
 }
 
 .statusBar {
@@ -381,4 +411,8 @@ pre.helpcode {
 
 .shareblock {
     margin-bottom: 10px;
+}
+
+.modal-dialog {
+  min-width: 320px !important;
 }

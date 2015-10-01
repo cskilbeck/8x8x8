@@ -13,29 +13,33 @@
 
         <title>8x8x8</title>
 
+        <link rel='stylesheet' href='http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css'>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+
         <!--STYLEBLOCK(style)-->
-        <link rel='stylesheet' href='http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.css'>
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.css">
         <link rel='stylesheet' href='/static/css/style.css'>
         <!--ENDSTYLEBLOCK(style)-->
 
         <!--SCRIPTBLOCK(all)-->
 
         <!-- JQuery -->
-        <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.js'></script>
+        <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js'></script>
 
         <!-- Bootstrap -->
-        <script src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.js'></script>
+        <script src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js'></script>
 
         <!-- Angular -->
-        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.js"></script>
-        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-animate.js"></script>
-        <script src="https://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.13.4.js"></script>
-        <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-route.js'></script>
-        <script src="https://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.13.4.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-animate.min.js"></script>
+        <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-route.min.js'></script>
+        <script src="https://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.13.4.min.js"></script>
 
         <!-- Ace -->
-        <script src='https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/ace.js'></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/ace.min.js'></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/theme-cobalt.js'></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/ext-language_tools.js'></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/mode-javascript.js'></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/worker-javascript.js'></script>
 
         <!-- Moment -->
         <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment.js'></script>
@@ -75,24 +79,6 @@
 
         <!--ENDSCRIPTBLOCK(all)-->
 
-        <script>
-            window.twttr = (function(d, s, id) {
-                var js,
-                    fjs = d.getElementsByTagName(s)[0],
-                    t = window.twttr || {};
-                if (d.getElementById(id)) return t;
-                js = d.createElement(s);
-                js.id = id;
-                js.src = "https://platform.twitter.com/widgets.js";
-                fjs.parentNode.insertBefore(js, fjs);
-                t._e = [];
-                t.ready = function(f) {
-                    t._e.push(f);
-                };
-                return t;
-            }(document, "script", "twitter-wjs"));
-        </script>
-
         <base href='/'>
     </head>
     <body ng-app='mainApp' ng-controller='MainController' ng-strict-di>
@@ -101,9 +87,62 @@
         <div class='backdropper'>
         </div>
 
+        <!-- main -->
+        <div id='mainview' ng-view>
+        </div>
+
+        <!-- siderbar -->
+        <div id='mainsidebar' class='centered player' ng-controller='PlayerController'>
+            <input name='title' id='game_title' ng-model='game.game_title' ng-disabled='!canEditInstructions()' ng-class='titleEditorClass()' highlight ng-change='checkText()'>
+            <div id='byline'>&nbsp;{{by(game)}}&nbsp;</div>
+            <iframe id='gameFrame' sandbox='allow-scripts allow-same-origin' src='/static/html/frame.html'></iframe>
+            <div class='controls'>
+                <textarea ng-change='checkText()' rows='5' ng-disabled='!canEditInstructions()' ng-model='game.game_instructions' ng-class='instructionsEditorClass()' highlight name='instructions'>
+                </textarea>
+                <div ng-show='showRating(game)' class='shareblock'>
+                    <div id='ratingBlock'>
+                        <span ng-mouseleave='resetHover(game)' class='linky'>
+                            <i ng-repeat='i in [1,2,3,4,5]' ng-mouseover='rateHover(i, game)' ng-click='rateClick(i, game)' class='{{rating(i, game)}}'></i>
+                        </span>
+                    </div>
+                    <div>
+                        <a ng-click='shareIt(game)'><i class="fa fa-2x fa-facebook-square"></i></a>
+                        <a ng-click='shareTwitter(game)'><i class="fa fa-2x fa-twitter-square"></i></a>
+                    </div>
+                </div>
+                <div class='btn-group' role='group' aria-label='...' ng-show='canEditInstructions()'>
+                    <button type='button' class='btn btn-default' id='restartButton' ng-click='restart()'><i class='fa fa-lg fa-fast-backward'></i></button>
+                    <button type='button' class='btn btn-default' id='pauseButton' ng-click='pause()'><i id='play' class='fa fa-lg fa-pause'></i></button>
+                    <button type='button' class='btn btn-default' id='stepButton' ng-click='step()'><i class='fa fa-lg fa-step-forward'></i></button>
+                </div>
+                <div ng-show='canEditInstructions()'>
+                    <div id='framerateButton'>
+                        <div class='form-group'>
+                        <button class='btn btn-default' ng-click='takeScreenShot()'><i class='fa fa-lg fa-camera'></i></button>
+                            &nbsp;
+                            <div class="btn-group">
+                                <button type="button" name='speedButton' class="btn btn-default dropdown-toggle" data-toggle="dropdown" data-hover='dropdown'>
+                                    {{frameratenames[game.game_framerate]}} <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li ng-repeat="f in frameratenames"><a style='cursor: pointer;' ng-click='setFramerate($index);'>{{f.toString()}}</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- footer -->
+        <div id='mainfooter' class='row'>
+            <span id='networkIndicator'><i id='spinner' ng-class='[ "fa", networkIcon, { "fa-spin": networkBusy } ]'></i>&nbsp;</span>
+            <span id='statusBar' ng-class='{ statusError: isError }'>{{status}}</span>
+        </div>
+
         <!-- header -->
         <div id='mainheader'>
-            <nav class="navbar navbar-default navbar-fixed-top" role='navigation'>
+            <nav class="navbar navbar-default navbar-fixed-top" role='navigation' id='navbar'>
                 <div class='container-fluid'>
                     <div class="navbar-header">
                         <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
@@ -136,62 +175,6 @@
                     </div>
                 </div>
             </nav>
-        </div>
-
-        <!-- footer -->
-        <div id='mainfooter' class='row'>
-            <span id='networkIndicator'><i id='spinner' ng-class='[ "fa", networkIcon, { "fa-spin": networkBusy } ]'></i>&nbsp;</span>
-            <span id='statusBar' ng-class='{ statusError: isError }'>{{status}}</span>
-        </div>
-
-        <!-- siderbar -->
-        <div id='mainsidebar' class='centered player' ng-controller='PlayerController'>
-            <input name='title' id='game_title' ng-model='game.game_title' ng-disabled='!canEditInstructions()' ng-class='titleEditorClass()' highlight ng-change='checkText()'>
-            <iframe id='gameFrame' sandbox='allow-scripts allow-same-origin' src='/static/html/frame.html'></iframe>
-            <div class='controls'>
-                <textarea ng-change='checkText()' rows='5' ng-disabled='!canEditInstructions()' ng-model='game.game_instructions' ng-class='instructionsEditorClass()' highlight name='instructions'>
-                </textarea>
-                <div ng-show='showRating(game)' class='shareblock'>
-                    <div id='ratingBlock'>
-                        <span ng-mouseleave='resetHover(game)' class='linky'>
-                            <i ng-repeat='i in [1,2,3,4,5]' ng-mouseover='rateHover(i, game)' ng-click='rateClick(i, game)' class='{{rating(i, game)}}'></i>
-                        </span>
-                    </div>
-                    <div>
-                        <a ng-click='shareIt(game)'><i class="fa fa-2x fa-facebook-square"></i></a>
-                        <a ng-click='shareTwitter(game)'><i class="fa fa-2x fa-twitter-square"></i></a>
-                    </div>
-                </div>
-                <div class='btn-group' role='group' aria-label='...' ng-show='canEditInstructions()'>
-                    <button type='button' class='btn btn-default' id='restartButton' ng-click='restart()'><i class='fa fa-lg fa-fast-backward'></i></button>
-                    <button type='button' class='btn btn-default' id='pauseButton' ng-click='pause()'><i id='play' class='fa fa-lg fa-pause'></i></button>
-                    <button type='button' class='btn btn-default' id='stepButton' ng-click='step()'><i class='fa fa-lg fa-step-forward'></i></button>
-                </div>
-                <div ng-show='canEditInstructions()'>
-                    <div id='framerateButton'>
-                        <div class='form-group'>
-                        <button class='btn btn-default' ng-click='takeScreenShot()'><i class='fa fa-lg fa-camera'></i></button>
-                            &nbsp;
-                            <div class="btn-group">
-                                <button type="button" name='speedButton' class="btn btn-sm dropdown-toggle" data-toggle="dropdown" data-hover='dropdown'>
-                                    {{frameratenames[game.game_framerate]}} <span class="caret"></span>
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li ng-repeat="f in frameratenames"><a style='cursor: pointer;' ng-click='setFramerate($index);'>{{f.toString()}}</a></li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- main -->
-        <div id='maincontainer'>
-            <div id='maincontent'>
-                <div ng-view>
-                </div>
-            </div>
         </div>
 
     </body>

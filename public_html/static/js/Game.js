@@ -8,8 +8,8 @@
         return s;
     }
 
-    function copy(o) {
-        var k, r = {};
+    function merge(o, r) {
+        var k;
         for(k in o) {
             if(Object.prototype.hasOwnProperty.call(o,k)) {
                 switch(typeof o[k]) {
@@ -26,6 +26,10 @@
         return r;
     }
 
+    function copy(o) {
+        return merge(o, {});
+    }
+
     mainApp.factory('game', ['ajax', 'user', '$rootScope',
     function(ajax, user, $rootScope) {
         "use strict";
@@ -34,7 +38,7 @@
 
             game_id: 0,
             game_title: '',
-            game_instructions: '',
+            game_instructions: ' ',
             game_framerate: 0,
             game_source: '',
             game_screenshot: [],
@@ -56,21 +60,44 @@
                 });
             },
 
+            reset: function() {
+                merge({
+                    game_id: 0,
+                    game_title: '',
+                    game_instructions: ' ',
+                    game_framerate: 0,
+                    game_source: '',
+                    game_screenshot: [],
+                    game_rating: 0,
+                    rating_stars: 0,
+                    user_id: 0,
+                    user_username: 0
+                }, game);
+                $rootScope.$broadcast('game:changed', game);
+            },
+
             find: function(id, name) {
                 return ajax.get('gameid', { game_title: name });
             },
 
-            create: function(source) {
-                var g, q = Q.defer();
-                game.game_id = 0;
-                game.game_created = new Date();
-                game.game_lastsaved = new Date();
-                game.game_source = source || '';
-                game.game_screenshot = [];
-                g = copy(game);
-                ajax.post('create', g)
+            create: function(newgame) {
+                var q = Q.defer(),
+                    g = {
+                        game_title: newgame.game_title || '',
+                        game_source: newgame.game_source || '',
+                        game_instructions: newgame.game_instructions || '',
+                        game_framerate: newgame.game_framerate
+                    };
+                ajax.post('create', g, 'Creating ' + game.game_title, 'Created ' + game.game_title, 'Error creating ' + game.game_title)
                 .then(function(result) {
+                    game.game_source = newgame.game_source;
                     game.game_id = result.game_id;
+                    game.game_title = newgame.game_title;
+                    game.game_instructions = newgame.game_instructions;
+                    game.game_framerate = newgame.game_framerate;
+                    game.user_id = user.id();   // owns it now...
+                    game.user_username = user.name();
+                    $rootScope.$broadcast('game:changed', game);
                     q.resolve(game);
                 }, function(xhr) {
                     q.reject();
@@ -96,8 +123,23 @@
             },
 
             save: function() {
-                game.game_instructions = game.game_instructions || '';
-                return ajax.post('save', copy(game), 'Saving ' + game.game_title, 'Saved ' + game.game_title, 'Error saving ' + game.game_title);
+                var g = copy(game);
+                g.game_instructions = g.game_instructions || '';
+                g.game_title = g.game_title || '';
+                g.game_source = g.game_source || '';
+                if(g.user_id === user.id()) {
+                    console.log("Saving as user id " + g.user_id);
+                    ajax.post('save', g, 'Saving ' + game.game_title, 'Saved ' + game.game_title, 'Error saving ' + game.game_title)
+                    .then(function(result) {
+                        game.user_id = user.id();   // whoever saved it owns it now!
+                        // TODO (chs): update the byline!?
+                        game.user_username = user.user_username();
+                    });
+                }
+                else {
+                    console.log("Creating game for user id " + user.id());
+                    game.create(g);
+                }
             },
 
             load: function(id) {

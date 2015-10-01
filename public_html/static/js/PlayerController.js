@@ -3,8 +3,11 @@
 
     var paused,
         step,
+        gameToPlay = null,
+        frameLoaded = false,
         frameWindow,
         frameDocument,
+        body,
         rating_user = 0,
         rating_game = 0,
         frameDelays = [ 1, 2, 3, 4, 5, 6],
@@ -32,7 +35,6 @@
             '10 - slowest'
         ];
 
-
         function format(fmt) {
             var args = Array.prototype.slice.call(arguments, 1);
             return fmt.replace(/{(\d+)}/g, function(match, number) {
@@ -44,9 +46,17 @@
             return format("https://twitter.com/intent/tweet?{0}", $.param({
                     text: format("{0}\nNice little game made with just 256 pixels!\n", game.game_title),
                     url: format("http://256pixels.net/play/{0}", game.game_id),
-                    via: "@256_Pixels"
+                    via: "256_Pixels"
                 }));
         }
+
+        $scope.$on('game:changed', function(e, m) {
+            playGame(game);
+        });
+
+        $scope.by = function(g) {
+            return g.game_id !== 0 ? "by " + g.user_username : "";
+        };
 
         $scope.shareTwitter = function(game) {
             window.open(twitterURL(game), "_blank", "height=400,width=600,status=no,toolbar=no");
@@ -68,15 +78,47 @@
         };
 
         window.reportRuntimeError = function(e) {
-            $scope.reportError(e.message);
             $rootScope.$broadcast('runtimeerror', e);
             $scope.$applyAsync();
         };
 
         window.reportRuntimeErrorDirect = function(msg, line, column) {
-            $scope.reportError(msg);
             $rootScope.$broadcast('editorGoto', {line: line, column: column, msg: msg});
             $scope.$applyAsync();
+        };
+
+        function playGame(game) {
+            var oldScript, newScript;
+            if(frameLoaded) {
+                oldScript = frameDocument.getElementById('clientscript');
+                newScript = frameDocument.createElement('script');
+                safecall(frameWindow.clearException);
+                $scope.unpause();
+                $rootScope.$broadcast('status', '');
+                game.frameDelay = frameDelays[game.game_framerate];
+                body.removeChild(oldScript);
+                newScript.setAttribute('id', 'clientscript');
+                newScript.innerHTML = preScript + game.game_source + postScript;
+                body.appendChild(newScript);
+                $('#gameFrame').focus();
+                frameWindow.game = game;
+                safecall(frameWindow.startIt);
+                gameToPlay = null;
+                $scope.$applyAsync();
+            }
+            else {
+                gameToPlay = game;
+            }
+        }
+
+        window.frameIsLoaded = function() {
+            frameLoaded = true;
+            frameWindow = $('#gameFrame')[0].contentWindow;
+            frameDocument = frameWindow.document;
+            body = frameDocument.getElementsByTagName('body')[0];
+            if(gameToPlay) {
+                playGame(gameToPlay);
+            }
         };
 
         $scope.showRating = function(g) {
@@ -103,7 +145,7 @@
             if(g.game_id) {
                 var old = g.rating_stars;
                 g.hover_rating = g.rating_stars = index;
-                user.login()
+                user.login("Sign in to rate this game")
                 .then(
                     function() {
                         return gamelist.rate(g, index);
@@ -221,13 +263,13 @@
 
         $scope.takeScreenShot = function() {
 
-            user.login().then(function() {
+            user.login("Sign in to take a screenshot").then(function() {
                 game.set_screenshot(frameWindow.getscreen());
             });
         };
 
         $scope.canEditInstructions = function() {
-            return game.editing && game.user_id === user.id();
+            return game.editing;
         };
 
         function safe(fn) {
@@ -238,14 +280,15 @@
 
         function safecall(fn) {
             if(typeof fn === 'function') {
-                fn.apply(arguments);
+                return fn.apply(arguments);
             }
+            return null;
         }
 
         function controller(f) {
             return function() {
-                f();
-                if(frameWindow.isPaused()) {
+                var r = f();
+                if(safecall(frameWindow.isPaused)) {
                     $('#play')
                         .removeClass('fa-pause')
                         .addClass('fa-play');
@@ -255,45 +298,30 @@
                         .addClass('fa-pause')
                         .removeClass('fa-play');
                 }
+                return r;
             };
         }
 
         $scope.unpause = controller(function() {
-            frameWindow.unpause();
+            safecall(frameWindow.unpause);
         });
 
         $scope.pause = controller(function() {
-            frameWindow.togglepause();
+            safecall(frameWindow.togglepause);
         });
 
         $scope.restart = controller(function() {
-            frameWindow.restart();
+            safecall(frameWindow.restart);
         });
 
         $scope.step = controller(function() {
-            frameWindow.step();
+            safecall(frameWindow.step);
         });
 
         $scope.$on('play', function(e, game) {
-            var body, o, n, i;
             if(game) {
                 $scope.game = game;
-                frameWindow = $('#gameFrame')[0].contentWindow;
-                frameDocument = frameWindow.document;
-                body = frameDocument.getElementsByTagName('body')[0];
-                o = frameDocument.getElementById('clientscript');
-                n = frameDocument.createElement('script');
-                safecall(frameWindow.clearException);
-                $scope.unpause();
-                $rootScope.$broadcast('status', '');
-                game.frameDelay = frameDelays[game.game_framerate];
-                body.removeChild(o);
-                n.setAttribute('id', 'clientscript');
-                n.innerHTML = preScript + game.game_source + postScript;
-                body.appendChild(n);
-                $('#gameFrame').focus();
-                frameWindow.game = game;
-                safecall(frameWindow.startIt);
+                playGame(game);
                 refreshRating();
             }
         });

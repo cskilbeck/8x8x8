@@ -34,7 +34,7 @@
             if(typeof data.user_session == 'undefined') {
                 data.user_session = user.session();
             }
-            func('/api/' + url, data)
+            func('http://45.55.170.25/api/' + url, data)
             .done(function(result) {
                 setInProgress(false);
                 reportStatus(complete || '');
@@ -51,6 +51,14 @@
         }
 
         var ajax = {
+
+            reportStatus: function(s) {
+                reportStatus(s);
+            },
+
+            reportError: function(e) {
+                reportError(e);
+            },
 
             set_user: function(u) {
                 user = u;

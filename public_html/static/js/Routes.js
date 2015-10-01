@@ -12,12 +12,10 @@
             controller: 'GameListController'
         }).when('/edit/:game_id', {
             templateUrl: '/static/html/editor.html',
-            controller: 'EditorController',
-            resolve: { readonly: function() { return false; } }
+            controller: 'EditorController'
         }).when('/view/:game_id', {
             templateUrl: '/static/html/editor.html',
-            controller: 'EditorController',
-            resolve: { readonly: function() { return true; } }
+            controller: 'EditorController'
         }).when('/help', {
             templateUrl: '/static/html/help.html',
             controller: 'HelpController'

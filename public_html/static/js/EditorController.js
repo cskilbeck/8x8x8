@@ -10,6 +10,7 @@
         modulesLoaded = false,
         name,
         game_id,
+        gameSettings,
         framerates = [60, 30, 20, 15, 10],
         editorOptions = {
             theme: 'Monokai',
@@ -25,12 +26,11 @@
             }
         };
 
-    mainApp.controller('EditorController', ['$scope', '$modal', '$routeParams', 'user', 'readonly', 'ajax', '$rootScope', 'gamelist', 'dialog', '$location', 'game',
-    function ($scope, $modal, $routeParams, user, readonly, ajax, $rootScope, gamelist, dialog, $location, game) {
+    mainApp.controller('EditorController', ['$scope', '$modal', '$routeParams', 'user', 'ajax', '$rootScope', 'gamelist', 'dialog', '$location', 'game',
+    function ($scope, $modal, $routeParams, user, ajax, $rootScope, gamelist, dialog, $location, game) {
 
         var newGameID = $routeParams.game_id;
 
-        $scope.readonly = readonly;
         $scope.game = game;
 
         $scope.$emit('pane:loaded', 'editor');
@@ -46,6 +46,7 @@
 
         // NOTE (chs): the dodgy line offsets are due to 0-based and 1-based differences and the preScript taking 1 line
         function gotoError(msg, line, column) {
+            ajax.reportError(msg);
             editor.gotoLine(line - 1, Math.max(0, column - 1), true);
             editor.session.setAnnotations([{
                 row: line - 2,
@@ -103,6 +104,7 @@
             }
             editor.$blockScrolling = Infinity;
             enableEditor(false);
+            inflateEditor();
         }
 
         $scope.isWorkUnsaved = function() {
@@ -160,7 +162,7 @@
         }
 
         function enableEditor(enable) {
-            editor.setReadOnly(!enable || readonly);
+            editor.setReadOnly(!enable);
         }
 
         // DONE (chs): require session to save game
@@ -168,7 +170,7 @@
         $scope.saveIt = function() {
             var data;
             if(game.game_title.length > 0) {
-                user.login()
+                user.login("Sign in to save " + game.game_title)
                 .then(function(details) {
                     if(game.game_id === 'new') {
                         game.create(editor.getValue())
@@ -247,10 +249,11 @@
         };
 
         function inflateEditor() {
-            var editorRect = $("#maincontainer")[0].getBoundingClientRect(),
+            var editorRect = $(".maincontainer")[0].getBoundingClientRect(),
                 tbh = $('#editorToolbar')[0].clientHeight,
                 width = editorRect.right - editorRect.left,
                 height = (editorRect.bottom - editorRect.top) - tbh;
+            $('#editorContainer').height(height - 1).width(width - 1); // -1 for the border
             $('#editor').height(height - 1).width(width - 1); // -1 for the border
             editor.resize();
         }
@@ -258,7 +261,7 @@
         function saveSettings(settings) {
             gameSettings = settings;
             $scope.$emit('settings', gameSettings);
-            user.login()
+            user.login("Sign in to save settings")
             .then(function() {
                 settings.game_id = game_id;
                 ajax.post('settings', settings);
@@ -312,7 +315,6 @@
         }
 
         function activateEditor() {
-            inflateEditor();
             enableKeyBindings();
             focusEditor();
             game.editing = true;
@@ -346,6 +348,7 @@
                     return gamelist.delete(game.game_id);
                 })
                 .then(function() {
+                    game.reset();
                     gamelist.reset();
                     $location.path('/list').replace();
                 });
@@ -367,6 +370,7 @@
                     game.hover_rating = 0;
                     game.game_rating = 0;
                     game.game_id = game_id;
+                    game.user_id = 0;
                     $scope.runIt();
                 }
                 else {
@@ -379,6 +383,7 @@
                         }
                         if(newGameID) {
                             enableEditor(false);
+                            game.user_id = 0;
                             game.load(newGameID)
                             .then(function(result) {
                                 editor.setValue(result.game_source, -1);

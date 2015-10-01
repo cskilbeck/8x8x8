@@ -18,7 +18,7 @@ script_replace_regex = r'\1<script src="\2.min.js"></script>\5'
 script_regex = r'<script\s*src\s*=\s*["\']\s*(.*?)\s*["\']\s*>\s*<\s*/script\s*>'
 
 styleblock_regex = r'(.*?)<!--\s*STYLEBLOCK\s*\((.+?)\)\s*-->(.*)<!--\s*ENDSTYLEBLOCK\s*\((.+?)\)\s*-->(.*)'
-style_replace_regex = r'\1<link rel="stylesheet" href="\2.min.css"></script>\5'
+style_replace_regex = r'\1<link rel="stylesheet" href="\2.min.css">\5'
 style_regex = r'<link\s*rel\s*=\s*["\']stylesheet["\']\s*href\s*=\s*["\']\s*(.*?)\s*["\']\s*>'
 
 
