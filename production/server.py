@@ -574,15 +574,15 @@ class refreshSession(Handler):
         'user_username': str
         })
     def Get(self):
-        self.input['session'] = getRandomInt()
+        self.input['new_session'] = getRandomInt()
         self.cur.execute('''UPDATE users
-                            SET user_session = %(session)s
+                            SET user_session = %(new_session)s
                             WHERE user_id = %(user_id)s
                                 AND user_username = %(user_username)s
                                 AND user_session = %(user_session)s''', self.input)
         if self.cur.rowcount != 1:
             raise web.HTTPError('404 Session not found')
-        self.input['user_session'] = self.input['session']
+        self.input['user_session'] = self.input['new_session']
         return JSON(self.input)
 
 #----------------------------------------------------------------------
