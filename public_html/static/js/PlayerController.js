@@ -4,9 +4,11 @@
     var paused,
         step,
         gameToPlay = null,
+        forceToPlay = false,
         frameLoaded = false,
         frameWindow,
         frameDocument,
+        running_game_id = 0,
         body,
         rating_user = 0,
         rating_game = 0,
@@ -51,11 +53,12 @@
         }
 
         $scope.$on('game:changed', function(e, m) {
-            playGame(game);
+            playGame(game, true);
+            refreshRating();
         });
 
         $scope.by = function(g) {
-            return g.game_id !== 0 ? "by " + g.user_username : "";
+            return g.game_id !== 0 ? "by " + (g.user_username || 'Anonymous') : "";
         };
 
         $scope.shareTwitter = function(game) {
@@ -67,8 +70,12 @@
             frameWindow.setFrameDelay(f + 1);
         };
 
-        $scope.showScreenshotButton = function() {
-            return game.user_id === user.id();
+        $scope.canShare = function(g) {
+            return g.game_id > 0;
+        };
+
+        $scope.myGame = function(g) {
+            return g.game_id > 0 && g.user_id == user.id();
         };
 
         $scope.checkText = function() {
@@ -87,26 +94,30 @@
             $scope.$applyAsync();
         };
 
-        function playGame(game) {
+        function playGame(game, force) {
             var oldScript, newScript;
             if(frameLoaded) {
-                oldScript = frameDocument.getElementById('clientscript');
-                newScript = frameDocument.createElement('script');
-                safecall(frameWindow.clearException);
-                $scope.unpause();
-                $rootScope.$broadcast('status', '');
-                game.frameDelay = frameDelays[game.game_framerate];
-                body.removeChild(oldScript);
-                newScript.setAttribute('id', 'clientscript');
-                newScript.innerHTML = preScript + game.game_source + postScript;
-                body.appendChild(newScript);
-                $('#gameFrame').focus();
-                frameWindow.game = game;
-                safecall(frameWindow.startIt);
-                gameToPlay = null;
-                $scope.$applyAsync();
+                if(force || game.game_id !== running_game_id) {
+                    running_game_id = game.game_id;
+                    oldScript = frameDocument.getElementById('clientscript');
+                    newScript = frameDocument.createElement('script');
+                    safecall(frameWindow.clearException);
+                    $scope.unpause();
+                    $rootScope.$broadcast('status', '');
+                    game.frameDelay = frameDelays[game.game_framerate];
+                    body.removeChild(oldScript);
+                    newScript.setAttribute('id', 'clientscript');
+                    newScript.innerHTML = preScript + game.game_source + postScript;
+                    body.appendChild(newScript);
+                    $('#gameFrame').focus();
+                    frameWindow.game = game;
+                    safecall(frameWindow.startIt);
+                    gameToPlay = null;
+                    $scope.$applyAsync();
+                }
             }
             else {
+                forceToPlay = force;
                 gameToPlay = game;
             }
         }
@@ -117,12 +128,12 @@
             frameDocument = frameWindow.document;
             body = frameDocument.getElementsByTagName('body')[0];
             if(gameToPlay) {
-                playGame(gameToPlay);
+                playGame(gameToPlay, forceToPlay);
             }
         };
 
         $scope.showRating = function(g) {
-            return g.game_id !== 0;
+            return true;
         };
 
         $scope.rating = function(index, g) {
@@ -130,13 +141,13 @@
         };
 
         $scope.rateHover = function(index, g) {
-            if(g.game_id) {
+            if(g.game_id && g.game_id !== 'new') {
                 g.hover_rating = index;
             }
         };
 
         $scope.resetHover = function(g) {
-            if(g.game_id) {
+            if(g.game_id && g.game_id !== 'new') {
                 g.hover_rating = g.rating_stars;
             }
         };
@@ -192,15 +203,11 @@
         }
 
         function refreshRating() {
-            if(!user.isLoggedIn()) {
+            if(!user.isLoggedIn() || !game.game_id || isNaN(parseInt(game.game_id))) {
+                game.rating_stars = game.hover_rating = 0;
+                $scope.$applyAsync();
             }
-            else if(!game.game_id) {
-            }
-            else if(rating_user == user.id() && rating_game == game.game_id) {
-            }
-            else if(isNaN(parseInt(game.game_id))) {
-            }
-            else {
+            else if(rating_user != user.id() || rating_game != game.game_id) {
                 game.getRating()
                 .then(function(result) {
                     rating_user = user.id();
@@ -215,6 +222,12 @@
             refreshRating();
         });
 
+        $scope.$on('user:logout', function() {
+            refreshRating();
+        });
+
+        // TODO (chs): fix these 4 functions for editing title & instructions, it's lamely done
+        
         $scope.$on('highlighter:activate', function(m, name) {
             switch(name) {
                 case 'title':
@@ -285,6 +298,12 @@
             return null;
         }
 
+        $scope.filterkeys = function(event) {
+            if(event.shiftKey === true && (event.keyCode === 188 || event.keyCode === 190)) {
+                event.preventDefault();
+            }
+        };
+
         function controller(f) {
             return function() {
                 var r = f();
@@ -318,10 +337,10 @@
             safecall(frameWindow.step);
         });
 
-        $scope.$on('play', function(e, game) {
-            if(game) {
-                $scope.game = game;
-                playGame(game);
+        $scope.$on('play', function(e, dt) {
+            if(dt.game) {
+                $scope.game = dt.game;
+                playGame(dt.game, dt.force);
                 refreshRating();
             }
         });

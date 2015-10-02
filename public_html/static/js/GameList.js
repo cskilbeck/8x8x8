@@ -51,6 +51,11 @@ function(ajax, user) {
             return q.promise;
         },
 
+        newScreenshot: function(id) {
+            var g = findByIndex(id);
+            return g ? g.new_screenshot : false;
+        },
+
         refreshOne: function(id) {
             var g = findByIndex(id),
                 q = Q.defer();
@@ -60,6 +65,7 @@ function(ajax, user) {
                 .then(function(result) {
                     if(result.count == 1) {
                         list[g.index] = result.games[0];
+                        list[g.index].new_screenshot = true;
                         q.resolve(result[0]);
                     }
                     else {

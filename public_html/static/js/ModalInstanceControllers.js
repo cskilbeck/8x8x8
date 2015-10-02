@@ -8,9 +8,9 @@
         $scope.details.failed = false;
 
         $scope.ok = function () {
+            $scope.details.failed = false;
             user.dologin($scope.details)
             .then(function(result) {
-                $scope.details.failed = false;
                 $modalInstance.close(result);
                 ajax.reportStatus(user.user_username + " signed in");
             }, function(xhr) {
@@ -97,11 +97,11 @@
         $scope.options = options;
 
         // DONE (chs): make input field focus on dialog show work!? [$modal was focusing element 0 in a requestAnimationFrame after the animation]
-        $modalInstance.opened.then(function() {
-            $timeout(function() {
-                $('#input').focus();
-            }, 350);
-        });
+        // $modalInstance.opened.then(function() {
+        //     $timeout(function() {
+        //         $('#input').focus();
+        //     }, 350);
+        // });
 
         $scope.ok = function() {
             $modalInstance.close();

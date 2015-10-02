@@ -1,56 +1,46 @@
 <div class='maincontainer'>
     <div class='toolbar'>
-        <button class='btn btn-sm btn-default' id='refreshButton' ng-click='refreshGameList()'><i class='fa fa-refresh'></i></button>
-        <a class='btn btn-sm btn-primary' href='/edit/new'>New Game</a>&nbsp;<input id='gameSearch' type='text' class='form-control input-sm horizinput' placeholder='Search' maxlength=32 />
-    </div>
-    <div id='games'>
-        <table class='table outer' id='gamesheader'>
-            <thead class='bg-info'>
-                <tr>
-                    <th width=25%>Game</th>
-                    <th width=25%>User</th>
-                    <th width=15%>Modified</th>
-                    <th width=15%>Created</th>
-                    <th width=20%>Rating</th>
-                </tr>
-            </thead>
-        </table>
+        <button class='btn btn-sm btn-default'
+                id='refreshButton'
+                ng-click='refreshGameList()'>
+            <i class='fa fa-refresh'></i>
+        </button>
+        <a class='btn btn-sm btn-primary' href='/edit/new'>
+            New Game
+        </a>&nbsp;
+        <input
+                id='gameSearch'
+                type='text'
+                class='form-control input-sm horizinput'
+                placeholder='Search'
+                maxlength=32 />
     </div>
     <div id='gameslist'>
-        <table class='table outer scrollable'>
-            <tbody ng-repeat='g in games'>
-                <tr data-toggle='collapse' data-target='#row{{$index}}' class='clickable' id='headerRow{{$index}}' aria-expandable='true' ng-click='yoink($index, g.game_id)' aria-expanded='{{expanded(g.game_id)}}'>
-                    <td>{{g.game_title}}</td>
-                    <td>{{g.user_username}}</td>
-                    <td>{{timer(g.game_lastsaved)}}</td>
-                    <td>{{timer(g.game_created)}}</td>
-                    <td>
-                        <i ng-repeat='i in [1,2,3,4,5]' class='{{star(i, g)}}star fa fa-star'></i>
-                    </td>
-                </tr>
-                <tr class='hid'>
-                    <td colspan='5'>
-                        <div class='accordion-body collapse tableContainer {{expanded(g.game_id) ? "in" : ""}}' id='row{{$index}}' row='#headerRow{{$index}}' collapsible aria-expanded='{{expanded(g.game_id)}}' style>
-                            <div class='gameinfo'>
-                                <div class='row'>
-                                    <div class='col-xs-4'>
-                                        <button class='btn btn-success' ng-click='playIt(g.game_id)' title="Play"><i class='fa fa-play'></i></button>&nbsp;
-                                        <a class='btn btn-primary' href='/edit/{{g.game_id}}'>Edit</a>&nbsp;
-                                    </div>
-                                </div>
-                                <div class='row'>
-                                    &nbsp;
-                                </div>
-                                <div class='row'>
-                                    <div class="col-xs-2">
-                                        <img ng-src='http://256pixels.net/screen/{{g.game_id}}' width='64' height='64'>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+        <div class='flex-container'>
+            <div ng-repeat='g in games'
+                    class='flex-item gameLink dropshadow'
+                    ng-click='playIt($event, g.game_id)'
+                    ng-mousedown='clicked($index)'
+                    ng-mouseleave='unclicked($index)'
+                    ng-mouseup='unclicked($index)'
+                    id='game_{{$index}}'>
+                <div class='game-title'>{{g.game_title}}</div>
+                <div class='game-username'>by {{g.user_username}}</div>
+                <div class='game-rating'>
+                    <i ng-repeat='i in [1,2,3,4,5]' class='{{star(i, g)}}star fa fa-star'></i>
+                </div>
+                <div class='game-screenshot'>
+                    <img id="screen_{{g.game_id}}"
+                            ng-src='http://256pixels.net/screen/{{screenshotGameID(g)}}'
+                            width='64'
+                            height='64' />
+                    </div>
+                <div class='game-buttons'>
+                    <a class='btn btn-default' ng-click='editIt($event, g.game_id)'>
+                        <i class='fa fa-pencil'></i>
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

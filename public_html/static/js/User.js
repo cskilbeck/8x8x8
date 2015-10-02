@@ -23,7 +23,6 @@ function ($rootScope, $modal, ajax, cookie) {
                 var q = Q.defer();
                 ajax.post('login', details, 'Logging in ' + details.email + '...')
                 .then(function(result) {
-                    console.log(result);
                     q.resolve(result);
                 }, function(xhr) {
                     q.reject(xhr);
@@ -45,6 +44,7 @@ function ($rootScope, $modal, ajax, cookie) {
                 if(details.user_id === 0) {
                     $modal.open({
                         animation: true,
+                        size: 'x-small',
                         templateUrl: '/static/html/loginModal.html',
                         controller: 'LoginModalInstanceController',
                         resolve: {
@@ -121,9 +121,11 @@ function ($rootScope, $modal, ajax, cookie) {
                 ajax.get('endSession', { user_id: details.user_id, user_session: details.user_session }, 'Logging ' + details.user_username + ' out...')
                 .then(function() {
                     user.update({user_id: 0, user_session: 0});
+                    $rootScope.$broadcast('user:logout');
                     q.resolve();
                 }, function() {
                     user.update({user_id: 0, user_session: 0});
+                    $rootScope.$broadcast('user:logout');
                     q.reject();
                 });
                 return q.promise;
@@ -136,7 +138,9 @@ function ($rootScope, $modal, ajax, cookie) {
                 cookie.set('user_username', details.user_username, 30);
                 cookie.set('user_session', details.user_session, 30);
                 cookie.set('user_email', details.user_email, 30);
-                $rootScope.$broadcast('user:updated', details);
+                if(details.user_session !== 0) {
+                    $rootScope.$broadcast('user:updated', details);
+                }
             },
 
             id: function() {
@@ -144,7 +148,7 @@ function ($rootScope, $modal, ajax, cookie) {
             },
 
             name: function() {
-                return details.user_username;
+                return details.user_username || "Anonymous";
             },
 
             session: function() {

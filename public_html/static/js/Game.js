@@ -30,8 +30,8 @@
         return merge(o, {});
     }
 
-    mainApp.factory('game', ['ajax', 'user', '$rootScope',
-    function(ajax, user, $rootScope) {
+    mainApp.factory('game', ['ajax', 'user', '$rootScope', 'gamelist',
+    function(ajax, user, $rootScope, gamelist) {
         "use strict";
 
         var game = {
@@ -55,6 +55,7 @@
                         })
                 .then(function() {
                     $rootScope.$broadcast('status', 'Saved screenshot');
+                    gamelist.refreshOne(game.game_id);
                 }, function(xhr) {
                     $rootScope.$broadcast('error', 'Error saving screenshot: ' + xhr.statusText);
                 });
@@ -100,7 +101,7 @@
                     $rootScope.$broadcast('game:changed', game);
                     q.resolve(game);
                 }, function(xhr) {
-                    q.reject();
+                    q.reject(xhr);
                 });
                 return q.promise;
             },
@@ -117,9 +118,12 @@
                 return q.promise;
             },
 
-            play: function(g) {
+            play: function(g, forceRestart) {
                 game.editing = (g && g.editing) || false;
-                $rootScope.$broadcast('play', g);
+                $rootScope.$broadcast('play', {
+                    game: g, 
+                    force: forceRestart
+                });
             },
 
             save: function() {
@@ -128,7 +132,6 @@
                 g.game_title = g.game_title || '';
                 g.game_source = g.game_source || '';
                 if(g.user_id === user.id()) {
-                    console.log("Saving as user id " + g.user_id);
                     ajax.post('save', g, 'Saving ' + game.game_title, 'Saved ' + game.game_title, 'Error saving ' + game.game_title)
                     .then(function(result) {
                         game.user_id = user.id();   // whoever saved it owns it now!
@@ -137,7 +140,6 @@
                     });
                 }
                 else {
-                    console.log("Creating game for user id " + user.id());
                     game.create(g);
                 }
             },

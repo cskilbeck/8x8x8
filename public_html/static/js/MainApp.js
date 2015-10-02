@@ -3,20 +3,15 @@
 var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']);
 
 //////////////////////////////////////////////////////////////////////
-// - player
-//      - player share buttons
-//      - player link to source
-//      - player rating (-> link to source)
-//      - player mouse/touch support (swipe UDLR & tap)
-//      - player in mobile browsers
+// - ratings - make it better than a simple average (http://www.evanmiller.org/)
+// - standalone player
+//      - standalone player share buttons
+//      - standalone player link to source
+//      - standalone player rating (-> link to source)
 // - screenshots
-//      - store screenshots as prebuilt pngs in the database as varbinary - less processing to serve...
-//      - update screenshot when it's taken (add a query parameter to the url)
 // - home page
 // - fix the docs
 // - ask if they want to save when quitting the editor if changes are unsaved
-//
-// ? groups of users (and admins) for schools
 //
 // - detect hangs and kill it (possible? with instrumentation via Esprima : for, while, do) (but how to keep the source line matched up? sounds hard...)
 // / instructions/documentation/tooltips/popovers
@@ -26,11 +21,16 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      - compressed assets (editor require() stuff and glyphicons not working)
 // - telemetry/analytics
 //
+// - mobile
+//      - mobile player mouse/touch support (swipe UDLR & tap)
+//      - player in mobile browsers
+//
 // - comments
 //
 // - editor
 //      - get rid of toolbar altogether (options button overlays the editor in top right)
 //      - get rid of run button in editor pane (play button in the player)
+//      - check if game name exists on create as well as save
 //
 // - user registration/login/forgot password
 //      - user profile modal dialog to change username\email\password
@@ -47,6 +47,10 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      - paging in game list
 //      - make the search text work (timeout on change)
 //      - quick search buttons: my games, top games, most played, recently added, recently changed
+//      - row/box layout option
+//      - update screenshot when it's taken (add a query parameter to the url) [bah, can't make this work very well]
+//
+// ? groups of users (and admins) for schools
 //
 // - api
 //      / fix the get/set pixel/color APIs for numbers/strings
@@ -54,6 +58,7 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //////////////////////////////////////////////////////////////////////
 // \ forking
 // \ make minify.py handle multiple SCRIPT/STYLEBLOCKs
+//      \ store screenshots as prebuilt pngs in the database as varbinary - less processing to serve...
 //
 //////////////////////////////////////////////////////////////////////
 // + save current source in LocalStorage
@@ -113,3 +118,5 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      + share button in player
 // + ALL games editable, only require login when you try and save it [actually done now]
 // + layout so toolbars don't scroll off the top [an ongoing nightmare]
+//      + flex instead of table layout for game list
+//      + rating_stars not updating when user changes

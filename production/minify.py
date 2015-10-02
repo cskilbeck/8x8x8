@@ -53,7 +53,7 @@ def join_scripts(scripts, base_url):
         file = urllib2.urlopen(url, context = ctx).read()
         print "Got", len(file), "bytes from", url
         files.append(file)
-    return ';'.join(files)
+    return '\n;\n'.join(files)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # minify the joined up script

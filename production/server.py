@@ -19,6 +19,7 @@ import MySQLdb as mdb
 import MySQLdb.cursors
 # import bcrypt
 import png, StringIO
+from PIL import Image, ImageDraw
 
 #----------------------------------------------------------------------
 # globals
@@ -71,7 +72,8 @@ def stripName(x, len):
 # JSON printer with date support
 
 def correct_date(d):
-    return d - (datetime.datetime.now() - datetime.datetime.utcnow())
+    d -= (datetime.datetime.now() - datetime.datetime.utcnow())
+    return d
 
 def date_handler(obj):
     if hasattr(obj, 'isoformat'):
@@ -634,21 +636,39 @@ palette = [ (0x00,0x00,0x00),
             (0xFF,0xFF,0x00),
             (0xFF,0xFF,0xFF) ]
 
-def dim(pixel, scale = 0.75):
-    return tuple([int(i * scale) for i in pixel])
+def round_rectangle(size, radius, fill):
+    width, height = size
+    rectangle = Image.new('RGB', size, fill)
+    corner = Image.new('RGB', (radius, radius), (0, 0, 0))
+    draw = ImageDraw.Draw(corner)
+    draw.pieslice((0, 0, radius * 2, radius * 2), 180, 270, fill=fill)
+    rectangle.paste(corner, (0, 0))
+    rectangle.paste(corner.rotate(90), (0, height - radius)) # Rotate the corner and paste it
+    rectangle.paste(corner.rotate(180), (width - radius, height - radius))
+    rectangle.paste(corner.rotate(270), (width - radius, 0))
+    return rectangle
 
-def makeScreenShot(str):
-    global palette
-    row, rows = [], []
-    for i in str:
+pixels = [round_rectangle((15, 15), 3, p) for p in palette]
+
+def get_screenshot(screen):
+    if screen is None:
+        return defaultScreenshot
+    s = Image.new('RGB', (256, 256), (0, 0, 0))
+    x, y = 0, 0
+    for i in screen:
         byte = ord(i)
-        b1 = palette[(byte >> 4) & 0xf]
-        b2 = palette[byte & 0xf]
-        row.extend([b1, b1, b1, dim(b1), b2, b2, b2, dim(b2)])
-        if len(row) == 64:
-            rows.extend([row, row, row, [dim(pixel) for pixel in row]])
-            row = []
-    return png.from_array(rows, 'RGB')
+        s.paste(pixels[(byte >> 4) & 0xf], (x +  1, y + 1))
+        s.paste(pixels[(byte >> 0) & 0xf], (x + 17, y + 1))
+        x += 32
+        if x == 256:
+            x = 0;
+            y += 16
+    buf = StringIO.StringIO()
+    s = s.resize((64, 64), Image.ANTIALIAS)
+    s.save(buf, 'PNG')
+    return buf.getvalue()
+
+defaultScreenshot = get_screenshot(os.urandom(128))
 
 class screen(Handler):
     def Get(self, game_id):
@@ -657,14 +677,9 @@ class screen(Handler):
         if self.cur.rowcount != 1:
             raise web.HTTPError('404 game not found')
         row = self.cur.fetchone()
-        if row['game_screenshot'] is not None:
-            screen = row['game_screenshot']
-        else:
-            screen = os.urandom(128)
-            web.http.lastmodified(correct_date(datetime.datetime.now()))
-        buf = StringIO.StringIO()
-        makeScreenShot(screen).save(buf)
-        return PNG(buf.getvalue())
+        print row['game_lastsaved']
+        web.http.lastmodified(correct_date(row['game_lastsaved']))    # TODO (chs): keep separate last-modified values for screenshot and game save
+        return PNG(get_screenshot(row['game_screenshot']))
 
 #----------------------------------------------------------------------
 # play

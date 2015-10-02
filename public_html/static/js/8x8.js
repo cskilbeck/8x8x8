@@ -400,7 +400,11 @@
     };
 
     window.getscreen = function() {
-        return screen;
+        var i, s = [];
+        for(i=0; i<256; ++i) {
+            s[i] = screen[i] || 0;
+        }
+        return s;
     };
 
     window.settings = function(settings) {

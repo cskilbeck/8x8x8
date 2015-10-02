@@ -20,8 +20,6 @@
         <link rel='stylesheet' href='/static/css/style.css'>
         <!--ENDSTYLEBLOCK(style)-->
 
-        <!--SCRIPTBLOCK(all)-->
-
         <!-- JQuery -->
         <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js'></script>
 
@@ -33,6 +31,8 @@
         <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-animate.min.js"></script>
         <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-route.min.js'></script>
         <script src="https://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.13.4.min.js"></script>
+
+        <!--SCRIPTBLOCK(all)-->
 
         <!-- Ace -->
         <script src='https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/ace.min.js'></script>
@@ -93,11 +93,17 @@
 
         <!-- siderbar -->
         <div id='mainsidebar' class='centered player' ng-controller='PlayerController'>
-            <input name='title' id='game_title' ng-model='game.game_title' ng-disabled='!canEditInstructions()' ng-class='titleEditorClass()' highlight ng-change='checkText()'>
+            <input name='title'
+                    id='game_title'
+                    ng-model='game.game_title'
+                    ng-disabled='!canEditInstructions()'
+                    ng-class='titleEditorClass()'
+                    highlight ng-change='checkText()'
+                    ng-keydown='filterkeys($event)' />
             <div id='byline'>&nbsp;{{by(game)}}&nbsp;</div>
             <iframe id='gameFrame' sandbox='allow-scripts allow-same-origin' src='/static/html/frame.html'></iframe>
             <div class='controls'>
-                <textarea ng-change='checkText()' rows='5' ng-disabled='!canEditInstructions()' ng-model='game.game_instructions' ng-class='instructionsEditorClass()' highlight name='instructions'>
+                <textarea ng-keydown='filterkeys($event)' ng-change='checkText()' rows='5' ng-disabled='!canEditInstructions()' ng-model='game.game_instructions' ng-class='instructionsEditorClass()' highlight name='instructions'>
                 </textarea>
                 <div ng-show='showRating(game)' class='shareblock'>
                     <div id='ratingBlock'>
@@ -105,9 +111,9 @@
                             <i ng-repeat='i in [1,2,3,4,5]' ng-mouseover='rateHover(i, game)' ng-click='rateClick(i, game)' class='{{rating(i, game)}}'></i>
                         </span>
                     </div>
-                    <div>
-                        <a ng-click='shareIt(game)'><i class="fa fa-2x fa-facebook-square"></i></a>
-                        <a ng-click='shareTwitter(game)'><i class="fa fa-2x fa-twitter-square"></i></a>
+                    <div id='social'>
+                        <a ng-disabled='!canShare(game)' ng-click='canShare(game) && shareIt(game)'><i ng-disabled='!canShare(game)' class="fa fa-2x fa-facebook-square"></i></a>
+                        <a ng-disabled='!canShare(game)' ng-click='canShare(game) && shareTwitter(game)'><i ng-disabled='!canShare(game)' class="fa fa-2x fa-twitter-square"></i></a>
                     </div>
                 </div>
                 <div class='btn-group' role='group' aria-label='...' ng-show='canEditInstructions()'>
@@ -118,7 +124,7 @@
                 <div ng-show='canEditInstructions()'>
                     <div id='framerateButton'>
                         <div class='form-group'>
-                        <button class='btn btn-default' ng-click='takeScreenShot()'><i class='fa fa-lg fa-camera'></i></button>
+                        <button class='btn btn-default' ng-disabled='!myGame(game)' ng-click='takeScreenShot()'><i class='fa fa-lg fa-camera'></i></button>
                             &nbsp;
                             <div class="btn-group">
                                 <button type="button" name='speedButton' class="btn btn-default dropdown-toggle" data-toggle="dropdown" data-hover='dropdown'>

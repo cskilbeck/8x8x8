@@ -3,6 +3,7 @@ html {
     min-width: 768px;
     overflow: hidden;
 }
+
 body {
     margin: 0;
     padding: 0;
@@ -18,49 +19,43 @@ body {
     overflow: hidden;
 }
 
-.centered {
-    text-align: center;
-}
-
-.mainmenu {
-    padding-top: 10px;
-}
-
 #editor {
     margin: 0;
     padding: 0;
 }
 
-.errorLine {
-  position:absolute;
-  background:rgba(100,200,100,0.5);
-  z-index:20
+.centered {
+    text-align: center;
 }
 
-body .modal .modal-dialog {
-  width: 25%;
+.modal-dialog {
+    min-width: 250px !important;
 }
 
-#buttonActivity {
-    box-shadow: 0px 0px 30px 15px #FFF;
+.modal-dialog.modal-x-small {
+    width: 20%;
+}
+
+.modal-dialog.modal-small {
+    width: 25%;
+}
+
+.modal-dialog.modal-medium {
+    width: 35%;
+}
+
+.modal-dialog.modal-large {
+    width: 50%;
 }
 
 .masked {
     display: none;
 }
 
-.bigga {
-    min-width: 768px;
-    overflow-x: hidden;
-}
-
 .toolbar {
     white-space: nowrap;
-    padding-top: 5px;
-    padding-bottom: 5px;
-    padding-left: 10px;
-    padding-right: 10px;
-    height: 40px;
+    padding: 10px;
+    height: 50px;
     width: 100%;
     margin-right: 300px;
     overflow: hidden;
@@ -71,136 +66,25 @@ body .modal .modal-dialog {
     width: 20em;
 }
 
-.whitestar {
-    color: #CCC;
-}
-
 .statusError {
     color: red;
     font-weight: bold;
+}
+
+.whitestar {
+    color: #CCC;
 }
 
 .yellowstar {
     color: #FC0;
 }
 
-.close.closeButton {
-    color: white;
-    opacity: 1;
-}
-
-.background {
-    position: absolute;
-    z-index: -1;
-    top: 0;
-    bottom: 0;
-    margin: 0;
-    padding: 0;
-}
-
-#gamesheader {
-    margin-right: 300px;
-    background: magenta;
-}
-
-.table.outer.scrollable {
-}
-
-table.table {
-    table-layout: fixed;
-}
-
-.clickable {
-    cursor: pointer;
-    background-color: #F5F5F5;
-}
-
-.clickable:hover {
-    background-color: #E8E8E8;
-}
-
-.clickable[aria-expanded="true"] {
-    background-color: #dff0d8;
-}
-
-.clickable[aria-expanded="true"]:hover {
-    background-color: #d8e8d0;
-}
-
-.table.outer >tbody >tr >td {
-    padding-top: 2px;
-    padding-bottom: 2px;
-    border: none;
-}
-
-.table.outer >tbody >tr.hid > td {
-    padding: 0;
-}
-
-.table.outer >tbody >tr.clickable:not(:last-child)  {
-    border-bottom: 1px LightGrey solid;
-}
-
-.table>thead>tr>th{
-    border-bottom: 1px LightGrey solid;
-}
-
-.table>tbody+tbody {
-    border: 0;
-}
-
-.tableContainer {
-    border-bottom: 1px LightGrey solid;
-}
-
-.table.inner {
-    width: auto;
-}
-
-.table.inner >tbody >tr >td {
-    border: none;
-    padding-left: 20px;
-    padding-right: 4px;
-    padding-top: 0px;
-    padding-bottom: 0px;
-    background-color: #ffffff;
-    font-size: small;
-}
-
-.table.inner >tbody >tr:first-child >td {
-    padding-top: 6px;
-}
-
-.table.inner >tbody >tr:first-child >td.butter {
-    padding-left: 20px;
-    padding-top: 6px;
-    padding-right: 6px;
-    padding-bottom: 10px;
-}
-
-.table.inner >tbody >tr:last-child >td {
-    padding-bottom: 8px;
-}
-
-.table {
-    margin-bottom: 0px;
-}
-
 .help-block.inline {
     display: inline;
 }
 
-
 .navbar-form.navbar-right.nomargin {
     margin: 0;
-}
-
-.gameinfo {
-    min-height: 9em;
-    margin-left: 10px;
-    margin-right: 15px;
-    margin-top: 10px;
-    margin-bottom: 10px;
 }
 
 .controls {
@@ -230,13 +114,6 @@ table.table {
     width: 256px;
     margin-top: 5px;
     margin-bottom: 10px;
-}
-
-.content.centered.player {
-    width: 356px;
-    height: 100%;
-    overflow-x: hidden;
-    border-left: 1px solid #E0E0E0;
 }
 
 .instructionsTextarea {
@@ -297,9 +174,6 @@ div#mainheader {
     right: 0;
 }
 
-#navbar {
-}
-
 div#mainsidebar {
     position: absolute;
     top: 50px;
@@ -327,17 +201,11 @@ div.maincontainer {
     right: 300px;
 }
 
-div#games {
-    height: 37px;
-    overflow: hidden;
-    background: #E0E0E0;
-}
-
 div#gameslist {
     margin: 0;
     padding: 0;
     position: absolute;
-    top: 77px;
+    top: 50px;
     left: 0;
     right: 0;
     bottom: 0;
@@ -348,11 +216,12 @@ div#editorContainer {
     margin: 0;
     padding: 0;
     position: absolute;
-    top: 40px;
+    top: 50px;
     left: 0;
     right: 0;
     bottom: 0;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
 div#helpcontainer {
@@ -387,10 +256,6 @@ div#mainfooter.row {
     width: 2em;
 }
 
-#screenShotButton {
-    margin-top: 10px;
-}
-
 #ratingBlock {
     margin-top: 10px;
     margin-bottom: 10px;
@@ -413,6 +278,117 @@ pre.helpcode {
     margin-bottom: 10px;
 }
 
-.modal-dialog {
-  min-width: 320px !important;
+.flex-container {
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-box-direction: normal;
+    -moz-box-direction: normal;
+    -webkit-box-orient: horizontal;
+    -moz-box-orient: horizontal;
+    -webkit-flex-direction: row;
+    -ms-flex-direction: row;
+    flex-direction: row;
+    -webkit-flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    -webkit-box-pack: start;
+    -moz-box-pack: start;
+    -webkit-justify-content: flex-start;
+    -ms-flex-pack: start;
+    justify-content: flex-start;
+    -webkit-align-content: flex-start;
+    -ms-flex-line-pack: start;
+    align-content: flex-start;
+    -webkit-box-align: start;
+    -moz-box-align: start;
+    -webkit-align-items: flex-start;
+    -ms-flex-align: start;
+    align-items: flex-start;
+    background: white;
+}
+
+.flex-item {
+    margin: 10px;
+    padding-top: 6px;
+    padding-right: 10px;
+    padding-left: 10px;
+    -webkit-box-ordinal-group: 1;
+    -moz-box-ordinal-group: 1;
+    -webkit-order: 0;
+    -ms-flex-order: 0;
+    -webkit-box-flex: 0;
+    -moz-box-flex: 0;
+    -webkit-flex: 0 1 auto;
+    -ms-flex: 0 1 auto;
+    flex: 0 1 auto;
+    -webkit-align-self: auto;
+    -ms-flex-item-align: auto;
+    align-self: auto;
+    width: 200px;
+    min-width: 200px;
+    height: 160px;
+    overflow: hidden;
+    background: white;
+    border: 1px solid #CCC;
+    position: relative;
+
+    border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    -ms-border-radius: 5px;
+}
+
+.dropshadow {
+    box-shadow: 2px 2px 20px 1px #EEE;
+}
+
+.game-title {
+    font-weight: bolder;
+    font-size: 14px;
+    white-space: nowrap;
+    width: 100%;
+    text-align: center;
+}
+
+.game-username {
+    font-weight: lighter;
+    font-size: 14px;
+    white-space: nowrap;
+    width: 100%;
+    text-align: center;
+}
+
+.game-screenshot {
+    position: absolute;
+    right: 15px;
+    bottom: 15px;
+}
+
+.game-buttons {
+    position: absolute;
+    left: 15px;
+    bottom: 15px;
+}
+
+.game-rating {
+    margin-top: 4px;
+    text-align: center;
+}
+
+a[disabled='disabled'] {
+    cursor: not-allowed;
+}
+
+div#social>a>i.fa.fa-2x.fa-facebook-square[disabled='disabled']:hover,
+div#social>a>i.fa.fa-2x.fa-facebook-square[disabled='disabled'],
+div#social>a>i.fa.fa-2x.fa-twitter-square[disabled='disabled']:hover,
+div#social>a>i.fa.fa-2x.fa-twitter-square[disabled='disabled'] {
+    color: #337ab7;
+}
+
+.gameLink:hover {
+    cursor: pointer;
 }

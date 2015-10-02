@@ -36,9 +36,7 @@ function($scope, $modal, user, ajax, $rootScope) {
     //     $(this).addClass('active');
     // });
 
-    $('#homelink').on('click', function(e) {
-        clearNavBar();
-    });
+    $('#homelink').on('click', clearNavBar);
 
     $scope.$on('pane:loaded', function(msg, pane) {
         clearNavBar();
@@ -56,14 +54,15 @@ function($scope, $modal, user, ajax, $rootScope) {
             $scope.showProfileButton = true;
             $scope.$applyAsync();
         }
-        else {
-            $scope.usernameMessage = '';
-            $scope.signInMessage = "Sign In";
-            $scope.signInClass = '';
-            $scope.reportStatus("Signed out");
-            $scope.showProfileButton = false;
-            $scope.$applyAsync();
-        }
+    });
+
+    $scope.$on('user:logout', function(msg) {
+        $scope.usernameMessage = '';
+        $scope.signInMessage = "Sign In";
+        $scope.signInClass = '';
+        $scope.reportStatus("Signed out");
+        $scope.showProfileButton = false;
+        $scope.$applyAsync();
     });
 
     $scope.$on('status', function(e, msg) {

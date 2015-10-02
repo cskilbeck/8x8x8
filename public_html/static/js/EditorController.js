@@ -141,6 +141,7 @@
             .then(function(result) {
                 game.game_title = 'New game';
                 game.game_id = 'new';
+                game.user_username = user.name();
                 focusEditor();
                 enableEditor(true);
             }, function() {
@@ -149,11 +150,11 @@
             });
         }
 
-        $scope.runIt = function() {
+        $scope.runIt = function(forceRestart) {
             $scope.$emit('status', '');
             game.editing = true;
             game.game_source = editor.getValue();
-            game.play(game);
+            game.play(game, forceRestart);
         };
 
         function save() {
@@ -173,7 +174,7 @@
                 user.login("Sign in to save " + game.game_title)
                 .then(function(details) {
                     if(game.game_id === 'new') {
-                        game.create(editor.getValue())
+                        game.create(game)
                         .then(function(result) {
                             game_id = result.game_id;
                             $location.path('/edit/' + game_id);
@@ -182,7 +183,7 @@
                             activateEditor();
                         }, function(xhr) {
                             if(xhr.status === 409) {
-                                dialog.choose('Game name already used',
+                                dialog.medium.choose('Game name already used',
                                     "'" + game.game_title + "' already exists, would you like to overwrite it? Warning, this will delete the original and cannot be undone",
                                     "Yes, overwrite it permanently",
                                     "No, do nothing")
@@ -306,7 +307,9 @@
                     mac: 'Command-R',
                     sender: 'editor|cli'
                 },
-                exec: $scope.runIt
+                exec: function() {
+                    $scope.runIt(true);
+                }
             });
         }
 
@@ -357,7 +360,7 @@
 
         if(session && newGameID === game_id) {
             editor.setSession(session);
-            $scope.runIt();
+            $scope.runIt(false);
         }
         else {
             if($routeParams.game_id) {
@@ -370,8 +373,10 @@
                     game.hover_rating = 0;
                     game.game_rating = 0;
                     game.game_id = game_id;
-                    game.user_id = 0;
-                    $scope.runIt();
+                    game.user_id = user.id();
+                    game.user_username = user.name();
+                    game.game_framerate = 2;
+                    $scope.runIt(true);
                 }
                 else {
                     try {
@@ -388,7 +393,7 @@
                             .then(function(result) {
                                 editor.setValue(result.game_source, -1);
                                 resetUndo();
-                                $scope.runIt();
+                                $scope.runIt(false);
                                 $scope.$apply();
                                 enableEditor(true);
                             }, function(xhr) {
