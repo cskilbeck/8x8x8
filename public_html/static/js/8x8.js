@@ -215,6 +215,7 @@
         return (code >= 0 && code <= arr.length) ? arr[code] : false;
     }
 
+    // TODO (chs): make keypressed() return same value until new frame fires
     function doPressed() {
         var k = keyPress.shift();
         return k !== undefined ? keyNameFromCode(k) : false;
