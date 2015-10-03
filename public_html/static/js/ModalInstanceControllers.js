@@ -10,10 +10,10 @@
         $scope.ok = function () {
             $scope.details.failed = false;
             user.dologin($scope.details)
-            .then(function(result) {
-                $modalInstance.close(result);
+            .then(function(data) {
+                $modalInstance.close(data);
                 ajax.reportStatus(user.user_username + " signed in");
-            }, function(xhr) {
+            }, function(response) {
                 ajax.reportError('Login failed');
                 $scope.details.failed = true;
                 $scope.$apply();
@@ -40,10 +40,10 @@
 
             $scope.details.failed = false;
             user.register($scope.details)
-            .then(function done(result) {
-                $modalInstance.close(result);
-            }, function fail(xhr) {
-                $scope.message = xhr.statusText;
+            .then(function done(data) {
+                $modalInstance.close(data);
+            }, function fail(response) {
+                $scope.message = response.statusText;
                 $scope.details.failed = true;
                 $scope.$apply();
             });

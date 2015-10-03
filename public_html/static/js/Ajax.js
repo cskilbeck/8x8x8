@@ -8,8 +8,8 @@
         session: function() { return 0; }
     };
 
-    mainApp.factory('ajax', ['$rootScope', 
-    function($rootScope) {
+    mainApp.factory('ajax', ['$rootScope', '$http',
+    function($rootScope, $http) {
         "use strict";
 
         function setInProgress(p) {
@@ -22,32 +22,6 @@
 
         function reportError(msg) {
             $rootScope.$broadcast('error', msg);
-        }
-
-        function doAjax(func, url, data, progress, complete, fail) {
-            var q = Q.defer();
-            setInProgress(true);
-            reportStatus(progress);
-            if(typeof data.user_id == 'undefined') {
-                data.user_id = user.id();
-            }
-            if(typeof data.user_session == 'undefined') {
-                data.user_session = user.session();
-            }
-            func('http://45.55.170.25/api/' + url, data)
-            .done(function(result) {
-                setInProgress(false);
-                reportStatus(complete || '');
-                $rootScope.$apply();
-                q.resolve(result);
-            })
-            .fail(function(xhr) {
-                setInProgress(false);
-                reportError((fail || 'Error:') + ' ' + xhr.statusText);
-                $rootScope.$apply();
-                q.reject(xhr);
-            });
-            return q.promise;
         }
 
         var ajax = {
@@ -64,12 +38,52 @@
                 user = u;
             },
 
-            get: function(url, data, progress, complete, fail) {
-                return doAjax($.get, url, data, progress, complete, fail);
+            get: function(url, params, progress, complete, fail) {
+                var q = Q.defer();
+                setInProgress(true);
+                reportStatus(progress);
+                if(typeof params.user_id === 'undefined') {
+                    params.user_id = user.id();
+                }
+                if(typeof params.user_session === 'undefined') {
+                    params.user_session = user.session();
+                }
+                console.log("GET", url, params);
+                $http.get('http://256pixels.net/api/' + url, { params: params })
+                .then(function(response) {
+                    setInProgress(false);
+                    reportStatus(complete || '');
+                    q.resolve(response);
+                }, function(response) {
+                    setInProgress(false);
+                    reportError((fail || 'Error:') + ' ' + response.statusText);
+                    q.reject(response);
+                });
+                return q.promise;
             },
 
             post: function(url, data, progress, complete, fail) {
-                return doAjax($.post, url, data, progress, complete, fail);
+                var q = Q.defer();
+                setInProgress(true);
+                reportStatus(progress);
+                if(typeof data.user_id === 'undefined') {
+                    data.user_id = user.id();
+                }
+                if(typeof data.user_session === 'undefined') {
+                    data.user_session = user.session();
+                }
+                console.log("POST", url, data);
+                $http.post('http://256pixels.net/api/' + url, data, { data: data })
+                .then(function(response) {
+                    setInProgress(false);
+                    reportStatus(complete || '');
+                    q.resolve(response);
+                }, function(response) {
+                    setInProgress(false);
+                    reportError((fail || 'Error:') + ' ' + response.statusText);
+                    q.reject(response);
+                });
+                return q.promise;
             }
         };
 

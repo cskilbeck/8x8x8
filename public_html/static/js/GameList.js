@@ -35,15 +35,15 @@ function(ajax, user) {
             var i, q = Q.defer();
             if(list.length === 0 || force) {
                 ajax.get('list', { user_id: user.id(), justmygames: 0 } )
-                .then(function(result) {
+                .then(function(response) {
 
-                    list = result.games || [];
+                    list = response.data.games || [];
                     for(i in list) {
                         list[i].hover_rating = list[i].rating_stars || 0;
                     }
                     q.resolve(list);
-                }, function(xhr) {
-                    q.reject(xhr);
+                }, function(response) {
+                    q.reject(response);
                 });
             } else {
                 q.resolve(list);
@@ -62,21 +62,21 @@ function(ajax, user) {
             if(g)
             {
                 ajax.get('list', { justmygames: 0, game_id: id, user_id: 0 })
-                .then(function(result) {
-                    if(result.count == 1) {
-                        list[g.index] = result.games[0];
+                .then(function(response) {
+                    if(response.data.count == 1) {
+                        list[g.index] = response.data.games[0];
                         list[g.index].new_screenshot = true;
-                        q.resolve(result[0]);
+                        q.resolve(response.data.games[0]);
                     }
                     else {
-                        q.reject();
+                        q.reject(response);
                     }
-                }, function(xhr) {
-                    q.reject();
+                }, function(response) {
+                    q.reject(response);
                 });
             }
             else {
-                q.reject();
+                q.reject(response);
             }
             return q.promise;
         },
@@ -97,14 +97,14 @@ function(ajax, user) {
         get: function(id) {
             var g, q = Q.defer();
             ajax.get('source', { game_id: id })
-            .then(function(result) {
+            .then(function(response) {
                 g = findByIndex(id);
                 if(g) {
-                    result.hover_rating = result.rating_stars = g.game.rating_stars;
+                    response.data.hover_rating = response.data.rating_stars = g.game.rating_stars;
                 }
-                q.resolve(result);
-            }, function(xhr) {
-                q.reject(xhr);
+                q.resolve(response.data);
+            }, function(response) {
+                q.reject(response);
             });
             return q.promise; 
         },
@@ -119,14 +119,14 @@ function(ajax, user) {
             var g,
                 q = Q.defer();
             ajax.post('delete', { game_id: game_id })
-            .then(function(result) {
+            .then(function(response) {
                 g = findByIndex(game_id);
                 if(g !== null) {
                     list.splice(g.index, 1);
                 }
-                q.resolve();
-            }, function(xhr) {
-                q.reject();
+                q.resolve(response.data);
+            }, function(response) {
+                q.reject(response);
             });
             return q.promise;
         },
@@ -136,10 +136,10 @@ function(ajax, user) {
                 q = Q.defer();
             if(g !== null) {
                 g.game.game_source = source;
-                q.resolve();
+                q.resolve(g);
             }
             else {
-                q.reject();
+                q.reject(null);
             }
             return q.promise;
         }

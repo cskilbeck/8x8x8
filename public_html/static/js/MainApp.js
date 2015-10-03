@@ -3,11 +3,20 @@
 var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']);
 
 //////////////////////////////////////////////////////////////////////
+// - Browsers
+//      - Firefox
+//      - [IE9]
+//      - IE10
+//      - IE11
+//      - Chrome
+//      - Safari
 // - ratings - make it better than a simple average (http://www.evanmiller.org/)
+// - send all non-editor keypresses to the player
 // - standalone player
 //      - standalone player share buttons
 //      - standalone player link to source
 //      - standalone player rating (-> link to source)
+// - unicode
 // - screenshots
 // - home page
 // - fix the docs

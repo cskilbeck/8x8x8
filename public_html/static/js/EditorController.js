@@ -159,7 +159,8 @@
 
         function save() {
             game.game_source = editor.getValue();
-            game.save();
+            console.log("Saving", game.game_title, ":", game.game_instructions);
+            return game.save();
         }
 
         function enableEditor(enable) {
@@ -333,15 +334,15 @@
 
         $scope.deleteIt = function() {
             if($scope.canDeleteIt()) {
-                dialog.choose("Delete " + game.game_title + "!?",
-                    "Do you really want to PERMANENTLY delete " + name + "? This action cannot be undone",
+                dialog.small.choose("Delete " + game.game_title + "!?",
+                    "Do you really want to PERMANENTLY delete " + game.game_title + "? This action cannot be undone",
                     "Yes, delete it",
                     "No",
                     'btn-danger',
                     'btn-default')
                 .then(function() {
-                    return dialog.choose("REALLY delete " + game.game_title + "????",
-                        "Are you quite SURE you want to PERMANENTLY delete " + name + "? This action cannot be undone, at all, ever",
+                    return dialog.medium.choose("REALLY delete " + game.game_title + "????",
+                        "Are you quite SURE you want to PERMANENTLY delete " + game.game_title + "? This action cannot be undone, at all, ever",
                         "Yes, delete it",
                         "No",
                         'btn-danger',

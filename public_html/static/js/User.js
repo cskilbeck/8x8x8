@@ -22,10 +22,10 @@ function ($rootScope, $modal, ajax, cookie) {
             dologin: function(details) {
                 var q = Q.defer();
                 ajax.post('login', details, 'Logging in ' + details.email + '...')
-                .then(function(result) {
-                    q.resolve(result);
-                }, function(xhr) {
-                    q.reject(xhr);
+                .then(function(response) {
+                    q.resolve(response.data);
+                }, function(response) {
+                    q.reject(response);
                 });
                 return q.promise;
             },
@@ -98,13 +98,13 @@ function ($rootScope, $modal, ajax, cookie) {
 
                 if(!isNaN(data.user_session) && data.user_session !== user.session()) {
                     ajax.get('refreshSession', data)
-                    .then(function(result) {
-                        result.user_email = data.user_email; // TODO (chs): get user details back from refreshSession
-                        user.update(result);
+                    .then(function(response) {
+                        data.user_session = response.data.user_session;
+                        user.update(data);
                         $rootScope.$broadcast('status', 'Welcome back ' + data.user_username);
                         q.resolve();
                     },
-                    function(xhr) {
+                    function(response) {
                         user.update({user_id: 0});
                         $rootScope.$broadcast('status', 'Session expired, please log in again...');
                         q.resolve();
@@ -138,6 +138,7 @@ function ($rootScope, $modal, ajax, cookie) {
                 cookie.set('user_username', details.user_username, 30);
                 cookie.set('user_session', details.user_session, 30);
                 cookie.set('user_email', details.user_email, 30);
+                console.log(details);
                 if(details.user_session !== 0) {
                     $rootScope.$broadcast('user:updated', details);
                 }

@@ -101,6 +101,7 @@ function($scope, $modal, user, ajax, $rootScope) {
     };
 
     $scope.setInProgress = function(p) {
+        console.log("PROGRESS: " + p);
         $scope.networkBusy = p;
         $scope.networkIcon = p ? 'fa-refresh' : 'fa-check';
         $scope.$applyAsync();

@@ -13,7 +13,7 @@
 #----------------------------------------------------------------------
 
 import sys, types, os, time, datetime, struct, re, random
-import web, pprint, json, iso8601, unicodedata
+import web, pprint, json, iso8601, unicodedata, urlparse
 from contextlib import closing
 import MySQLdb as mdb
 import MySQLdb.cursors
@@ -144,6 +144,7 @@ class Handler:
             with closing(opendb()) as self.db:
                 with closing(self.db.cursor()) as self.cur:
                     self.input = web.input()
+                    self.data = web.data()
                     output = self.output(handlerFunc(self, *args))
                     return output
 
@@ -201,30 +202,48 @@ def ICON(x):
 
 class data(object):
 
-    def __init__(self, paramSpec, validateSession = False):
+    def __init__(self, paramSpec):
         self.paramSpec = paramSpec
-        self.validateSession = validateSession
 
     def __call__(self, original_func):
         def new_function(slf, *args, **kwargs):
             result = {}
-            data = slf.input
 
-            if self.validateSession:
-                self.paramSpec['user_id'] = int
-                self.paramSpec['user_session'] = int
+            method = web.ctx.method
+            if method in ['GET', 'DELETE']: # TODO (chs): work out which should use URL and which should use Request Data
+                data = web.input()
+            elif method in ['POST', 'PUT']:
+                contentType = web.ctx.env.get('CONTENT_TYPE').split(';')
+                if len(contentType) > 0:
+                    if contentType[0] == 'application/json':
+                        data = json.loads(web.data())
+                    elif contentType[0] == 'application/x-www-form-urlencoded':
+                        data = urlparse.parse_qs(web.data())
+                        # now it will be strings...
+                    # TODO (chs): add more content-type handlers (I thought web.input was supposed to )
+                    # TODO (chs): handle UNICODE?
 
-            for name in self.paramSpec:
-                default = self.paramSpec[name]
+            # print "ENV:", pprint.pformat(web.ctx.environ)
+
+            params = self.paramSpec.get('params', {})
+
+            validate = False
+            if self.paramSpec.get('validate', False):
+                validate = True
+                params['user_id'] = int
+                params['user_session'] = int
+
+            for name in params:
+                default = params[name]
                 deftype = type(default)
                 val = data.get(name, None)
-                if val is not None:
-                    val = unicodedata.normalize('NFKD', val).encode('ascii','ignore')
+                # if val is str:
+                #     val = unicodedata.normalize('NFKD', val).encode('ascii','ignore')
                 if deftype == type:
                     if val is None:
                         raise web.HTTPError('401 Missing parameter %s' % (name,))
                     try:
-                        val = default(val)
+                        val = default(val)  # chs: handle unicode?
                     except TypeError:
                         raise ValueError('%s cannot be cast to %s' % (name, default.__name__))
                 elif deftype == dict:
@@ -249,7 +268,7 @@ class data(object):
                             val = min(maxval, val)
                         elif deftype == str:
                             val = val[:maxval]
-                elif deftype in [int, float, str]:
+                elif deftype in [int, float, str, unicode]:
                     val = default if val is None else deftype(val)
                 elif deftype == datetime.datetime:
                     val = default if val is None else iso8601.parse_date(val)
@@ -259,7 +278,7 @@ class data(object):
                 else:
                     result[name] = val
 
-            if self.validateSession:
+            if validate:
                 slf.cur.execute('''SELECT COUNT(*) AS count
                                     FROM users
                                     WHERE user_id = %(user_id)s
@@ -285,12 +304,14 @@ def searchTerm(s):
 
 class list(Handler):
     @data({
-        'user_id': 0,
-        'game_id': 0,
-        'justmygames': 0,
-        'search': '',
-        'length': { 'default': 20, 'type': int, 'max': 100, 'min': 1 },
-        'offset': { 'default': 0, 'min': 0 }
+        'params': {
+            'user_id': 0,
+            'game_id': 0,
+            'justmygames': 0,
+            'search': '',
+            'length': { 'default': 20, 'type': int, 'max': 100, 'min': 1 },
+            'offset': { 'default': 0, 'min': 0 }
+            }
         })
     def Get(self):
         self.input['search'] = searchTerm(self.input['search'])
@@ -312,8 +333,10 @@ class list(Handler):
 
 class count(Handler):
     @data({
-        'user_id': int,
-        'search': ''
+        'params': {
+            'user_id': int,
+            'search': ''
+            }
         })
     def Get(self):
         self.input['search'] = searchTerm(self.input['search'])
@@ -327,7 +350,11 @@ class count(Handler):
 # /api/source
 
 class source(Handler):
-    @data({ 'game_id': int })
+    @data({
+        'params': {
+            'game_id': int
+            }
+        })
     def Get(self):
         self.cur.execute('''SELECT game_id, users.user_id, user_username, game_created, game_lastsaved, game_title, game_instructions, game_framerate, game_source
                             FROM games
@@ -342,8 +369,10 @@ class source(Handler):
 
 class gameid(Handler):
     @data({
-        'user_id': int,
-        'name': str
+        'params': {
+            'user_id': int,
+            'name': str
+            }
         })
     def Get(self):
         self.cur.execute('''SELECT game_id
@@ -359,11 +388,14 @@ class gameid(Handler):
 
 class create(Handler):
     @data({
-        'game_title': str,
-        'game_source': str,
-        'game_instructions': '',
-        'game_framerate': int
-        }, True)
+        'validate': True,
+        'params': {
+            'game_title': str,
+            'game_source': str,
+            'game_instructions': '',
+            'game_framerate': int
+            }
+        })
     def Post(self):
         self.cur.execute('''SELECT game_id
                             FROM games
@@ -379,10 +411,13 @@ class create(Handler):
 
 class settings(Handler):
     @data({
-        'game_id': int,
-        'game_framerate': 0,
-        'game_instructions': ''
-        }, True)
+        'validate': True,
+        'params': {
+            'game_id': int,
+            'game_framerate': 0,
+            'game_instructions': ''
+            }
+        })
     def Post(self):
         self.cur.execute('''UPDATE games SET game_framerate = %(game_framerate)s, game_instructions = %(game_instructions)s
                             WHERE game_id = %(game_id)s
@@ -394,9 +429,12 @@ class settings(Handler):
 
 class rename(Handler):
     @data({
-        'game_id': int,
-        'name': str
-        }, True)
+        'validate': True,
+        'params': {
+            'game_id': int,
+            'name': str
+            }
+        })
     def Post(self):
         self.cur.execute('''UPDATE games
                             SET game_lastsaved = NOW(), game_title = %(name)s
@@ -409,8 +447,11 @@ class rename(Handler):
 
 class rating(Handler):
     @data({
-        'game_id': int
-        }, True)
+        'validate': True,
+        'params': {
+            'game_id': int
+            }
+        })
     def Get(self):
         self.cur.execute('''SELECT rating_stars FROM ratings
                             WHERE user_id = %(user_id)s
@@ -425,9 +466,12 @@ class rating(Handler):
 
 class rate(Handler):
     @data({
-        'game_id': int,
-        'rating': int
-        }, True)
+        'validate': True,
+        'params': {
+            'game_id': int,
+            'rating': int
+            }
+        })
     def Post(self):
         self.cur.execute('''INSERT INTO ratings (rating_timestamp, game_id, user_id, rating_stars)
                             VALUES(NOW(), %(game_id)s, %(user_id)s, %(rating)s)
@@ -447,12 +491,15 @@ class rate(Handler):
 
 class save(Handler):
     @data({
-        'game_id': int,
-        'game_title': str,
-        'game_instructions': str,
-        'game_framerate': int,
-        'game_source': str
-        }, True)
+        'validate': True,
+        'params': {
+            'game_id': int,
+            'game_title': str,
+            'game_instructions': str,
+            'game_framerate': int,
+            'game_source': str
+            }
+        })
     def Post(self):
         self.input['game_instructions'] = stripName(self.input['game_instructions'], 240)
         self.input['game_title'] = stripName(self.input['game_title'], 32)
@@ -471,9 +518,12 @@ class save(Handler):
 
 class screenshot(Handler):
     @data({
-        'screen': str,
-        'game_id': int
-        }, True)
+        'validate': True,
+        'params': {
+            'screen': str,
+            'game_id': int
+            }
+        })
     def Post(self):
         self.cur.execute('''UPDATE games
                             SET game_screenshot = UNHEX(%(screen)s), game_lastsaved = NOW()
@@ -489,8 +539,11 @@ class screenshot(Handler):
 
 class delete(Handler):
     @data({
-        'game_id': int
-        }, True)
+        'validate': True,
+        'params': {
+            'game_id': int
+            }
+        })
     def Post(self):
         self.cur.execute('''DELETE FROM games
                             WHERE game_id = %(game_id)s
@@ -504,9 +557,11 @@ class delete(Handler):
 
 class register(Handler):
     @data({
-        'email': str,
-        'password': str,
-        'username': str
+        'params': {
+            'email': str,
+            'password': str,
+            'username': str
+            }
         })
     def Post(self):
         result = {}
@@ -546,9 +601,11 @@ class register(Handler):
 
 class login(Handler):
     @data({
-        'email': str,
-        'password': str
-        })
+        'params': {
+            'email': str,
+            'password': str
+        }
+    })
     def Post(self):
         result = {}
         self.input['session'] = getRandomInt()
@@ -571,10 +628,12 @@ class login(Handler):
 
 class refreshSession(Handler):
     @data({
-        'user_id': int,
-        'user_session': int,
-        'user_username': str
-        })
+        'params': {
+            'user_id': int,
+            'user_session': int,
+            'user_username': str
+        }
+    })
     def Get(self):
         self.input['new_session'] = getRandomInt()
         self.cur.execute('''UPDATE users
@@ -591,7 +650,9 @@ class refreshSession(Handler):
 # /api/endSession
 
 class endSession(Handler):
-    @data({}, True)
+    @data({
+        'validate': True,
+    })
     def Get(self):
         self.cur.execute('''UPDATE users
                             SET user_session = NULL    
@@ -677,7 +738,6 @@ class screen(Handler):
         if self.cur.rowcount != 1:
             raise web.HTTPError('404 game not found')
         row = self.cur.fetchone()
-        print row['game_lastsaved']
         web.http.lastmodified(correct_date(row['game_lastsaved']))    # TODO (chs): keep separate last-modified values for screenshot and game save
         return PNG(get_screenshot(row['game_screenshot']))
 

@@ -203,6 +203,7 @@
         }
 
         function refreshRating() {
+            console.log("refreshRating?");
             if(!user.isLoggedIn() || !game.game_id || isNaN(parseInt(game.game_id))) {
                 game.rating_stars = game.hover_rating = 0;
                 $scope.$applyAsync();
@@ -213,7 +214,7 @@
                     rating_user = user.id();
                     rating_game = game.game_id;
                     $scope.$applyAsync();
-                }, function() {
+                    console.log("Got rating for ", game.game_title, game.rating_stars);
                 });
             }
         }
@@ -339,8 +340,7 @@
 
         $scope.$on('play', function(e, dt) {
             if(dt.game) {
-                $scope.game = dt.game;
-                playGame(dt.game, dt.force);
+                playGame(game, dt.force);
                 refreshRating();
             }
         });

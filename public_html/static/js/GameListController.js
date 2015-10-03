@@ -31,8 +31,8 @@
                     }
                 });
                 q.resolve(gameList);
-            }, function(xhr) {
-                q.reject(xhr);
+            }, function(response) {
+                q.reject(response);
             });
             return q.promise;
         }
@@ -70,7 +70,7 @@
         });
 
         $scope.refreshGameList = function() {
-            getGames(true);
+            return getGames(true);
         };
 
         $scope.expanded = function(id) {
