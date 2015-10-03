@@ -29,8 +29,8 @@
         };
     }]);
 
-    mainApp.controller('RegisterModalInstanceController', ['$scope', '$modal', '$modalInstance', 'details', 'ajax',
-    function ($scope, $modal, $modalInstance, details, ajax) {
+    mainApp.controller('RegisterModalInstanceController', ['$scope', '$modal', '$modalInstance', 'details', 'ajax', 'user',
+    function ($scope, $modal, $modalInstance, details, ajax, user) {
 
         $scope.details = details;
         $scope.message = 'Fill in required fields...';
