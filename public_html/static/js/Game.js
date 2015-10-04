@@ -65,7 +65,7 @@
                         })
                 .then(function() {
                     $rootScope.$broadcast('status', 'Saved screenshot');
-                    gamelist.refreshOne(game.game_id);
+                    gamelist.setscreenshot(game.game_id, s);
                 }, function(xhr) {
                     $rootScope.$broadcast('error', 'Error saving screenshot: ' + xhr.statusText);
                 });

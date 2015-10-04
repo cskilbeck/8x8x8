@@ -22,14 +22,7 @@
             var q = Q.defer();
             gamelist.getlist(force).then(function(gameList) {
                 $scope.games = gameList;
-                $scope.$apply();
-                angular.forEach(gameList, function(val, key) {
-                    if(val.new_screenshot) {
-                        $("#screen_" + val.game_id).attr('src', "http://256pixels.net/screen/" + val.game_id + '?r=' + Date.now());
-                        // NOTE (chs): have to leave new_screenshot true otherwise it goes back to the cached version.
-                        // val.new_screenshot = false;
-                    }
-                });
+                $scope.$applyAsync();
                 q.resolve(gameList);
             }, function(response) {
                 q.reject(response);
@@ -94,12 +87,8 @@
             $scope.$apply();
         });
 
-        $scope.screenshotGameID = function(g) {
-            var url = g.game_id.toString();
-            if(gamelist.newScreenshot(g.game_id)) {
-                url += '?r=' + Date.now();
-            }
-            return url;
+        $scope.screenshot = function(g) {
+            return gamelist.getscreenshot(g.game_id);
         };
 
         $scope.playIt = function(event, id) {

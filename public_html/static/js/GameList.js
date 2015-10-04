@@ -5,6 +5,7 @@ function(ajax, user) {
     // { game_id: number, user_id: number, game_title: string, game_lastsaved: datetime, game_created: datetime, user_username:string }
 
     var list = [],
+        blank = drawScreenshot([]),
         refreshing = false;
 
     function findByIndex(id) {
@@ -17,14 +18,22 @@ function(ajax, user) {
         return null;
     }
 
-    function findByTitle(title) {
-        var i;
-        for(i = 0; i < list.length; ++i) {
-            if(list[i].game_title === title) {
-                return { index: i, game: list[i] };
-            }
+    function drawScreenshot(s) {
+        var c = document.createElement('canvas'),
+            ctx = c.getContext('2d'),
+            data;
+        c.width = 256;
+        c.height = 256;
+        mainApp.draw(c, ctx, s, 16, 16);
+        return c.toDataURL();
+    }
+
+    function unhex(s) {
+        var i, b = [];
+        for(i in s) {
+            b.push(parseInt(s[i], 16) & 0xf);
         }
-        return null;
+        return b;
     }
 
     var games = {
@@ -36,10 +45,10 @@ function(ajax, user) {
             if(list.length === 0 || force) {
                 ajax.get('list', { user_id: user.id(), justmygames: 0 } )
                 .then(function(response) {
-
                     list = response.data.games || [];
                     for(i in list) {
                         list[i].hover_rating = list[i].rating_stars || 0;
+                        list[i].bin_screenshot = drawScreenshot(unhex(list[i].screenshot));
                     }
                     q.resolve(list);
                 }, function(response) {
@@ -51,9 +60,21 @@ function(ajax, user) {
             return q.promise;
         },
 
-        newScreenshot: function(id) {
+        getscreenshot: function(id) {
             var g = findByIndex(id);
-            return g ? g.new_screenshot : false;
+            if(g) {
+                return g.game.bin_screenshot || blank;
+            }
+            else {
+                return blank;
+            }
+        },
+
+        setscreenshot: function(id, s) {
+            var g = findByIndex(id);
+            if(g) {
+                g.game.bin_screenshot = drawScreenshot(s);
+            }
         },
 
         refreshOne: function(id) {
@@ -65,7 +86,7 @@ function(ajax, user) {
                 .then(function(response) {
                     if(response.data.count == 1) {
                         list[g.index] = response.data.games[0];
-                        list[g.index].new_screenshot = true;
+                        list[g.index].bin_screenshot = drawScreenshot(unhex(list[g.index].screenshot));
                         q.resolve(response.data.games[0]);
                     }
                     else {

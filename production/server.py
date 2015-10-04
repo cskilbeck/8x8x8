@@ -15,6 +15,7 @@
 import sys, types, os, time, datetime, struct, re, random
 import web, pprint, json, iso8601, unicodedata, urlparse
 from contextlib import closing
+from base64 import b64encode
 import MySQLdb as mdb
 import MySQLdb.cursors
 # import bcrypt
@@ -197,6 +198,10 @@ def ICON(x):
     web.header('Content-type', 'image/x-icon')
     return x
 
+def BIN(x):
+    web.header('Content-type', 'application/octet-stream')
+    return x
+
 #----------------------------------------------------------------------
 # check parameter types and values in the web.input
 
@@ -218,12 +223,13 @@ class data(object):
                     if contentType[0] == 'application/json':
                         data = json.loads(web.data())
                     elif contentType[0] == 'application/x-www-form-urlencoded':
-                        data = urlparse.parse_qs(web.data())
+                        data = web.input()
                         # now it will be strings...
                     # TODO (chs): add more content-type handlers (I thought web.input was supposed to )
                     # TODO (chs): handle UNICODE?
 
             # print "ENV:", pprint.pformat(web.ctx.environ)
+            print "Data:", pprint.pformat(web.data())
 
             params = self.paramSpec.get('params', {})
 
@@ -315,10 +321,23 @@ class list(Handler):
         })
     def Get(self):
         self.input['search'] = searchTerm(self.input['search'])
-        self.cur.execute('''SELECT games.game_id, games.user_id, game_title, game_lastsaved, game_created, user_username, game_instructions, game_rating, rating_stars
+        self.cur.execute('''SELECT games.game_id,
+                                    games.user_id,
+                                    game_title,
+                                    game_lastsaved,
+                                    game_created,
+                                    user_username,
+                                    game_instructions,
+                                    game_rating,
+                                    rating_stars,
+                                    HEX(game_screenshot) AS screenshot
                             FROM games
-                                JOIN users ON users.user_id = games.user_id
-                                LEFT JOIN (SELECT * FROM ratings WHERE user_id = %(user_id)s) AS myratings ON games.game_id = myratings.game_id
+                                JOIN users
+                                    ON users.user_id = games.user_id
+                                LEFT JOIN (SELECT *
+                                            FROM ratings
+                                            WHERE user_id = %(user_id)s) AS myratings
+                                    ON games.game_id = myratings.game_id
                             WHERE (%(justmygames)s = 0 OR games.user_id = %(user_id)s)
                                 AND (%(game_id)s = 0 OR games.game_id = %(game_id)s)
                                 AND (game_title LIKE %(search)s)

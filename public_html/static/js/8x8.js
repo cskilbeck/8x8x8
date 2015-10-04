@@ -32,11 +32,17 @@
     }
 }());
 
+mainApp = {
+
+    draw: function() {
+
+    }
+};
+
 (function() {
     "use strict";
 
     var W = 16, H = 16,
-        CW, CH,
         animFrameID,
         context, canvas,
         paused = false, step = false,
@@ -47,24 +53,6 @@
         exception = false,
         keyCount = 0, lastkey,
         frame = 0, frameCounter = 0, frameDelay,
-        colors = [
-            '#000', // black
-            '#080', // dark green
-            '#0F0', // green
-            '#8F8', // light green
-            '#800', // dark red
-            '#F00', // red
-            '#F88', // light red
-            '#008', // dark blue
-            '#00F', // blue
-            '#0FF', // lightblue
-            '#808', // purple
-            '#F0F', // magenta
-            '#F8F', // pink
-            '#F80', // orange
-            '#FF0', // yellow
-            '#FFF'  // white
-        ],
         colorTable = {
             black: 0,
             darkgreen: 1,
@@ -116,43 +104,8 @@
         frameCounter = 0;
     }
 
-    function ellipse(ctx, cx, cy, w, h, rounded){
-        var lx = cx - w,
-            rx = cx + w,
-            ty = cy - h,
-            by = cy + h;
-        var m = 0.551784 * (rounded || 1);
-        var xm = m * w;
-        var ym = h * m;
-        ctx.beginPath();
-        ctx.moveTo(cx, ty);
-        ctx.bezierCurveTo(cx + xm, ty, rx, cy - ym, rx, cy);
-        ctx.bezierCurveTo(rx, cy + ym, cx + xm, by, cx, by);
-        ctx.bezierCurveTo(cx - xm, by, lx, cy + ym, lx, cy);
-        ctx.bezierCurveTo(lx, cy - ym, cx - xm, ty, cx, ty);
-    }
-
-    function draw() {
-        var x,
-            y,
-            xm = CW / W,
-            ym = CH / H,
-            xm2 = xm / 2,
-            ym2 = ym / 2,
-            i = 0;
-        context.fillStyle = '#122';
-        context.fillRect(0, 0, canvas.width, canvas.height);
-        for(y = ym2; y < CH; y += ym) {
-            for(x = xm2; x < CW; x += xm) {
-                context.fillStyle = colors[screen[i++] & 15];
-                context.globalAlpha = 0.8;
-                ellipse(context, x, y, xm2 - 1, ym2 - 1, 1.75);
-                context.fill();
-                context.globalAlpha = 1.0;
-                ellipse(context, x, y, xm2 - 2, ym2 - 2, 1.75);
-                context.fill();
-            }
-        }
+    function drawScreen() {
+        mainApp.draw(canvas, context, screen, W, H);
     }
 
     function doSet(x, y, color) {
@@ -309,7 +262,7 @@
                 ++frame;
             }
             step = false;
-            draw();
+            drawScreen();
         }
         if(hasUpdate) {
             animFrameID = requestAnimationFrame(onFrame);
@@ -344,8 +297,6 @@
 
     canvas = document.getElementById('canvas');
     context = canvas.getContext('2d');
-    CW = canvas.width;
-    CH = canvas.height;
     window.setpixel = function(x, y, c) { return doSet(x, y, c); };
     window.getpixel = function(x, y) { return doGetColor(x, y); };
     window.getpixeli = function(x, y) { return doGet(x, y); };
@@ -358,7 +309,7 @@
         try {
             reset();
             client = (typeof ClientScript !== 'undefined') ? new ClientScript() : null;
-            draw();
+            drawScreen();
             frameDelay = window.game && window.game.frameDelay;
             if(animFrameID) {
                 cancelAnimationFrame(animFrameID);
@@ -412,7 +363,7 @@
         frameDelay = settings.framedelay;        
     };
 
-    draw();
+    drawScreen();
     startIt();
 
 }());

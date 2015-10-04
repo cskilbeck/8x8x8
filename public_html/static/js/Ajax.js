@@ -42,6 +42,9 @@
                 var q = Q.defer();
                 setInProgress(true);
                 reportStatus(progress);
+                if(typeof params === 'undefined') {
+                    params = {};
+                }
                 if(typeof params.user_id === 'undefined') {
                     params.user_id = user.id();
                 }
