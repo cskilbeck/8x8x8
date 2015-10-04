@@ -145,8 +145,8 @@
 
         <!-- footer -->
         <div id='mainfooter' class='row'>
-            <span id='networkIndicator'><i id='spinner' ng-class='[ "fa", networkIcon, { "fa-spin": networkBusy } ]'></i>&nbsp;</span>
-            <span id='statusBar' ng-class='{ statusError: isError }'>{{status}}</span>
+            <span id='networkIndicator'><i id='spinner' ng-class='[ "fa", { "fa-refresh fa-spin": status.isBusy() }, {"fa-check": !status.isBusy() } ]'></i>&nbsp;</span>
+            <span id='statusBar' ng-class='{ "statusError": status.isError() }'>{{status.getText()}}</span>
         </div>
 
         <!-- header -->

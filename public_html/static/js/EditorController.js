@@ -153,7 +153,7 @@
         }
 
         $scope.runIt = function(forceRestart) {
-            status.clear();
+            status.clearError();
             game.editing = true;
             game.game_source = editor.getValue();
             game.play(game, forceRestart);

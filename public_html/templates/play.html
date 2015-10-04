@@ -58,6 +58,7 @@ $code
             }
         </style>
         <script type='text/javascript'>
+            mainApp = {};
             window.game = { "frameDelay": $framerate() }
         </script>
 
@@ -77,6 +78,7 @@ $code
 $:source()
             ;this.$$updateFunction = typeof update === "function" ? update : null; };
         </script>
+        <script src='http://256pixels.net/static/js/Draw.js'></script>
         <script src='http://256pixels.net/static/js/8x8.js'></script>
     </body>
 </html>

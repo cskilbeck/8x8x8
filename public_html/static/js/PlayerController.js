@@ -103,7 +103,7 @@
                     newScript = frameDocument.createElement('script');
                     safecall(frameWindow.clearException);
                     $scope.unpause();
-                    status.clear();
+                    status.clearError();
                     game.frameDelay = frameDelays[game.game_framerate];
                     body.removeChild(oldScript);
                     newScript.setAttribute('id', 'clientscript');

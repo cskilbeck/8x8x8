@@ -381,7 +381,9 @@ class source(Handler):
                             WHERE game_id = %(game_id)s''', self.input)
         if self.cur.rowcount != 1:
             raise web.HTTPError('404 Game not found')
-        return JSON(self.cur.fetchone())
+        row = self.cur.fetchone();
+        web.http.lastmodified(correct_date(row['game_lastsaved']))    # TODO (chs): keep separate last-modified values for screenshot and game save
+        return JSON(row)
 
 #----------------------------------------------------------------------
 # /api/gameid

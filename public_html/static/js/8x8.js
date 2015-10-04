@@ -32,13 +32,6 @@
     }
 }());
 
-mainApp = {
-
-    draw: function() {
-
-    }
-};
-
 (function() {
     "use strict";
 

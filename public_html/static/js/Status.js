@@ -1,22 +1,34 @@
-mainApp.factory('status', [ '$rootScope',
-function ($rootScope) {
+mainApp.factory('status', [ '$rootScope', '$timeout',
+function ($rootScope, $timeout) {
 
     var isError = false,
+        isBusy = false,
         statusText = '';
     
     function status(text) {
         statusText = text;
-        $rootScope.$broadcast('status', text);
+        $timeout(function() {
+            statusText = '';
+        }, 1000);
     }
 
     status.error = function(text) {
         statusText = text;
-        $rootScope.$broadcast('error', msg);
+    };
+
+    status.busy = function(b) {
+        isBusy = b;
     };
 
     status.clear = function() {
         statusText = ' ';
-        $rootScope.$broadcast('status', ' ');
+    };
+
+    status.clearError = function() {
+        if(isError) {
+            statusText = '';
+            isError = false;
+        }
     };
 
     status.isError = function() {
@@ -25,6 +37,10 @@ function ($rootScope) {
 
     status.getText = function() {
         return statusText;
+    };
+
+    status.isBusy = function() {
+        return isBusy;
     };
 
     return status;

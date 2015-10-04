@@ -12,7 +12,7 @@
             user.dologin($scope.details)
             .then(function(data) {
                 $modalInstance.close(data);
-                status(user.user_username + " signed in");
+                status(user.name() + " signed in");
             }, function(response) {
                 status.error('Login failed');
                 $scope.details.failed = true;
