@@ -106,7 +106,7 @@ function(ajax, user) {
             return ajax.post('rate', {
                 game_id: game.game_id,
                 rating: rating
-            });
+            }, 'Rating ' + game.game_title);
         },
 
         getcount: function(search) {
@@ -139,7 +139,7 @@ function(ajax, user) {
         delete: function(game_id) {
             var g,
                 q = Q.defer();
-            ajax.post('delete', { game_id: game_id })
+            ajax.post('delete', { game_id: game_id }, 'Deleting game ' + game_id)
             .then(function(response) {
                 g = findByIndex(game_id);
                 if(g !== null) {

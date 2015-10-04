@@ -229,7 +229,7 @@ class data(object):
                     # TODO (chs): handle UNICODE?
 
             # print "ENV:", pprint.pformat(web.ctx.environ)
-            print "Data:", pprint.pformat(web.data())
+            # print "Data:", pprint.pformat(web.data())
 
             params = self.paramSpec.get('params', {})
 

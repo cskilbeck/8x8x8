@@ -20,7 +20,6 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 // - screenshots
 // - home page
 // - fix the docs
-// - ask if they want to save when quitting the editor if changes are unsaved
 //
 // - detect hangs and kill it (possible? with instrumentation via Esprima : for, while, do) (but how to keep the source line matched up? sounds hard...)
 // / instructions/documentation/tooltips/popovers
@@ -37,15 +36,13 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 // - comments
 //
 // - editor
-//      - get rid of toolbar altogether (options button overlays the editor in top right)
-//      - get rid of run button in editor pane (play button in the player)
-//      - check if game name exists on create as well as save
 //
 // - user registration/login/forgot password
 //      - user profile modal dialog to change username\email\password
 //      - bcrypt password on client before transmission
 //      - permission bits
 //      - proper session security
+//      ? groups of users (and admins) for schools
 //
 // - tutorials
 //      - tetris
@@ -57,9 +54,7 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      - make the search text work (timeout on change)
 //      - quick search buttons: my games, top games, most played, recently added, recently changed
 //      - row/box layout option
-//      - update screenshot when it's taken (add a query parameter to the url) [bah, can't make this work very well]
 //
-// ? groups of users (and admins) for schools
 //
 // - api
 //      / fix the get/set pixel/color APIs for numbers/strings
@@ -68,6 +63,8 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 // \ forking
 // \ make minify.py handle multiple SCRIPT/STYLEBLOCKs
 //      \ store screenshots as prebuilt pngs in the database as varbinary - less processing to serve...
+//      \ get rid of editor toolbar altogether (options button overlays the editor in top right) [run,save,delete kept]
+//      \ get rid of run button in editor pane (play button in the player) [nope, bad idea]
 //
 //////////////////////////////////////////////////////////////////////
 // + save current source in LocalStorage
@@ -129,3 +126,6 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 // + layout so toolbars don't scroll off the top [an ongoing nightmare]
 //      + flex instead of table layout for game list
 //      + rating_stars not updating when user changes
+//      + check if game name exists on create as well as save
+// + ask if they want to save when quitting the editor if changes are unsaved
+//      + update screenshot when it's taken (add a query parameter to the url) [bah, can't make this work very well] [fixed now]

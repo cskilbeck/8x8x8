@@ -1,5 +1,5 @@
-mainApp.factory('user', [ '$rootScope', '$modal', 'ajax', 'cookie',
-function ($rootScope, $modal, ajax, cookie) {
+mainApp.factory('user', [ '$rootScope', '$modal', 'ajax', 'cookie', 'status',
+function ($rootScope, $modal, ajax, cookie, status) {
     "use strict";
 
     var details = {
@@ -16,7 +16,7 @@ function ($rootScope, $modal, ajax, cookie) {
             },
 
             register: function(details) {
-                return ajax.post('register', details, 'Registering...');
+                return ajax.post('register', details, 'Registering ' + details.email);
             },
 
             dologin: function(details) {
@@ -101,12 +101,12 @@ function ($rootScope, $modal, ajax, cookie) {
                     .then(function(response) {
                         data.user_session = response.data.user_session;
                         user.update(data);
-                        $rootScope.$broadcast('status', 'Welcome back ' + data.user_username);
+                        status('Welcome back ' + data.user_username);
                         q.resolve();
                     },
                     function(response) {
                         user.update({user_id: 0});
-                        $rootScope.$broadcast('status', 'Session expired, please log in again...');
+                        status('Session expired, please log in again...');
                         q.resolve();
                     });
                 }
@@ -138,7 +138,6 @@ function ($rootScope, $modal, ajax, cookie) {
                 cookie.set('user_username', details.user_username, 30);
                 cookie.set('user_session', details.user_session, 30);
                 cookie.set('user_email', details.user_email, 30);
-                console.log(details);
                 if(details.user_session !== 0) {
                     $rootScope.$broadcast('user:updated', details);
                 }

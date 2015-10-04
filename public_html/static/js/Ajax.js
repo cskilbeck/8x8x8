@@ -8,68 +8,62 @@
         session: function() { return 0; }
     };
 
-    mainApp.factory('ajax', ['$rootScope', '$http',
-    function($rootScope, $http) {
+    mainApp.factory('ajax', ['$rootScope', '$http', 'status',
+    function($rootScope, $http, status) {
         "use strict";
 
         function setInProgress(p) {
             $rootScope.$broadcast('network', p);
         }
 
-        function reportStatus(msg) {
-            $rootScope.$broadcast('status', msg);
-        }
-
-        function reportError(msg) {
-            $rootScope.$broadcast('error', msg);
+        function valid(data) {
+            if(typeof data === 'undefined') {
+                data = {};
+            }
+            if(typeof data.user_id === 'undefined') {
+                data.user_id = user.id();
+            }
+            if(typeof data.user_session === 'undefined') {
+                data.user_session = user.session();
+            }
+            return data;
         }
 
         var ajax = {
-
-            reportStatus: function(s) {
-                reportStatus(s);
-            },
-
-            reportError: function(e) {
-                reportError(e);
-            },
 
             set_user: function(u) {
                 user = u;
             },
 
-            submit: function(fn, url, data, progress, complete, fail) {
+            submit: function(fn, url, params, data, msg) {
                 var q = Q.defer();
                 setInProgress(true);
-                reportStatus(progress);
-                if(typeof data === 'undefined') {
-                    data = {};
-                }
-                if(typeof data.user_id === 'undefined') {
-                    data.user_id = user.id();
-                }
-                if(typeof data.user_session === 'undefined') {
-                    data.user_session = user.session();
-                }
-                fn('http://256pixels.net/api/' + url, data)
+                msg = msg || '';
+                status(msg);
+                console.log(fn, url, "PARAMS", params, "DATA", data);
+                $http({ method: fn,
+                        url: 'http://256pixels.net/api/' + url,
+                        params: params,
+                        data: data
+                    })
                 .then(function(response) {
                     setInProgress(false);
-                    reportStatus(complete || '');
+                    status(msg ? ('Finished ' + msg) : '');
                     q.resolve(response);
                 }, function(response) {
                     setInProgress(false);
-                    reportError((fail || 'Error:') + ' ' + response.statusText);
+                    status.error('Error ' + msg + ': ' + response.statusText);
                     q.reject(response);
                 });
                 return q.promise;
             },
 
-            get: function(url, data, progress, complete, fail) {
-                return ajax.submit($http.get, url, data, progress, complete, fail);
+            get: function(url, data, msg) {
+                return ajax.submit('GET', url, valid(data), {}, msg);
             },
 
-            post: function(url, data, progress, complete, fail) {
-                return ajax.submit($http.post, url, data, progress, complete, fail);
+            post: function(url, data, msg) {
+                return ajax.submit('POST', url, {}, valid(data), msg);
             }
         };
 

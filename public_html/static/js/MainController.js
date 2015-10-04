@@ -1,5 +1,5 @@
-mainApp.controller('MainController', ['$scope', '$modal', 'user', 'ajax', '$rootScope',
-function($scope, $modal, user, ajax, $rootScope) {
+mainApp.controller('MainController', ['$scope', '$modal', 'user', 'ajax', '$rootScope', 'status',
+function($scope, $modal, user, ajax, $rootScope, status) {
     "use strict";
 
     $scope.signInMessage = "Sign In";
@@ -14,6 +14,10 @@ function($scope, $modal, user, ajax, $rootScope) {
     $scope.signInClass = '';
     $scope.showBackdropper = false;
 
+    function clearNavBar() {
+        $('.nav.navbar-nav > li').removeClass('active');
+    }
+
     $scope.$on('showBackdropper', function() {
         $scope.showBackdropper = true;
     });
@@ -24,17 +28,7 @@ function($scope, $modal, user, ajax, $rootScope) {
 
     $scope.backdropperClicked = function() {
         $scope.showBackdropper = false;
-        $rootScope.$emit('backdropperClicked');
     };
-
-    function clearNavBar() {
-        $('.nav.navbar-nav > li').removeClass('active');
-    }
-
-    // $('.nav.navbar-nav > li').on('click', function(e) {
-    //     clearNavbar();
-    //     $(this).addClass('active');
-    // });
 
     $('#homelink').on('click', clearNavBar);
 
@@ -43,14 +37,12 @@ function($scope, $modal, user, ajax, $rootScope) {
         $('#nav' + pane).addClass('active');
     });
 
-    clearNavBar();
-
     $scope.$on('user:updated', function(msg, details) {
         if(details.user_id !== 0) {
             $scope.usernameMessage = 'Signed in as ' + details.user_username;
             $scope.signInMessage = "Sign out";
             $scope.signInClass = '';
-            $scope.reportStatus("Welcome back " + details.user_username);
+            status("Welcome back " + details.user_username);
             $scope.showProfileButton = true;
             $scope.$applyAsync();
         }
@@ -60,24 +52,32 @@ function($scope, $modal, user, ajax, $rootScope) {
         $scope.usernameMessage = '';
         $scope.signInMessage = "Sign In";
         $scope.signInClass = '';
-        $scope.reportStatus("Signed out");
+        status("Signed out");
         $scope.showProfileButton = false;
         $scope.$applyAsync();
     });
 
-    $scope.$on('status', function(e, msg) {
-        $scope.reportStatus(msg);
+    $scope.$on('status', function(e, text) {
+        $scope.isError = false;
+        if(typeof text === 'string' && text.length > 0) {
+            $scope.status = text;
+        }
+        $scope.$applyAsync();
     });
 
-    $scope.$on('error', function(e, msg) {
-        $scope.reportError(msg);
+    $scope.$on('error', function(e, text) {
+        $scope.isError = true;
+        if(typeof text === 'string' && text.length > 0) {
+            $scope.status = text;
+        }
+        $scope.$applyAsync();
     });
 
-    $scope.$on('network', function(e, msg) {
-        $scope.setInProgress(msg);
+    $scope.$on('network', function(e, b) {
+        $scope.networkBusy = b;
+        $scope.networkIcon = b ? 'fa-refresh' : 'fa-check';
+        $scope.$applyAsync();
     });
-
-    // TODO (chs): possible race here between 'play' event and window loading (details might change in between, but does it matter?)
 
     $scope.toggleLogin = function() {
         if(user.isLoggedIn()) {
@@ -88,25 +88,8 @@ function($scope, $modal, user, ajax, $rootScope) {
         }
     };
 
-    $scope.reportError = function(text) {
-        $scope.isError = true;
-        $scope.status = text;
-        $scope.$applyAsync();
-    };
-
-    $scope.reportStatus = function(text) {
-        $scope.isError = false;
-        $scope.status = text;
-        $scope.$applyAsync();
-    };
-
-    $scope.setInProgress = function(p) {
-        console.log("PROGRESS: " + p);
-        $scope.networkBusy = p;
-        $scope.networkIcon = p ? 'fa-refresh' : 'fa-check';
-        $scope.$applyAsync();
-    };
-
+    clearNavBar();
     user.refreshSession();
+
 }]);
 

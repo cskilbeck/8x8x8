@@ -11,6 +11,7 @@
         name,
         game_id,
         gameSettings,
+        discardChanges = false,
         framerates = [60, 30, 20, 15, 10],
         editorOptions = {
             theme: 'Monokai',
@@ -26,8 +27,8 @@
             }
         };
 
-    mainApp.controller('EditorController', ['$scope', '$modal', '$routeParams', 'user', 'ajax', '$rootScope', 'gamelist', 'dialog', '$location', 'game',
-    function ($scope, $modal, $routeParams, user, ajax, $rootScope, gamelist, dialog, $location, game) {
+    mainApp.controller('EditorController', ['$scope', '$modal', '$routeParams', 'user', 'ajax', '$rootScope', 'gamelist', 'dialog', '$location', 'game', 'status',
+    function ($scope, $modal, $routeParams, user, ajax, $rootScope, gamelist, dialog, $location, game, status) {
 
         var newGameID = $routeParams.game_id;
 
@@ -35,6 +36,7 @@
 
         $scope.$emit('pane:loaded', 'editor');
 
+        discardChanges = false;
 
         window.focusEditor = function() {
             focus();
@@ -46,7 +48,7 @@
 
         // NOTE (chs): the dodgy line offsets are due to 0-based and 1-based differences and the preScript taking 1 line
         function gotoError(msg, line, column) {
-            ajax.reportError(msg);
+            status.error(msg);
             editor.gotoLine(line - 1, Math.max(0, column - 1), true);
             editor.session.setAnnotations([{
                 row: line - 2,
@@ -151,7 +153,7 @@
         }
 
         $scope.runIt = function(forceRestart) {
-            $scope.$emit('status', '');
+            status.clear();
             game.editing = true;
             game.game_source = editor.getValue();
             game.play(game, forceRestart);
@@ -159,7 +161,6 @@
 
         function save() {
             game.game_source = editor.getValue();
-            console.log("Saving", game.game_title, ":", game.game_instructions);
             return game.save();
         }
 
@@ -266,7 +267,7 @@
             user.login("Sign in to save settings")
             .then(function() {
                 settings.game_id = game_id;
-                ajax.post('settings', settings);
+                ajax.post('settings', settings, 'Saving settings');
             });
         }
 
@@ -423,6 +424,26 @@
 
         $("#editor").click(function(e) {
             focusEditor();
+        });
+
+        $scope.$on('$routeChangeStart', function(event, to, from) {
+            var destination = to,
+                changes = [],
+                sourceChanged = !editor.session.getUndoManager().isClean();
+            if(!discardChanges && (sourceChanged || game.changed())) {
+                event.preventDefault();
+                changes = game.changes();
+                if(sourceChanged) {
+                    changes.push('Code');
+                }
+                dialog.small.choose('Discard unsaved changes?', 'You have changed the ' + changes.join(' & ') + '. Do you want to lose these changes?', 'Yes, discard changes', "No").
+                then(function() {
+                    discardChanges = true;
+                    $location.path(destination.originalPath);
+                }, function() {
+                    focusEditor();
+                });
+            }
         });
 
         $scope.$on("$destroy", function(e) {

@@ -23,8 +23,8 @@
         preScript = 'function ClientScript(' + hidden.join() + ') { "use strict";\n',
         postScript = ';this.$updateFunction = typeof update === "function" ? update : null; };';
 
-    mainApp.controller('PlayerController', ['$scope', '$modal', '$routeParams', 'user', 'ajax', '$rootScope', 'gamelist', 'dialog', '$location', '$timeout', 'game',
-    function($scope, $modal, $routeParams, user, ajax, $rootScope, gamelist, dialog, $location, $timeout, game) {
+    mainApp.controller('PlayerController', ['$scope', '$modal', '$routeParams', 'user', 'ajax', '$rootScope', 'gamelist', 'dialog', '$location', '$timeout', 'game', 'status',
+    function($scope, $modal, $routeParams, user, ajax, $rootScope, gamelist, dialog, $location, $timeout, game, status) {
 
         $scope.game = game;
         $scope.canEditInstructions = false;
@@ -103,7 +103,7 @@
                     newScript = frameDocument.createElement('script');
                     safecall(frameWindow.clearException);
                     $scope.unpause();
-                    $rootScope.$broadcast('status', '');
+                    status.clear();
                     game.frameDelay = frameDelays[game.game_framerate];
                     body.removeChild(oldScript);
                     newScript.setAttribute('id', 'clientscript');
@@ -203,7 +203,6 @@
         }
 
         function refreshRating() {
-            console.log("refreshRating?");
             if(!user.isLoggedIn() || !game.game_id || isNaN(parseInt(game.game_id))) {
                 game.rating_stars = game.hover_rating = 0;
                 $scope.$applyAsync();
@@ -214,7 +213,6 @@
                     rating_user = user.id();
                     rating_game = game.game_id;
                     $scope.$applyAsync();
-                    console.log("Got rating for ", game.game_title, game.rating_stars);
                 });
             }
         }

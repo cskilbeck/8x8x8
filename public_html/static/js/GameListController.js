@@ -77,7 +77,7 @@
                     // TODO (chs): move this into the gamelist service (and don't refresh gamelist)
                     ajax.post('rename', {
                         game_id: game_id,
-                        name: text })
+                        name: text }, 'Renaming ' + game_name + ' to ' + text)
                     .then($scope.refreshGameList);
                 }
             });

@@ -1,8 +1,8 @@
 (function() {
     "use strict";
 
-    mainApp.controller('LoginModalInstanceController', ['$scope', '$modal', '$modalInstance', 'details', 'ajax', 'user',
-    function ($scope, $modal, $modalInstance, details, ajax, user) {
+    mainApp.controller('LoginModalInstanceController', ['$scope', '$modal', '$modalInstance', 'details', 'ajax', 'user', 'status',
+    function ($scope, $modal, $modalInstance, details, ajax, user, status) {
 
         $scope.details = details;
         $scope.details.failed = false;
@@ -12,9 +12,9 @@
             user.dologin($scope.details)
             .then(function(data) {
                 $modalInstance.close(data);
-                ajax.reportStatus(user.user_username + " signed in");
+                status(user.user_username + " signed in");
             }, function(response) {
-                ajax.reportError('Login failed');
+                status.error('Login failed');
                 $scope.details.failed = true;
                 $scope.$apply();
             });
