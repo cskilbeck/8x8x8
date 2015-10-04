@@ -38,21 +38,20 @@
                 user = u;
             },
 
-            get: function(url, params, progress, complete, fail) {
+            submit: function(fn, url, data, progress, complete, fail) {
                 var q = Q.defer();
                 setInProgress(true);
                 reportStatus(progress);
-                if(typeof params === 'undefined') {
-                    params = {};
+                if(typeof data === 'undefined') {
+                    data = {};
                 }
-                if(typeof params.user_id === 'undefined') {
-                    params.user_id = user.id();
+                if(typeof data.user_id === 'undefined') {
+                    data.user_id = user.id();
                 }
-                if(typeof params.user_session === 'undefined') {
-                    params.user_session = user.session();
+                if(typeof data.user_session === 'undefined') {
+                    data.user_session = user.session();
                 }
-                console.log("GET", url, params);
-                $http.get('http://256pixels.net/api/' + url, { params: params })
+                fn('http://256pixels.net/api/' + url, data)
                 .then(function(response) {
                     setInProgress(false);
                     reportStatus(complete || '');
@@ -65,28 +64,12 @@
                 return q.promise;
             },
 
+            get: function(url, data, progress, complete, fail) {
+                return ajax.submit($http.get, url, data, progress, complete, fail);
+            },
+
             post: function(url, data, progress, complete, fail) {
-                var q = Q.defer();
-                setInProgress(true);
-                reportStatus(progress);
-                if(typeof data.user_id === 'undefined') {
-                    data.user_id = user.id();
-                }
-                if(typeof data.user_session === 'undefined') {
-                    data.user_session = user.session();
-                }
-                console.log("POST", url, data);
-                $http.post('http://256pixels.net/api/' + url, data, { data: data })
-                .then(function(response) {
-                    setInProgress(false);
-                    reportStatus(complete || '');
-                    q.resolve(response);
-                }, function(response) {
-                    setInProgress(false);
-                    reportError((fail || 'Error:') + ' ' + response.statusText);
-                    q.reject(response);
-                });
-                return q.promise;
+                return ajax.submit($http.post, url, data, progress, complete, fail);
             }
         };
 
