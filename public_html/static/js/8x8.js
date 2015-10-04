@@ -40,6 +40,8 @@
         context, canvas,
         paused = false, step = false,
         client,
+        lastKeyPressed,
+        lastKeyReleased,
         keyPress = [], keyRelease = [],
         keyHeld = [ false, false, false, false, false ],
         keyHeldReal  = [ false, false, false, false, false ],
@@ -148,13 +150,7 @@
     }
 
     function keyNameFromCode(code) {
-        if(code >= 0 && code <= 4) {
-            return ['space', 'left', 'up', 'right', 'down'][code];
-        }
-        else
-        {
-            return '?';
-        }
+        return ['space', 'left', 'up', 'right', 'down'][code];
     }
 
     function getKey(code, arr) {
@@ -163,17 +159,21 @@
 
     // TODO (chs): make keypressed() return same value until new frame fires
     function doPressed() {
-        var k = keyPress.shift();
-        return k !== undefined ? keyNameFromCode(k) : false;
+        if(lastKeyPressed === undefined) {
+            lastKeyPressed = keyPress.shift();
+        }
+        return keyNameFromCode(lastKeyPressed);
+    }
+
+    function doReleased(key) {
+        if(lastKeyReleased === undefined) {
+            lastKeyReleased = keyPress.shift();
+        }
+        return keyNameFromCode(lastKeyReleased);
     }
 
     function doHeld(key) {
         return getKey(keyCodeFromName(key), keyHeld);
-    }
-
-    function doReleased(key) {
-        var k = keyRelease.shift();
-        return k ? keyNameFromCode(k) : '';
     }
 
     function getKeyCode(key) {
@@ -247,6 +247,8 @@
                     exception = true;
                     reportError(e);
                 }
+                lastKeyReleased = undefined;
+                lastKeyPressed = undefined;
                 for(i in keyHeldReal) {
                     keyHeld[i] = keyHeldReal[i];
                 }

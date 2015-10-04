@@ -392,3 +392,7 @@ div#social>a>i.fa.fa-2x.fa-twitter-square[disabled='disabled'] {
 .gameLink:hover {
     cursor: pointer;
 }
+
+#editorOptionsForm > .row {
+    margin-left: 40px;
+}

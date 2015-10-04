@@ -1,4 +1,8 @@
-(function(w) {
+if(typeof mainApp === 'undefined') {
+    mainApp = {};
+}
+
+(function() {
 
     var colors = [
             '#000', // black
@@ -60,6 +64,6 @@
         }
     }
 
-    w.draw = draw;
+    mainApp.draw = draw;
     
-})(mainApp);
+})();
