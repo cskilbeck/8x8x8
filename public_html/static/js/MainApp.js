@@ -19,7 +19,6 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 // - unicode
 // - screenshots
 // - home page
-// - fix the docs
 //
 // - detect hangs and kill it (possible? with instrumentation via Esprima : for, while, do) (but how to keep the source line matched up? sounds hard...)
 // / instructions/documentation/tooltips/popovers
@@ -129,3 +128,4 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      + check if game name exists on create as well as save
 // + ask if they want to save when quitting the editor if changes are unsaved
 //      + update screenshot when it's taken (add a query parameter to the url) [bah, can't make this work very well] [fixed now]
+// + fix the docs
