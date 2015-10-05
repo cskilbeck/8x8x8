@@ -133,3 +133,4 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      + update screenshot when it's taken (add a query parameter to the url) [bah, can't make this work very well] [fixed now]
 // + fix the docs
 //      + SSL for login/register [SSL for everything via cloudflare]
+// + Google Ad

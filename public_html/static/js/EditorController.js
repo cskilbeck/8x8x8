@@ -248,12 +248,16 @@
 
         function inflateEditor() {
             var editorRect = $(".maincontainer")[0].getBoundingClientRect(),
-                tbh = $('#editorToolbar')[0].clientHeight,
-                width = editorRect.right - editorRect.left,
+                tbh = $('#editorToolbar'),
+                width, height;
+            if(tbh.length > 0) {
+                tbh = tbh[0].clientHeight;
+                width = editorRect.right - editorRect.left;
                 height = (editorRect.bottom - editorRect.top) - tbh;
-            $('#editorContainer').height(height - 1).width(width - 1); // -1 for the border
-            $('#editor').height(height - 1).width(width - 1); // -1 for the border
-            editor.resize();
+                $('#editorContainer').height(height - 1).width(width - 1); // -1 for the border
+                $('#editor').height(height - 1).width(width - 1); // -1 for the border
+                editor.resize();
+            }
         }
 
         function saveSettings(settings) {

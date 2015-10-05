@@ -108,11 +108,8 @@
                     body.removeChild(oldScript);
                     newScript.setAttribute('id', 'clientscript');
                     newScript.innerHTML = preScript + game.game_source + postScript;
-                    body.appendChild(newScript);
-                    $timeout(function() {
-                        frameWindow.focus();
-                    }, 10);
-                    // status.focus($('#gameFrame'));
+                    body.appendChild(newScript); 
+                    status.focus(frameWindow);
                     frameWindow.game = game;
                     safecall(frameWindow.startIt);
                     gameToPlay = null;
@@ -133,10 +130,6 @@
             if(gameToPlay) {
                 playGame(gameToPlay, forceToPlay);
             }
-        };
-
-        $scope.showRating = function(g) {
-            return true;
         };
 
         $scope.rating = function(index, g) {

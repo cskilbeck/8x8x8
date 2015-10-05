@@ -43,6 +43,7 @@
         lastKeyPressed,
         lastKeyReleased,
         keyPress = [], keyRelease = [],
+        keys = [32, 37, 38, 39, 40],
         keyHeld = [ false, false, false, false, false ],
         keyHeldReal  = [ false, false, false, false, false ],
         exception = false,
@@ -196,6 +197,7 @@
 
     document.onkeydown = function(e) {
         var key;
+        console.log(e);
         if(e.keyCode === 27) {
             focusEditor();
         }
@@ -215,7 +217,8 @@
             }
         }
         ++keyCount;
-        if(e.keyCode in [32, 37, 38, 39, 40]) {
+        if(keys.indexOf(e.keyCode) >= 0) {
+            console.log("Prevent!");
             e.preventDefault();
         }
     };
@@ -230,7 +233,7 @@
             keyRelease.push(key);
             keyHeldReal[key] = false;
         }
-        if(e.keyCode in [32, 37, 38, 39, 40]) {
+        if(keys.indexOf(e.keyCode) >= 0) {
             e.preventDefault();
         }
     };

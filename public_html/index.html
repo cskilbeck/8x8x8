@@ -21,21 +21,21 @@
         <!--ENDSTYLEBLOCK(style)-->
 
         <!-- JQuery -->
-        <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js'></script>
+        <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.js'></script>
 
         <!-- Bootstrap -->
-        <script src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js'></script>
+        <script src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.js'></script>
 
         <!-- Angular -->
-        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.min.js"></script>
-        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-animate.min.js"></script>
-        <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-route.min.js'></script>
-        <script src="https://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.13.4.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-animate.js"></script>
+        <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-route.js'></script>
+        <script src="https://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.13.4.js"></script>
 
         <!--SCRIPTBLOCK(all)-->
 
         <!-- Ace -->
-        <script src='https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/ace.min.js'></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/ace.js'></script>
         <script src='https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/theme-cobalt.js'></script>
         <script src='https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/ext-language_tools.js'></script>
         <script src='https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/mode-javascript.js'></script>
@@ -96,50 +96,61 @@
 
         <!-- siderbar -->
         <div id='mainsidebar' class='centered player' ng-controller='PlayerController'>
-            <input name='title'
-                    id='game_title'
-                    ng-model='game.game_title'
-                    ng-disabled='!canEditInstructions()'
-                    ng-class='titleEditorClass()'
-                    highlight ng-change='checkText()'
-                    ng-keydown='filterkeys($event)' />
-            <div id='byline'>&nbsp;{{by(game)}}&nbsp;</div>
-            <iframe id='gameFrame' tabindex='1' sandbox='allow-scripts allow-same-origin' src='/static/html/frame.html'></iframe>
-            <div class='controls'>
-                <textarea ng-keydown='filterkeys($event)' ng-change='checkText()' rows='5' ng-disabled='!canEditInstructions()' ng-model='game.game_instructions' ng-class='instructionsEditorClass()' highlight name='instructions'>
-                </textarea>
-                <div ng-show='showRating(game)' class='shareblock'>
-                    <div id='ratingBlock'>
-                        <span ng-mouseleave='resetHover(game)' class='linky'>
-                            <i ng-repeat='i in [1,2,3,4,5]' ng-mouseover='rateHover(i, game)' ng-click='rateClick(i, game)' class='{{rating(i, game)}}'></i>
-                        </span>
+            <div style='z-index: 2'>
+                <input name='title'
+                        id='game_title'
+                        ng-model='game.game_title'
+                        ng-disabled='!canEditInstructions()'
+                        ng-class='titleEditorClass()'
+                        highlight ng-change='checkText()'
+                        ng-keydown='filterkeys($event)' />
+                <div id='byline'>&nbsp;{{by(game)}}&nbsp;</div>
+                <iframe id='gameFrame' tabindex='1' sandbox='allow-scripts allow-same-origin' src='/static/html/frame.html'></iframe>
+                <div class='controls'>
+                    <textarea ng-keydown='filterkeys($event)' ng-change='checkText()' rows='5' ng-disabled='!canEditInstructions()' ng-model='game.game_instructions' ng-class='instructionsEditorClass()' highlight name='instructions'>
+                    </textarea>
+                    <div class='shareblock'>
+                        <div id='ratingBlock'>
+                            <span ng-mouseleave='resetHover(game)' class='linky'>
+                                <i ng-repeat='i in [1,2,3,4,5]' ng-mouseover='rateHover(i, game)' ng-click='rateClick(i, game)' class='{{rating(i, game)}}'></i>
+                            </span>
+                        </div>
+                        <div id='social'>
+                            <a ng-disabled='!canShare(game)' ng-click='canShare(game) && shareIt(game)'><i ng-disabled='!canShare(game)' class="fa fa-2x fa-facebook-square"></i></a>
+                            <a ng-disabled='!canShare(game)' ng-click='canShare(game) && shareTwitter(game)'><i ng-disabled='!canShare(game)' class="fa fa-2x fa-twitter-square"></i></a>
+                        </div>
                     </div>
-                    <div id='social'>
-                        <a ng-disabled='!canShare(game)' ng-click='canShare(game) && shareIt(game)'><i ng-disabled='!canShare(game)' class="fa fa-2x fa-facebook-square"></i></a>
-                        <a ng-disabled='!canShare(game)' ng-click='canShare(game) && shareTwitter(game)'><i ng-disabled='!canShare(game)' class="fa fa-2x fa-twitter-square"></i></a>
+                    <div class='btn-group' role='group' aria-label='...'>
+                        <button type='button' class='btn btn-default' id='restartButton' ng-click='restart()'><i class='fa fa-lg fa-fast-backward'></i></button>
+                        <button type='button' class='btn btn-default' id='pauseButton' ng-click='pause()'><i id='play' class='fa fa-lg fa-pause'></i></button>
+                        <button type='button' class='btn btn-default' id='stepButton' ng-click='step()'><i class='fa fa-lg fa-step-forward'></i></button>
                     </div>
-                </div>
-                <div class='btn-group' role='group' aria-label='...' ng-show='canEditInstructions()'>
-                    <button type='button' class='btn btn-default' id='restartButton' ng-click='restart()'><i class='fa fa-lg fa-fast-backward'></i></button>
-                    <button type='button' class='btn btn-default' id='pauseButton' ng-click='pause()'><i id='play' class='fa fa-lg fa-pause'></i></button>
-                    <button type='button' class='btn btn-default' id='stepButton' ng-click='step()'><i class='fa fa-lg fa-step-forward'></i></button>
-                </div>
-                <div ng-show='canEditInstructions()'>
                     <div id='framerateButton'>
                         <div class='form-group'>
-                        <button class='btn btn-default' ng-disabled='!myGame(game)' ng-click='takeScreenShot()'><i class='fa fa-lg fa-camera'></i></button>
+                            <button class='btn btn-default' ng-disabled='!canEditInstructions()' ng-click='takeScreenShot()'><i class='fa fa-lg fa-camera'></i></button>
                             &nbsp;
                             <div class="btn-group">
-                                <button type="button" name='speedButton' class="btn btn-default dropdown-toggle" data-toggle="dropdown" data-hover='dropdown'>
+                                <button type="button" name='speedButton' class="btn btn-default dropdown-toggle" data-toggle="dropdown" data-hover='dropdown' ng-disabled='!canEditInstructions()'>
                                     {{frameratenames[game.game_framerate]}} <span class="caret"></span>
                                 </button>
-                                <ul class="dropdown-menu">
+                                <ul class="dropdown-menu" ng-disabled='!canEditInstructions()'>
                                     <li ng-repeat="f in frameratenames"><a style='cursor: pointer;' ng-click='setFramerate($index);'>{{f.toString()}}</a></li>
                                 </ul>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
+            <div style='z-index: 1; position: absolute; right: 0; background: #EEE; overflow: hidden;'>
+                <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+                <!-- player_ad -->
+                <ins class="adsbygoogle"
+                     style="display:inline-block;width:300px;height:250px"
+                     data-ad-client="ca-pub-8644367080783637"
+                     data-ad-slot="5952804307"></ins>
+                <script>
+                    (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
             </div>
         </div>
 
