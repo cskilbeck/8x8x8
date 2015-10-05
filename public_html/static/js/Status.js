@@ -55,9 +55,11 @@ function ($rootScope, $timeout) {
     // TODO (chs): put status.focus somewhere more appropriate
 
     status.focus = function(elem) {
-        $timeout(function() {
-            elem.focus();
-        }, 100);
+        if(elem) {
+            $timeout(function() {
+                elem.focus();
+            });
+        }
     };
 
     return status;

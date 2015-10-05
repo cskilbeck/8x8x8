@@ -103,10 +103,19 @@ function(ajax, user) {
         },
 
         rate: function(game, rating) {
-            return ajax.post('rate', {
+            var q = ajax.post('rate', {
                 game_id: game.game_id,
                 rating: rating
             }, 'Rating ' + game.game_title);
+
+            q.then(function(response) {
+                var g = findByIndex(game.game_id);
+                if(g) {
+                    g.game.game_rating = response.data.game_rating;
+                }
+            });
+
+            return q;
         },
 
         getcount: function(search) {

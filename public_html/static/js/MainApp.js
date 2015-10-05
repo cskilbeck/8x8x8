@@ -13,6 +13,9 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      - IE11
 //      - Chrome
 //      - Safari
+// - backdropper flash on page load
+// - editor focus nightmare
+// - not saving framerate
 // - ratings - make it better than a simple average (http://www.evanmiller.org/)
 // - send all non-editor keypresses to the player
 // - standalone player
@@ -20,7 +23,6 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      - standalone player link to source
 //      - standalone player rating (-> link to source)
 // - unicode
-// - screenshots
 // - home page
 // ? make it like jsfiddle where games are all anonymous ? save without login would be cool... 
 //
@@ -56,7 +58,6 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      - make the search text work (timeout on change)
 //      - quick search buttons: my games, top games, most played, recently added, recently changed
 //      - row/box layout option
-//
 //
 // - api
 //      / fix the get/set pixel/color APIs for numbers/strings
@@ -134,3 +135,4 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 // + fix the docs
 //      + SSL for login/register [SSL for everything via cloudflare]
 // + Google Ad
+// + screenshots

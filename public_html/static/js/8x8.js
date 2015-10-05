@@ -32,6 +32,17 @@
     }
 }());
 
+Object.defineProperty(Error.prototype, 'toJSON', {
+    value: function () {
+        var alt = {};
+        Object.getOwnPropertyNames(this).forEach(function (key) {
+            alt[key] = this[key];
+        }, this);
+        return alt;
+    },
+    configurable: true
+});
+
 (function() {
     "use strict";
 
@@ -48,7 +59,8 @@
         keyHeldReal  = [ false, false, false, false, false ],
         exception = false,
         keyCount = 0, lastkey,
-        frame = 0, frameCounter = 0, frameDelay,
+        frame = 0, frameCounter = 0, frameDelay = 1,
+        keynames = ['space', 'left', 'up', 'right', 'down'],
         colorTable = {
             black: 0,
             darkgreen: 1,
@@ -139,19 +151,11 @@
     }
 
     function keyCodeFromName(str) {
-        switch(str.toLowerCase()) {
-            case ' ': return 0;
-            case 'space' : return 0;
-            case 'left': return 1;
-            case 'up': return 2;
-            case 'right': return 3;
-            case 'down': return 4;
-            default: return -1;
-        }
+        return keynames.indexOf(str.toLowerCase());
     }
 
     function keyNameFromCode(code) {
-        return ['space', 'left', 'up', 'right', 'down'][code];
+        return keynames[code];
     }
 
     function getKey(code, arr) {
@@ -189,15 +193,18 @@
         return null;
     }
 
-    function focusEditor() {
-        if(parent.window && typeof parent.window.focusEditor === 'function') {
-            parent.window.focusEditor();
+    function postMessage(message, data) {
+        if(parent && parent.window) {
+            parent.window.postMessage(JSON.stringify({ message: message, data: data }), "https://256pixels.net");
         }
+    }
+
+    function focusEditor() {
+        postMessage('focus-editor');
     }
 
     document.onkeydown = function(e) {
         var key;
-        console.log(e);
         if(e.keyCode === 27) {
             focusEditor();
         }
@@ -218,7 +225,6 @@
         }
         ++keyCount;
         if(keys.indexOf(e.keyCode) >= 0) {
-            console.log("Prevent!");
             e.preventDefault();
         }
     };
@@ -271,15 +277,15 @@
     }
 
     function reportError(e) {
-        if(parent && parent.window && typeof parent.window.reportRuntimeError === 'function') {
-            parent.window.reportRuntimeError(e);
-        }
+        postMessage('error', e);
     }
 
     function reportErrorDirect(msg, line, column) {
-        if(parent && parent.window && typeof parent.window.reportRuntimeErrorDirect === 'function') {
-            parent.window.reportRuntimeErrorDirect(msg, line, column);
-        }
+        postMessage('error-direct', {
+                    msg: msg,
+                    line: line,
+                    column: column
+                });
     }
 
     window.onerror = function(message, file, line, column) {
@@ -288,9 +294,7 @@
     };
 
     window.onload = function() {
-        if(parent && parent.window && typeof parent.window.frameIsLoaded === 'function') {
-            parent.window.frameIsLoaded();
-        }
+        postMessage('frame-loaded');
     };
 
     canvas = document.getElementById('canvas');
@@ -308,7 +312,6 @@
             reset();
             client = (typeof ClientScript !== 'undefined') ? new ClientScript() : null;
             drawScreen();
-            frameDelay = window.game && window.game.frameDelay;
             if(animFrameID) {
                 cancelAnimationFrame(animFrameID);
             }
@@ -319,47 +322,62 @@
         }
     };
 
-    window.setFrameDelay = function(f) {
-        frameDelay = f;
-    };
+    // Allow anyone, anywhere to send us some script which we will blindly execute!
+    // Check origin!
 
-    window.togglepause = function() {
-        paused = !paused;
-    };
+    function setup(data) {
+        var oldScript = document.getElementById('clientscript'),
+            newScript = document.createElement('script'),
+            body = document.getElementsByTagName('body')[0];
+        body.removeChild(oldScript);
+        newScript.setAttribute('id', 'clientscript');
+        newScript.innerHTML = data;
+        body.appendChild(newScript);
+    }
 
-    window.unpause = function() {
-        paused = false;
-    };
-
-    window.restart = function() {
-        step = true;
-        startIt();
-    };
-
-    window.step = function() {
-        paused = true;
-        step = true;
-    };
-
-    window.isPaused = function() {
-        return paused;
-    };
-
-    window.clearException = function () {
-        reset();
-    };
-
-    window.getscreen = function() {
-        var i, s = [];
-        for(i=0; i<256; ++i) {
-            s[i] = screen[i] || 0;
+    window.addEventListener('message', function(e) {
+        var payload, message, data;
+        try {
+            payload = JSON.parse(e.data);
+            message = payload.message;
+            data = payload.data;
+            switch(message) {
+                case 'set-frame-delay':
+                    frameDelay = data;
+                    break;
+                case 'toggle-pause':
+                    paused = !paused;
+                    postMessage('paused', paused);
+                    break;
+                case 'unpause':
+                    paused = false;
+                    postMessage('paused', paused);
+                    break;
+                case 'restart':
+                    step = true;
+                    startIt();
+                    break;
+                case 'step':
+                    step = true;
+                    paused = true;
+                    break;
+                case 'is-paused':
+                    break;
+                case 'clear-exception':
+                    reset();
+                    break;
+                case 'screenshot':
+                    postMessage('screenshot', screen);
+                    break;
+                case 'source':
+                    setup(data);
+                    break;
+            }
         }
-        return s;
-    };
+        catch(SyntaxError) {
 
-    window.settings = function(settings) {
-        frameDelay = settings.framedelay;        
-    };
+        }
+    });
 
     drawScreen();
     startIt();

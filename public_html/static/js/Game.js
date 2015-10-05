@@ -99,6 +99,12 @@
                             game_id: game.game_id
                         }, 'Saving screenshot')
                 .then(function() {
+                    ga('send', {
+                        hitType: 'event',
+                        eventCategory: 'game',
+                        eventAction: 'screenshot',
+                        eventValue: game_id
+                    });
                     gamelist.setscreenshot(game.game_id, s);
                 });
             },
@@ -120,7 +126,21 @@
             },
 
             find: function(id, name) {
-                return ajax.get('gameid', { game_title: name });
+                var q = Q.defer();
+                ajax.get('gameid', { game_title: name })
+                .then(function(response) {
+                    ga('send', {
+                        hitType: 'event',
+                        eventCategory: 'game',
+                        eventAction: 'delete',
+                        eventLabel: name,
+                        eventValue: id
+                    });
+                    q.resolve(response);
+                }, function(response) {
+                    q.reject(response);
+                });
+                return q.promise;
             },
 
             getRating: function() {
@@ -163,6 +183,13 @@
                     game.user_username = user.name();
                     $rootScope.$broadcast('game:changed', game);
                     clearChanges(game);
+                    ga('send', {
+                        hitType: 'event',
+                        eventCategory: 'game',
+                        eventAction: 'create',
+                        eventLabel: game.game_title,
+                        eventValue: game.game_id
+                    });
                     q.resolve(game);
                 }, function(response) {
                     q.reject(response);
@@ -183,6 +210,13 @@
                         // TODO (chs): update the byline!?
                         game.user_username = user.name();
                         clearChanges(game);
+                        ga('send', {
+                            hitType: 'event',
+                            eventCategory: 'game',
+                            eventAction: 'save',
+                            eventLabel: game.game_title,
+                            eventValue: game.game_id
+                        });
                         q.resolve(response.data);
                     }, function(response) {
                         q.reject(response);

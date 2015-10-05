@@ -59,7 +59,7 @@
 
         $scope.$on('user:updated', function(msg, details) {
             $scope.user_id = user.id();
-            getGames(true);
+//          getGames(true);
         });
 
         $scope.refreshGameList = function() {
@@ -112,7 +112,7 @@
             $('#game_' + index).addClass('dropshadow');
         };
 
-        getGames();
+        getGames(true);
 
     }]);
 

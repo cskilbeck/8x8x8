@@ -65,14 +65,14 @@ function ($rootScope, $modal, ajax, cookie, status) {
                                     }
                                 }
                             }).result.then(function(result) {
-                                user.update(result);
+                                user.update(result, 'register');
                                 q.resolve(result);
                             }, function(xhr) {
                                 q.reject(xhr);
                             });
                         }
                         else {
-                            user.update(result);
+                            user.update(result, 'login');
                             q.resolve(result);
                         }
                     }, function(xhr) {
@@ -101,12 +101,12 @@ function ($rootScope, $modal, ajax, cookie, status) {
                     ajax.get('refreshSession', data)
                     .then(function(response) {
                         data.user_session = response.data.user_session;
-                        user.update(data);
+                        user.update(response.data, 'refreshSession');
                         status('Welcome back ' + data.user_username);
                         q.resolve();
                     },
                     function(response) {
-                        user.update({user_id: 0});
+                        user.update({user_id: 0}, 'sessionExpired');
                         status('Session expired, please log in again...');
                         q.resolve();
                     });
@@ -121,19 +121,26 @@ function ($rootScope, $modal, ajax, cookie, status) {
                 var q = Q.defer();
                 ajax.get('endSession', { user_id: details.user_id, user_session: details.user_session }, 'Logging ' + details.user_username + ' out...')
                 .then(function() {
-                    user.update({user_id: 0, user_session: 0});
+                    user.update({user_id: 0, user_session: 0}, 'logout');
                     $rootScope.$broadcast('user:logout');
                     q.resolve();
                 }, function() {
-                    user.update({user_id: 0, user_session: 0});
+                    user.update({user_id: 0, user_session: 0}, 'logoutFailed');
                     $rootScope.$broadcast('user:logout');
                     q.reject();
                 });
                 return q.promise;
             },
 
-            update: function(d) {
+            update: function(d, reason) {
                 details = d;
+                ga('send', {
+                    hitType: 'event',
+                    eventCategory: 'user',
+                    eventAction: reason,
+                    eventValue: details.user_id,
+                    eventInteration: false
+                });
                 ajax.set_user(user);
                 cookie.set('user_id', details.user_id, 30);
                 cookie.set('user_username', details.user_username, 30);

@@ -132,7 +132,8 @@ class Handler:
         print handler + " for " + web.ctx.path
 
         # TODO (chs): fix this and make it work with cloudflare
-        web.header('Access-Control-Allow-Origin', '*')
+        web.header('Access-Control-Allow-Origin', 'https://256pixels.net')
+        web.header('Origin', 'https://256pixels.net');
 
         if not handler in self.__class__.__dict__:
             raise web.HTTPError('401 Invalid method (%s not supported)' % (handler.upper(),))
@@ -604,7 +605,6 @@ class register(Handler):
                         FROM users
                         WHERE user_email=%(email)s''', data)
         if self.fetchone()['count'] != 0:
-            web.debug("TAKEN!")
             raise web.HTTPError('409 Email already taken')
         else:
             self.execute('''SELECT COUNT(*) AS count FROM users

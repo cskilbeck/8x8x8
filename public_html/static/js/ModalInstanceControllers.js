@@ -48,9 +48,9 @@
 
             $scope.details.failed = false;
             user.register($scope.details)
-            .then(function done(data) {
-                $modalInstance.close(data);
-            }, function fail(response) {
+            .then(function(response) {
+                $modalInstance.close(response.data);
+            }, function(response) {
                 $scope.message = response.statusText;
                 $scope.details.failed = true;
                 $scope.$apply();

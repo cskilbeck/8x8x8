@@ -5,7 +5,7 @@
 #   name.js (concatenated scripts) and name.min.js (concatenated, minified scripts) will be saved in current directory
 #
 # usage: minify.py <url>
-# eg: minify.py http://localhost:8080/index.html
+# eg: minify.py http://localhost:8080/index.html . /static/
 #
 # TODO (chs): allow minifier to be specified as an option (hardcodrd to use AjaxMinifier.exe, currently)
 # TODO (chs): make it replace all the SCRIPTBLOCKs, not just the first one it finds
@@ -73,7 +73,7 @@ def save_file(text, filename):
 # main
 
 try:
-    host = sys.argv[1] if len(sys.argv) == 2 else 'http://localhost:8080'
+    host = sys.argv[1] if len(sys.argv) > 1 else 'http://localhost:8080'
     context = ssl._create_unverified_context()
     url = urlparse.urlparse(host)
     html = urllib2.urlopen(url.geturl(), context = context).read()

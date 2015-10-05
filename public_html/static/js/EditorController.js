@@ -27,8 +27,8 @@
             }
         };
 
-    mainApp.controller('EditorController', ['$scope', '$modal', '$routeParams', 'user', 'ajax', '$rootScope', 'gamelist', 'dialog', '$location', 'game', 'status',
-    function ($scope, $modal, $routeParams, user, ajax, $rootScope, gamelist, dialog, $location, game, status) {
+    mainApp.controller('EditorController', ['$scope', '$modal', '$routeParams', 'user', 'ajax', '$rootScope', 'gamelist', 'dialog', '$location', 'game', 'status', '$timeout',
+    function ($scope, $modal, $routeParams, user, ajax, $rootScope, gamelist, dialog, $location, game, status, $timeout) {
 
         var newGameID = $routeParams.game_id;
 
@@ -38,13 +38,24 @@
 
         discardChanges = false;
 
-        window.focusEditor = function() {
-            focus();
-            if(editor) {
-                status.focus(editor);
-                enableEditor(true);
-            }
-        };
+        function focusEditor() {
+            $timeout(function() {
+                focus();
+                if(editor) {
+                    enableEditor(true);
+                    editor.focus();
+                }
+            });
+        }
+
+        $scope.$on('frame:focus-editor', function() {
+            focusEditor();
+        });
+
+        $scope.$on('frame:error', function(m, e) {
+            var parts = printStackTrace({ e: e })[0].match(/.*@.*\:(\d+):(\d+)/);
+            gotoError(e.message, parseInt(parts[1]), parseInt(parts[2]));
+        });
 
         // NOTE (chs): the dodgy line offsets are due to 0-based and 1-based differences and the preScript taking 1 line
         function gotoError(msg, line, column) {
