@@ -1,5 +1,8 @@
 //////////////////////////////////////////////////////////////////////
 
+if (window.location.protocol != "https:")
+    window.location.href = "https:" + window.location.href.substring(window.location.protocol.length);
+
 var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']);
 
 //////////////////////////////////////////////////////////////////////
@@ -19,6 +22,7 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 // - unicode
 // - screenshots
 // - home page
+// ? make it like jsfiddle where games are all anonymous ? save without login would be cool... 
 //
 // - detect hangs and kill it (possible? with instrumentation via Esprima : for, while, do) (but how to keep the source line matched up? sounds hard...)
 // / instructions/documentation/tooltips/popovers
@@ -34,14 +38,13 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //
 // - comments
 //
-// - editor
-//
 // - user registration/login/forgot password
 //      - user profile modal dialog to change username\email\password
 //      - bcrypt password on client before transmission
 //      - permission bits
 //      - proper session security
 //      ? groups of users (and admins) for schools
+//      - delete/deactivate user accounts and username recycling (delete games and ratings? and then re-rate all the games they rated!? hmph...)
 //
 // - tutorials
 //      - tetris
@@ -129,3 +132,4 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 // + ask if they want to save when quitting the editor if changes are unsaved
 //      + update screenshot when it's taken (add a query parameter to the url) [bah, can't make this work very well] [fixed now]
 // + fix the docs
+//      + SSL for login/register [SSL for everything via cloudflare]

@@ -1,11 +1,15 @@
 (function() {
     "use strict";
 
-    mainApp.controller('LoginModalInstanceController', ['$scope', '$modal', '$modalInstance', 'details', 'ajax', 'user', 'status',
-    function ($scope, $modal, $modalInstance, details, ajax, user, status) {
+    mainApp.controller('LoginModalInstanceController', ['$scope', '$modal', '$modalInstance', 'details', 'ajax', 'user', 'status', '$timeout',
+    function ($scope, $modal, $modalInstance, details, ajax, user, status, $timeout) {
 
         $scope.details = details;
         $scope.details.failed = false;
+
+        $timeout(function() {
+            status.focus($('#email').focus());
+        }, 350);
 
         $scope.ok = function () {
             $scope.details.failed = false;
@@ -29,12 +33,16 @@
         };
     }]);
 
-    mainApp.controller('RegisterModalInstanceController', ['$scope', '$modal', '$modalInstance', 'details', 'ajax', 'user',
-    function ($scope, $modal, $modalInstance, details, ajax, user) {
+    mainApp.controller('RegisterModalInstanceController', ['$scope', '$modal', '$modalInstance', 'details', 'ajax', 'user', '$timeout', 'status',
+    function ($scope, $modal, $modalInstance, details, ajax, user, $timeout, status) {
 
         $scope.details = details;
         $scope.message = 'Fill in required fields...';
         $scope.details.failed = false;
+
+        $timeout(function() {
+            status.focus($('#username'));
+        }, 350);
 
         $scope.ok = function () {
 
@@ -99,7 +107,7 @@
         // DONE (chs): make input field focus on dialog show work!? [$modal was focusing element 0 in a requestAnimationFrame after the animation]
         // $modalInstance.opened.then(function() {
         //     $timeout(function() {
-        //         $('#input').focus();
+        //         status.focus($('#input'));
         //     }, 350);
         // });
 

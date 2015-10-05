@@ -40,7 +40,7 @@
         function format(fmt) {
             var args = Array.prototype.slice.call(arguments, 1);
             return fmt.replace(/{(\d+)}/g, function(match, number) {
-                return typeof args[number] !== 'undefined' ? args[number] : match;
+                return args[number] !== undefined ? args[number] : match;
             });
         }
 
@@ -109,7 +109,10 @@
                     newScript.setAttribute('id', 'clientscript');
                     newScript.innerHTML = preScript + game.game_source + postScript;
                     body.appendChild(newScript);
-                    $('#gameFrame').focus();
+                    $timeout(function() {
+                        frameWindow.focus();
+                    }, 10);
+                    // status.focus($('#gameFrame'));
                     frameWindow.game = game;
                     safecall(frameWindow.startIt);
                     gameToPlay = null;

@@ -41,7 +41,7 @@
         window.focusEditor = function() {
             focus();
             if(editor) {
-                editor.focus();
+                status.focus(editor);
                 enableEditor(true);
             }
         };
@@ -87,23 +87,18 @@
         function startEditor() {
             editor = ace.edit("editor");
 
-            setOptions(editorOptions);
-
             if(!modulesLoaded) {
+                ace.config.set('basePath', 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/');
                 ace.config.set("modePath", "https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/");
                 ace.config.set("workerPath", "https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/");
                 ace.config.set("themePath", "https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/");
                 ace.config.loadModule('ace/ext/language_tools', function(m) {
                     ace.require(['ace/ext/language_tools']);
-                    editor.getSession().setMode('ace/mode/javascript');
-                    setOptions(editorOptions);
                     modulesLoaded = true;
                 });
             }
-            else {
-                editor.getSession().setMode('ace/mode/javascript');
-                setOptions(editorOptions);
-            }
+            editor.getSession().setMode('ace/mode/javascript');
+            setOptions(editorOptions);
             editor.$blockScrolling = Infinity;
             enableEditor(false);
             inflateEditor();
@@ -215,7 +210,7 @@
                 .then(function() {
                     game.game_title = "New Game";
                     $scope.$apply();
-                    $("#game_title").focus();
+                    status.focus($("#game_title"));
                 });
             }
         };

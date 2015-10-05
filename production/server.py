@@ -14,6 +14,7 @@
 
 import sys, types, os, time, datetime, struct, re, random
 import web, pprint, json, iso8601, unicodedata, urlparse
+import bcrypt
 from contextlib import closing
 from base64 import b64encode
 import MySQLdb as mdb
@@ -144,8 +145,6 @@ class Handler:
         try:
             with closing(opendb()) as self.db:
                 with closing(self.db.cursor()) as self.cur:
-                    self.input = web.input()
-                    self.data = web.data()
                     output = self.output(handlerFunc(self, *args))
                     return output
 
@@ -180,11 +179,26 @@ class Handler:
     def PUT(self, *args):
         return self.mainHandler("Put", *args)
 
+    def execute(self, sql, dic):
+        return self.cur.execute(sql, dic)
+
+    def rowcount(self):
+        return self.cur.rowcount
+
+    def fetchone(self):
+        return self.cur.fetchone()
+
+    def fetchall(self):
+        return self.cur.fetchall()
+
+    def lastrowid(self):
+        return self.cur.lastrowid
+
 #----------------------------------------------------------------------
 
 def JSON(x):
     web.header('Content-type', 'application/json')
-    return json.dumps(x, indent = 4, separators=(',',': '), default = date_handler)
+    return json.dumps(x, separators = (',',':'), default = date_handler)
 
 def PNG(x):
     web.header('Content-type', 'image/png')
@@ -285,15 +299,14 @@ class data(object):
                     result[name] = val
 
             if validate:
-                slf.cur.execute('''SELECT COUNT(*) AS count
-                                    FROM users
-                                    WHERE user_id = %(user_id)s
-                                        AND user_session = %(user_session)s''', result)
-                if slf.cur.fetchone()['count'] != 1:
+                slf.execute('''SELECT COUNT(*) AS count
+                                FROM users
+                                WHERE user_id = %(user_id)s
+                                    AND user_session = %(user_session)s''', result)
+                if slf.fetchone()['count'] != 1:
                     raise web.HTTPError('401 Invalid user session')
 
-            slf.input = result
-            return original_func(slf, *args, **kwargs)
+            return original_func(slf, result, *args, **kwargs)
 
         return new_function
 
@@ -319,32 +332,31 @@ class list(Handler):
             'offset': { 'default': 0, 'min': 0 }
             }
         })
-    def Get(self):
-        self.input['search'] = searchTerm(self.input['search'])
-        self.cur.execute('''SELECT games.game_id,
-                                    games.user_id,
-                                    game_title,
-                                    game_lastsaved,
-                                    game_created,
-                                    user_username,
-                                    game_instructions,
-                                    game_rating,
-                                    rating_stars,
-                                    HEX(game_screenshot) AS screenshot
-                            FROM games
-                                JOIN users
-                                    ON users.user_id = games.user_id
-                                LEFT JOIN (SELECT *
-                                            FROM ratings
-                                            WHERE user_id = %(user_id)s) AS myratings
-                                    ON games.game_id = myratings.game_id
-                            WHERE (%(justmygames)s = 0 OR games.user_id = %(user_id)s)
-                                AND (%(game_id)s = 0 OR games.game_id = %(game_id)s)
-                                AND (game_title LIKE %(search)s)
-                            ORDER BY game_lastsaved DESC, game_created DESC
-                            LIMIT %(length)s OFFSET %(offset)s'''
-                    , self.input)
-        rows = self.cur.fetchall()
+    def Get(self, data):
+        data['search'] = searchTerm(data['search'])
+        self.execute('''SELECT games.game_id,
+                                games.user_id,
+                                game_title,
+                                game_lastsaved,
+                                game_created,
+                                user_username,
+                                game_instructions,
+                                game_rating,
+                                rating_stars,
+                                HEX(game_screenshot) AS screenshot
+                        FROM games
+                            LEFT JOIN users
+                                ON users.user_id = games.user_id
+                            LEFT JOIN (SELECT *
+                                        FROM ratings
+                                        WHERE user_id = %(user_id)s) AS myratings
+                                ON games.game_id = myratings.game_id
+                        WHERE (%(justmygames)s = 0 OR games.user_id = %(user_id)s)
+                            AND (%(game_id)s = 0 OR games.game_id = %(game_id)s)
+                            AND (game_title LIKE %(search)s)
+                        ORDER BY game_lastsaved DESC, game_created DESC
+                        LIMIT %(length)s OFFSET %(offset)s''', data)
+        rows = self.fetchall()
         return JSON({ 'count': len(rows), 'games': rows })
 
 #----------------------------------------------------------------------
@@ -357,13 +369,13 @@ class count(Handler):
             'search': ''
             }
         })
-    def Get(self):
-        self.input['search'] = searchTerm(self.input['search'])
-        self.cur.execute('''SELECT COUNT(*) AS count
-                            FROM games
-                            WHERE (%(user_id)s < 0 OR games.user_id = %(user_id)s)
-                                AND game_title LIKE %(search)s''', self.input)
-        return JSON(self.cur.fetchone())
+    def Get(self, data):
+        data['search'] = searchTerm(data['search'])
+        self.execute('''SELECT COUNT(*) AS count
+                        FROM games
+                        WHERE (%(user_id)s < 0 OR games.user_id = %(user_id)s)
+                            AND game_title LIKE %(search)s''', data)
+        return JSON(self.fetchone())
 
 #----------------------------------------------------------------------
 # /api/source
@@ -374,14 +386,14 @@ class source(Handler):
             'game_id': int
             }
         })
-    def Get(self):
-        self.cur.execute('''SELECT game_id, users.user_id, user_username, game_created, game_lastsaved, game_title, game_instructions, game_framerate, game_source
-                            FROM games
-                                JOIN users ON users.user_id = games.user_id
-                            WHERE game_id = %(game_id)s''', self.input)
-        if self.cur.rowcount != 1:
+    def Get(self, data):
+        self.execute('''SELECT game_id, users.user_id, user_username, game_created, game_lastsaved, game_title, game_instructions, game_framerate, game_source
+                        FROM games
+                            LEFT JOIN users ON users.user_id = games.user_id # user must exist for each game...
+                        WHERE game_id = %(game_id)s''', data)
+        if self.rowcount() != 1:
             raise web.HTTPError('404 Game not found')
-        row = self.cur.fetchone();
+        row = self.fetchone();
         web.http.lastmodified(correct_date(row['game_lastsaved']))    # TODO (chs): keep separate last-modified values for screenshot and game save
         return JSON(row)
 
@@ -395,14 +407,14 @@ class gameid(Handler):
             'name': str
             }
         })
-    def Get(self):
-        self.cur.execute('''SELECT game_id
-                            FROM games
-                            WHERE game_title = %(name)s
-                                AND user_id = %(user_id)s''', self.input)
-        if self.cur.rowcount != 1:
+    def Get(self, data):
+        self.execute('''SELECT game_id
+                        FROM games
+                        WHERE game_title = %(name)s
+                            AND user_id = %(user_id)s''', data)
+        if self.rowcount() != 1:
             raise web.HTTPError('404 Game not found')
-        return JSON(self.cur.fetchone())
+        return JSON(self.fetchone())
 
 #----------------------------------------------------------------------
 # /api/create
@@ -417,15 +429,15 @@ class create(Handler):
             'game_framerate': int
             }
         })
-    def Post(self):
-        self.cur.execute('''SELECT game_id
-                            FROM games
-                            WHERE game_title = %(game_title)s AND user_id = %(user_id)s''', self.input)
-        if self.cur.rowcount != 0:
+    def Post(self, data):
+        self.execute('''SELECT game_id
+                        FROM games
+                        WHERE game_title = %(game_title)s AND user_id = %(user_id)s''', data)
+        if self.rowcount() != 0:
             raise web.HTTPError('409 Game name already exists')
-        self.cur.execute('''INSERT INTO games (user_id, game_created, game_lastsaved, game_source, game_title, game_instructions, game_framerate)
-                            VALUES (%(user_id)s, NOW(), NOW(), %(game_source)s, %(game_title)s, %(game_instructions)s, %(game_framerate)s)''' , self.input)
-        return JSON({ 'created': self.cur.rowcount, 'game_id': self.cur.lastrowid })
+        self.execute('''INSERT INTO games (user_id, game_created, game_lastsaved, game_source, game_title, game_instructions, game_framerate)
+                        VALUES (%(user_id)s, NOW(), NOW(), %(game_source)s, %(game_title)s, %(game_instructions)s, %(game_framerate)s)''' , data)
+        return JSON({ 'created': self.rowcount(), 'game_id': self.lastrowid() })
 
 #----------------------------------------------------------------------
 # /api/settings
@@ -439,11 +451,11 @@ class settings(Handler):
             'game_instructions': ''
             }
         })
-    def Post(self):
-        self.cur.execute('''UPDATE games SET game_framerate = %(game_framerate)s, game_instructions = %(game_instructions)s
-                            WHERE game_id = %(game_id)s
-                                AND user_id = %(user_id)s''', self.input)
-        return JSON({'settings_saved': self.cur.rowcount })
+    def Post(self, data):
+        self.execute('''UPDATE games SET game_framerate = %(game_framerate)s, game_instructions = %(game_instructions)s
+                        WHERE game_id = %(game_id)s
+                            AND user_id = %(user_id)s''', data)
+        return JSON({'settings_saved': self.rowcount() })
 
 #----------------------------------------------------------------------
 # /api/rename
@@ -456,12 +468,12 @@ class rename(Handler):
             'name': str
             }
         })
-    def Post(self):
-        self.cur.execute('''UPDATE games
-                            SET game_lastsaved = NOW(), game_title = %(name)s
-                            WHERE game_id = %(game_id)s
-                                AND user_id = %(user_id)s''' , self.input)
-        return JSON({ 'renamed': self.cur.rowcount })
+    def Post(self, data):
+        self.execute('''UPDATE games
+                        SET game_lastsaved = NOW(), game_title = %(name)s
+                        WHERE game_id = %(game_id)s
+                            AND user_id = %(user_id)s''' , data)
+        return JSON({ 'renamed': self.rowcount() })
 
 #----------------------------------------------------------------------
 # /api/rate
@@ -473,14 +485,14 @@ class rating(Handler):
             'game_id': int
             }
         })
-    def Get(self):
-        self.cur.execute('''SELECT rating_stars FROM ratings
-                            WHERE user_id = %(user_id)s
-                                AND game_id = %(game_id)s''', self.input)
-        if self.cur.rowcount == 0:
-            #raise web.HTTPError('404 user %(user_id)d has not rated game %(game_id)d' % self.input)
+    def Get(self, data):
+        self.execute('''SELECT rating_stars FROM ratings
+                        WHERE user_id = %(user_id)s
+                            AND game_id = %(game_id)s''', data)
+        if self.rowcount() == 0:
+            #raise web.HTTPError('404 user %(user_id)d has not rated game %(game_id)d' % data)
             return JSON({ 'rating_stars': 0 })  # meaning not yet rated by this user
-        return JSON(self.cur.fetchone())
+        return JSON(self.fetchone())
 
 #----------------------------------------------------------------------
 # /api/rate
@@ -493,18 +505,18 @@ class rate(Handler):
             'rating': int
             }
         })
-    def Post(self):
-        self.cur.execute('''INSERT INTO ratings (rating_timestamp, game_id, user_id, rating_stars)
-                            VALUES(NOW(), %(game_id)s, %(user_id)s, %(rating)s)
-                            ON DUPLICATE KEY UPDATE rating_timestamp = NOW(), rating_stars = %(rating)s''', self.input)
-        self.cur.execute('''UPDATE games 
-                            SET game_rating =
-                                (SELECT (SELECT SUM(rating_stars) FROM ratings WHERE game_id = %(game_id)s) / (SELECT COUNT(*) FROM ratings WHERE game_id = %(game_id)s))
-                            WHERE game_id = %(game_id)s''', self.input)
-        self.cur.execute('''SELECT game_rating
-                            FROM games
-                            WHERE game_id = %(game_id)s''', self.input)
-        return JSON(self.cur.fetchone())
+    def Post(self, data):
+        self.execute('''INSERT INTO ratings (rating_timestamp, game_id, user_id, rating_stars)
+                        VALUES(NOW(), %(game_id)s, %(user_id)s, %(rating)s)
+                        ON DUPLICATE KEY UPDATE rating_timestamp = NOW(), rating_stars = %(rating)s''', data)
+        self.execute('''UPDATE games 
+                        SET game_rating =
+                            (SELECT (SELECT SUM(rating_stars) FROM ratings WHERE game_id = %(game_id)s) / (SELECT COUNT(*) FROM ratings WHERE game_id = %(game_id)s))
+                        WHERE game_id = %(game_id)s''', data)
+        self.execute('''SELECT game_rating
+                        FROM games
+                        WHERE game_id = %(game_id)s''', data)
+        return JSON(self.fetchone())
 
 #----------------------------------------------------------------------
 # /api/save
@@ -521,18 +533,18 @@ class save(Handler):
             'game_source': str
             }
         })
-    def Post(self):
-        self.input['game_instructions'] = stripName(self.input['game_instructions'], 240)
-        self.input['game_title'] = stripName(self.input['game_title'], 32)
-        self.cur.execute('''UPDATE games SET
-                                game_lastsaved = NOW(),
-                                game_title = %(game_title)s,
-                                game_instructions = %(game_instructions)s,
-                                game_framerate = %(game_framerate)s,
-                                game_source = %(game_source)s
-                            WHERE game_id = %(game_id)s
-                                AND user_id = %(user_id)s''', self.input)
-        return JSON({ 'saved': self.cur.rowcount })
+    def Post(self, data):
+        data['game_instructions'] = stripName(data['game_instructions'], 240)
+        data['game_title'] = stripName(data['game_title'], 32)
+        self.execute('''UPDATE games SET
+                            game_lastsaved = NOW(),
+                            game_title = %(game_title)s,
+                            game_instructions = %(game_instructions)s,
+                            game_framerate = %(game_framerate)s,
+                            game_source = %(game_source)s
+                        WHERE game_id = %(game_id)s
+                            AND user_id = %(user_id)s''', data)
+        return JSON({ 'saved': self.rowcount() })
 
 #----------------------------------------------------------------------
 # /api/screenshot
@@ -545,12 +557,12 @@ class screenshot(Handler):
             'game_id': int
             }
         })
-    def Post(self):
-        self.cur.execute('''UPDATE games
-                            SET game_screenshot = UNHEX(%(screen)s), game_lastsaved = NOW()
-                            WHERE game_id = %(game_id)s
-                                AND user_id = %(user_id)s''', self.input)
-        return JSON({'posted': self.cur.rowcount })
+    def Post(self, data):
+        self.execute('''UPDATE games
+                        SET game_screenshot = UNHEX(%(screen)s), game_lastsaved = NOW()
+                        WHERE game_id = %(game_id)s
+                            AND user_id = %(user_id)s''', data)
+        return JSON({'posted': self.rowcount() })
 
 #----------------------------------------------------------------------
 # /api/delete
@@ -565,16 +577,18 @@ class delete(Handler):
             'game_id': int
             }
         })
-    def Post(self):
-        self.cur.execute('''DELETE FROM games
-                            WHERE game_id = %(game_id)s
-                                AND user_id = %(user_id)s''', self.input)
-        if self.cur.rowcount == 0:
+    def Post(self, data):
+        self.execute('''DELETE FROM games
+                        WHERE game_id = %(game_id)s
+                            AND user_id = %(user_id)s''', data)
+        if self.rowcount() == 0:
             raise web.HTTPError('404 Game not found')
-        return JSON({ 'deleted': self.cur.rowcount })
+        return JSON({ 'deleted': self.rowcount() })
 
 #----------------------------------------------------------------------
 # /api/register
+
+# TODO (chs): hash in a thread, return status immediately
 
 class register(Handler):
     @data({
@@ -584,38 +598,41 @@ class register(Handler):
             'username': str
             }
         })
-    def Post(self):
+    def Post(self, data):
         result = {}
-        self.cur.execute('''SELECT COUNT(*) AS count
-                            FROM users
-                            WHERE user_email=%(email)s''', self.input)
-        if self.cur.fetchone()['count'] != 0:
+        self.execute('''SELECT COUNT(*) AS count
+                        FROM users
+                        WHERE user_email=%(email)s''', data)
+        if self.fetchone()['count'] != 0:
             web.debug("TAKEN!")
             raise web.HTTPError('409 Email already taken')
         else:
-            self.cur.execute('''SELECT COUNT(*) AS count FROM users
-                                WHERE user_username=%(username)s''', self.input)
-            if self.cur.fetchone()['count'] != 0:
+            self.execute('''SELECT COUNT(*) AS count FROM users
+                            WHERE user_username=%(username)s''', data)
+            if self.fetchone()['count'] != 0:
                 raise web.HTTPError('409 Username already taken')
             else:
-                self.input['session'] = getRandomInt()
-                self.cur.execute('''INSERT INTO users (user_email, user_password, user_username, user_created, user_session)
-                                    VALUES (%(email)s, %(password)s, %(username)s, NOW(), %(session)s)
-                                    ON DUPLICATE KEY UPDATE user_session = %(session)s, user_id = LAST_INSERT_ID(user_id)''', self.input)
-                if self.cur.rowcount == 1 or self.cur.rowcount == 2:
-                    user_id = self.cur.lastrowid
-                    self.cur.execute('''SELECT user_session 
-                                        FROM users
-                                        WHERE user_email = %(email)s''', self.input)
-                    if self.cur.rowcount != 1:
-                        raise web.HTTPError('500 Database error 37')
-                    row = self.cur.fetchone()
-                    result['user_id'] = user_id
-                    result['user_username'] = self.input['username']
-                    result['user_session'] = row['user_session']
+                data['session'] = getRandomInt()
+                data['hashed'] = bcrypt.hashpw(data['password'], bcrypt.gensalt(12))
+                self.execute('''INSERT INTO users (user_email, user_password, user_username, user_created, user_session)
+                                VALUES (%(email)s, %(hashed)s, %(username)s, NOW(), %(session)s)''', data)
+                if self.rowcount() == 1:
+                    result['user_id'] = self.lastrowid()
+                    result['user_username'] = data['username']
+                    result['user_session'] = data['session']
                 else:
                     raise web.HTTPError("401 Can't create account")
         return JSON(result)
+
+class registerComplete(Handler):
+    @data({
+        'params': {
+            'username': str
+            }
+        })
+    def Get(self):
+        # wait for thread[username] to complete
+        pass
 
 #----------------------------------------------------------------------
 # /api/login
@@ -625,23 +642,41 @@ class login(Handler):
         'params': {
             'email': str,
             'password': str
-        }
-    })
-    def Post(self):
+            }
+        })
+    def Post(self, data):
         result = {}
-        self.input['session'] = getRandomInt()
-        self.cur.execute('''UPDATE users
-                            SET user_session = %(session)s
-                            WHERE user_email = %(email)s
-                                AND user_password=%(password)s''', self.input)
-        if self.cur.rowcount != 1:
-            raise web.HTTPError('401 Incorrect email address or password')
-        self.cur.execute('''SELECT user_id, user_username, user_session, user_email
-                            FROM users
-                            WHERE user_email = %(email)s''', self.input)
-        if self.cur.rowcount != 1:
+
+        self.execute('''SELECT user_id, user_password
+                        FROM users
+                        WHERE user_email = %(email)s''', data)
+        print self.rowcount()
+        if self.rowcount() != 1:
+            raise web.HTTPError('401 Incorrect email address')
+
+        row = self.fetchone()
+        hashed = row['user_password']
+
+        try:
+            if bcrypt.hashpw(data['password'], hashed) != hashed:
+                raise web.HTTPError('401 Incorrect password')
+        except ValueError:
+            raise web.HTTPError('401 Incorrect password!')
+
+        data['user_id'] = row['user_id']
+        data['session'] = getRandomInt()
+        self.execute('''UPDATE users
+                        SET user_session = %(session)s
+                        WHERE user_email = %(email)s''', data)
+        if self.rowcount() != 1:
+            raise web.HTTPError("500 Can't update session for %(email)s!?" % data)
+
+        self.execute('''SELECT user_id, user_username, user_session, user_email
+                        FROM users
+                        WHERE user_email = %(email)s''', data)
+        if self.rowcount() != 1:
             raise web.HTTPError('500 Login error')
-        row = self.cur.fetchone()
+        row = self.fetchone()
         return JSON(row)
 
 #----------------------------------------------------------------------
@@ -655,17 +690,17 @@ class refreshSession(Handler):
             'user_username': str
         }
     })
-    def Get(self):
-        self.input['new_session'] = getRandomInt()
-        self.cur.execute('''UPDATE users
-                            SET user_session = %(new_session)s
-                            WHERE user_id = %(user_id)s
-                                AND user_username = %(user_username)s
-                                AND user_session = %(user_session)s''', self.input)
-        if self.cur.rowcount != 1:
+    def Get(self, data):
+        data['new_session'] = getRandomInt()
+        self.execute('''UPDATE users
+                        SET user_session = %(new_session)s
+                        WHERE user_id = %(user_id)s
+                            AND user_username = %(user_username)s
+                            AND user_session = %(user_session)s''', data)
+        if self.rowcount() != 1:
             raise web.HTTPError('404 Session not found')
-        self.input['user_session'] = self.input['new_session']
-        return JSON(self.input)
+        data['user_session'] = data['new_session']
+        return JSON(data)
 
 #----------------------------------------------------------------------
 # /api/endSession
@@ -674,12 +709,12 @@ class endSession(Handler):
     @data({
         'validate': True,
     })
-    def Get(self):
-        self.cur.execute('''UPDATE users
-                            SET user_session = NULL    
-                            WHERE user_id = %(user_id)s
-                                AND user_session = %(user_session)s''', self.input)
-        if self.cur.rowcount != 1:
+    def Get(self, data):
+        self.execute('''UPDATE users
+                        SET user_session = NULL    
+                        WHERE user_id = %(user_id)s
+                            AND user_session = %(user_session)s''', data)
+        if self.rowcount() != 1:
             raise web.HTTPError('401 Error terminating session')
         return JSON({ 'status': 'ok' })
 
@@ -721,16 +756,16 @@ palette = [ (0x00,0x00,0x00),
 def round_rectangle(size, radius, fill):
     width, height = size
     rectangle = Image.new('RGB', size, fill)
-    corner = Image.new('RGB', (radius, radius), (0, 0, 0))
+    corner = Image.new('RGB', (radius, radius + 1), (0, 0, 0))
     draw = ImageDraw.Draw(corner)
-    draw.pieslice((0, 0, radius * 2, radius * 2), 180, 270, fill=fill)
+    draw.pieslice([0, 0, radius * 2, radius * 2], 180, 270, fill=fill)
     rectangle.paste(corner, (0, 0))
     rectangle.paste(corner.rotate(90), (0, height - radius)) # Rotate the corner and paste it
-    rectangle.paste(corner.rotate(180), (width - radius, height - radius))
-    rectangle.paste(corner.rotate(270), (width - radius, 0))
+    rectangle.paste(corner.rotate(180), (width - radius, height - radius - 1))
+    rectangle.paste(corner.rotate(270), (width - radius - 1, 0))
     return rectangle
 
-pixels = [round_rectangle((15, 15), 3, p) for p in palette]
+pixels = [round_rectangle((14, 14), 2, p) for p in palette]
 
 def get_screenshot(screen):
     if screen is None:
@@ -746,7 +781,7 @@ def get_screenshot(screen):
             x = 0;
             y += 16
     buf = StringIO.StringIO()
-    s = s.resize((64, 64), Image.ANTIALIAS)
+    s = s.resize((128, 128), Image.ANTIALIAS)
     s.save(buf, 'PNG')
     return buf.getvalue()
 
@@ -754,11 +789,11 @@ defaultScreenshot = get_screenshot(os.urandom(128))
 
 class screen(Handler):
     def Get(self, game_id):
-        self.cur.execute('''SELECT game_screenshot, game_lastsaved FROM games
-                            WHERE game_id = %(game_id)s''', locals())
-        if self.cur.rowcount != 1:
+        self.execute('''SELECT game_screenshot, game_lastsaved FROM games
+                        WHERE game_id = %(game_id)s''', locals())
+        if self.rowcount() != 1:
             raise web.HTTPError('404 game not found')
-        row = self.cur.fetchone()
+        row = self.fetchone()
         web.http.lastmodified(correct_date(row['game_lastsaved']))    # TODO (chs): keep separate last-modified values for screenshot and game save
         return PNG(get_screenshot(row['game_screenshot']))
 
@@ -767,11 +802,14 @@ class screen(Handler):
 
 class play(Handler):
     def Get(self, game_id):
-        self.cur.execute('''SELECT game_id, game_source, game_title, game_instructions, game_framerate
-                            FROM games WHERE game_id = %(game_id)s''', locals())
-        if self.cur.rowcount == 0:
+        self.execute('''SELECT game_id, game_source, game_title, game_instructions, game_framerate, game_lastsaved
+                        FROM games
+                        WHERE game_id = %(game_id)s''', locals())
+        if self.rowcount() == 0:
             return HTML(render.nogame(game_id))
-        return HTML(render.play(self.cur.fetchone()))
+        row = self.fetchone()
+        web.http.lastmodified(correct_date(row['game_lastsaved']))
+        return HTML(render.play(row))
 
 #----------------------------------------------------------------------
 

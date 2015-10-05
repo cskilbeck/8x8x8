@@ -9,15 +9,24 @@ function ($rootScope, $timeout) {
         statusText = text;
         $timeout(function() {
             statusText = '';
-        }, 1000);
+            isError = false;
+        }, 2000);
     }
 
     status.error = function(text) {
         statusText = text;
+        isError = true;
+        $timeout(function() {
+            statusText = '';
+            isError = false;
+        }, 3000);
     };
 
     status.busy = function(b) {
         isBusy = b;
+        $timeout(function() {
+            $rootScope.$apply();
+        }, 100);
     };
 
     status.clear = function() {
@@ -41,6 +50,14 @@ function ($rootScope, $timeout) {
 
     status.isBusy = function() {
         return isBusy;
+    };
+
+    // TODO (chs): put status.focus somewhere more appropriate
+
+    status.focus = function(elem) {
+        $timeout(function() {
+            elem.focus();
+        }, 100);
     };
 
     return status;

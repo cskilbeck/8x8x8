@@ -13,7 +13,7 @@
 
         <title>8x8x8</title>
 
-        <link rel='stylesheet' href='http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css'>
+        <link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css'>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
 
         <!--STYLEBLOCK(style)-->
@@ -46,10 +46,6 @@
 
         <!-- Stacktrace -->
         <script src='https://cdnjs.cloudflare.com/ajax/libs/stacktrace.js/0.6.4/stacktrace.js'></script>
-
-        <!-- bCrypt -->
-        <script src='/static/js/isaac.js'></script>
-        <script src='/static/js/bCrypt.js'></script>
 
         <!-- Q -->
         <script src='/static/js/Q.js'></script>
@@ -108,7 +104,7 @@
                     highlight ng-change='checkText()'
                     ng-keydown='filterkeys($event)' />
             <div id='byline'>&nbsp;{{by(game)}}&nbsp;</div>
-            <iframe id='gameFrame' sandbox='allow-scripts allow-same-origin' src='/static/html/frame.html'></iframe>
+            <iframe id='gameFrame' tabindex='1' sandbox='allow-scripts allow-same-origin' src='/static/html/frame.html'></iframe>
             <div class='controls'>
                 <textarea ng-keydown='filterkeys($event)' ng-change='checkText()' rows='5' ng-disabled='!canEditInstructions()' ng-model='game.game_instructions' ng-class='instructionsEditorClass()' highlight name='instructions'>
                 </textarea>

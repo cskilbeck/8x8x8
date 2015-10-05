@@ -7,7 +7,7 @@
         <div class='form-group' ng-class="{'has-error': registerForm.username.$invalid && !registerForm.username.$pristine }">
             <label for='username'>Username</label>
             <span ng-show='registerForm.username.$invalid && !registerForm.username.$pristine' class='help-block inline'> must be at least 3 characters</span>
-            <input type='text' name="username" class='form-control' required minlength='3' ng-model='details.username'/>
+            <input type='text' name="username" id='username' class='form-control' required minlength='3' ng-model='details.username'/>
         </div>
         <div class='form-group' ng-class="{'has-error': registerForm.email.$invalid && !registerForm.email.$pristine }">
             <label for='email'>Email</label>

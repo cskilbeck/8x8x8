@@ -68,7 +68,7 @@
             rating_stars: 0,
 
             changed: function () {
-                return typeof saved !== 'undefined' &&
+                return saved !== undefined &&
                         (game.game_title !== saved.game_title ||
                         game.game_instructions !== saved.game_instructions ||
                         game.game_framerate !== saved.game_framerate);
@@ -76,7 +76,7 @@
 
             changes: function() {
                 var c = [];
-                if (typeof saved !== 'undefined') {
+                if (saved !== undefined) {
                     if(game.game_title !== saved.game_title) {
                         c.push('Name');
                     }

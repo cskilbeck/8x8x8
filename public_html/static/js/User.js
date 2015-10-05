@@ -56,6 +56,7 @@ function ($rootScope, $modal, ajax, cookie, status) {
                         if(result.registration === 'required') {
                             $modal.open({
                                 animation: true,
+                                size: 'x-small',
                                 templateUrl: '/static/html/registerModal.html',
                                 controller: 'RegisterModalInstanceController',
                                 resolve: {

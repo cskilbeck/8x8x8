@@ -13,13 +13,13 @@
         "use strict";
 
         function valid(data) {
-            if(typeof data === 'undefined') {
+            if(data === undefined) {
                 data = {};
             }
-            if(typeof data.user_id === 'undefined') {
+            if(data.user_id === undefined) {
                 data.user_id = user.id();
             }
-            if(typeof data.user_session === 'undefined') {
+            if(data.user_session === undefined) {
                 data.user_session = user.session();
             }
             return data;
@@ -40,7 +40,7 @@
                 }
                 // console.log(fn, url, "PARAMS", params, "DATA", data);
                 $http({ method: fn,
-                        url: 'http://256pixels.net/api/' + url,
+                        url: '//256pixels.net/api/' + url,
                         params: params,
                         data: data
                     })
