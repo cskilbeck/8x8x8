@@ -13,12 +13,9 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      - IE11
 //      - Chrome
 //      - Safari
-// - get the database password out of github
-// - backdropper flash on page load
-// - editor focus nightmare
+// - editor focus nightmare, & send all non-editor keypresses to the player
 // - game_lastsaved and caching not working
 // - ratings - make it better than a simple average (http://www.evanmiller.org/)
-// - send all non-editor keypresses to the player
 // - standalone player
 //      - standalone player share buttons
 //      - standalone player link to source
@@ -30,10 +27,7 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 // - detect hangs and kill it (possible? with instrumentation via Esprima : for, while, do) (but how to keep the source line matched up? sounds hard...)
 // / instructions/documentation/tooltips/popovers
 //
-// / work out how to run it from [azure|aws|digitalocean] on Debian with:
-//      - database on another machine
-//      - compressed assets (editor require() stuff and glyphicons not working)
-// - telemetry/analytics
+// - telemetry/analytics - ga(...) everywhere
 //
 // - mobile
 //      - mobile player mouse/touch support (swipe UDLR & tap)
@@ -137,3 +131,8 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      + SSL for login/register [SSL for everything via cloudflare]
 // + Google Ad
 // + screenshots
+// + get the database password out of github
+// + backdropper flash on page load
+// + work out how to run it from [azure|aws|digitalocean] on Debian [DigitalOcean]
+//      + database on another machine
+//      + compressed assets (editor require() stuff and glyphicons not working) [near enough]

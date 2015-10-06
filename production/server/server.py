@@ -1,5 +1,4 @@
 #----------------------------------------------------------------------
-# TODO (chs): bcrypt password
 # TODO (chs): autogenerate REST docs from parameter check dictionaries
 # TODO (chs): make delete undoable for N days
 # TODO (chs): make it unicode
@@ -10,6 +9,7 @@
 # DONE (chs): parameter validation and conditioning engine
 # DONE (chs): DRY the REST functions
 # DONE (chs): screenshots!
+# DONE (chs): bcrypt password
 #----------------------------------------------------------------------
 
 import sys, types, os, time, datetime, struct, re, random
@@ -30,7 +30,7 @@ app = None
 render = web.template.render('templates/')
 
 dbvars = DB.Vars()
-print repr(dbvars)
+print "Using database at", dbvars.host
 
 urls = (
     '/login', 'login',                      # user logging in
@@ -42,11 +42,11 @@ urls = (
     '/details', 'details',                  # R get details of a game (name, instructions, screenshot)
     '/count', 'count',                      # R search for # of games matching a search term
     '/list', 'list',                        # R get paginated list of games
+    '/gameid', 'gameid',                    # R get a gameid
     '/rating', 'rating',                    # R get what rating a user gave a game
     '/save', 'save',                        # U saving a game (name and source code)
     '/rate', 'rate',                        # U set a rating per user
     '/rename', 'rename',                    # U renaming a game (name)
-    '/gameid', 'gameid',
     '/settings', 'settings',                # U update settings for a game
     '/screenshot', 'screenshot',            # U upload screenshot of a game
     '/delete', 'delete',                    # D delete a game

@@ -11,6 +11,7 @@
         name,
         game_id,
         gameSettings,
+        codeChanges = 0,
         discardChanges = false,
         framerates = [60, 30, 20, 15, 10],
         editorOptions = {
@@ -38,7 +39,7 @@
 
         discardChanges = false;
 
-        function focusEditor() {
+         function focusEditor() {
             $timeout(function() {
                 focus();
                 if(editor) {
@@ -113,24 +114,15 @@
             editor.$blockScrolling = Infinity;
             enableEditor(false);
             inflateEditor();
+
+            editor.getSession().on('change', function(e) {
+                ++codeChanges;
+            });
         }
 
         $scope.isWorkUnsaved = function() {
             return !(editor && editor.session && editor.session.getUndoManager().isClean());
         };
-
-        // $scope.validateName = function() {
-        //     var i,
-        //         n = '',
-        //         regex = /[\"\'\:\;\! \?\.\,\-a-zA-Z0-9]*/;
-        //     for(i in $scope.gameName) {
-        //         if (regex.test($scope.gameName[i])) {
-        //             n += $scope.gameName[i];
-        //         }
-        //     }
-        //     $scope.gameName = n;
-        //     name = n;
-        // };
 
         $scope.saveState = function() {
             source = editor.getValue();
@@ -141,6 +133,7 @@
         };
 
         function resetUndo() {
+            codeChanges = 0;
             editor.session.setUndoManager(new ace.UndoManager());
         }
 
@@ -167,7 +160,10 @@
 
         function save() {
             game.game_source = editor.getValue();
-            return game.save();
+            return game.save()
+            .then(function() {
+                codeChanges = 0;
+            });
         }
 
         function enableEditor(enable) {
@@ -177,13 +173,13 @@
         // DONE (chs): require session to save game
 
         $scope.saveIt = function() {
-            var data;
-            if(game.game_title.length > 0) {
+            if(game.game_title && game.game_title.length > 0) {
                 user.login("Sign in to save " + game.game_title)
                 .then(function(details) {
                     if(game.game_id === 'new') {
                         game.create(game)
                         .then(function(result) {
+                            codeChanges = 0;
                             game_id = result.game_id;
                             $location.path('/edit/' + game_id);
                             $scope.$apply();
@@ -200,18 +196,23 @@
                                     .then(function(result) {
                                         // TODO (chs): update the location bar to reflect the new game id
                                         game_id = result.game_id;
-                                        save();
-                                        $location.path('/edit/' + game_id);
-                                        $scope.$apply();
-                                        startEditor();
-                                        activateEditor();
+                                        save()
+                                        .then(function() {
+                                            $location.path('/edit/' + game_id);
+                                            $scope.$apply();
+                                            startEditor();
+                                            activateEditor();
+                                        });
                                     });
                                 });
                             }
                         });
                     }
                     else {
-                        save();
+                        save()
+                        .then(function() {
+                            // Game has been saved...
+                        });
                     }
                     gamelist.reset();
                 });
@@ -365,6 +366,8 @@
                 .then(function() {
                     game.reset();
                     gamelist.reset();
+                    codeChanges = 0;
+                    discardChanges = true;
                     $location.path('/list').replace();
                 });
             }
@@ -439,7 +442,7 @@
         $scope.$on('$routeChangeStart', function(event, to, from) {
             var destination = to,
                 changes = [],
-                sourceChanged = !editor.session.getUndoManager().isClean();
+                sourceChanged = codeChanges > 0;
             if(!discardChanges && (sourceChanged || game.changed())) {
                 event.preventDefault();
                 changes = game.changes();
