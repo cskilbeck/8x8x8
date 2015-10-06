@@ -1,2 +1,3 @@
 *.pyc
 *.orig
+*_nogit.py

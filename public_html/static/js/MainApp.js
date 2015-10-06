@@ -13,9 +13,10 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      - IE11
 //      - Chrome
 //      - Safari
+// - get the database password out of github
 // - backdropper flash on page load
 // - editor focus nightmare
-// - not saving framerate
+// - game_lastsaved and caching not working
 // - ratings - make it better than a simple average (http://www.evanmiller.org/)
 // - send all non-editor keypresses to the player
 // - standalone player

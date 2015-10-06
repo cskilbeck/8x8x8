@@ -19,15 +19,18 @@ from contextlib import closing
 from base64 import b64encode
 import MySQLdb as mdb
 import MySQLdb.cursors
-# import bcrypt
 import png, StringIO
 from PIL import Image, ImageDraw
+import dbase_nogit as DB
 
 #----------------------------------------------------------------------
 # globals
 
 app = None
 render = web.template.render('templates/')
+
+dbvars = DB.Vars()
+print repr(dbvars)
 
 urls = (
     '/login', 'login',                      # user logging in
@@ -110,10 +113,10 @@ def session():
 # open the database
 
 def opendb():
-    conn = mdb.connect( host        = 'localhost',
-                        user        = 'chs',
-                        passwd      = 'henry1',
-                        db          = 'G8',
+    conn = mdb.connect( host        = dbvars.host,
+                        user        = dbvars.user,
+                        passwd      = dbvars.passwd,
+                        db          = dbvars.db,
                         use_unicode = True,
                         cursorclass = MySQLdb.cursors.DictCursor,
                         charset     = 'utf8')
@@ -130,10 +133,6 @@ class Handler:
     def mainHandler(self, handler, *args):
 
         print handler + " for " + web.ctx.path
-
-        # TODO (chs): fix this and make it work with cloudflare
-        web.header('Access-Control-Allow-Origin', 'https://256pixels.net')
-        web.header('Origin', 'https://256pixels.net');
 
         if not handler in self.__class__.__dict__:
             raise web.HTTPError('401 Invalid method (%s not supported)' % (handler.upper(),))
@@ -589,8 +588,6 @@ class delete(Handler):
 #----------------------------------------------------------------------
 # /api/register
 
-# TODO (chs): hash in a thread, return status immediately
-
 class register(Handler):
     @data({
         'params': {
@@ -623,16 +620,6 @@ class register(Handler):
                 else:
                     raise web.HTTPError("401 Can't create account")
         return JSON(result)
-
-class registerComplete(Handler):
-    @data({
-        'params': {
-            'username': str
-            }
-        })
-    def Get(self):
-        # wait for thread[username] to complete
-        pass
 
 #----------------------------------------------------------------------
 # /api/login
@@ -818,6 +805,4 @@ app = web.application(urls, globals())
 if __name__ == '__main__':
     app.run()
 else:
-    os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../public_html/'))
-    web.debug(os.getcwd())
     application = app.wsgifunc()
