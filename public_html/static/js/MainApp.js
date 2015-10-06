@@ -48,7 +48,6 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      / sprites & collision
 //
 // - game list
-//      - ? Make a game private/public
 //      - paging in game list
 //      - make the search text work (timeout on change)
 //      - quick search buttons: my games, top games, most played, recently added, recently changed
@@ -63,7 +62,7 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      \ store screenshots as prebuilt pngs in the database as varbinary - less processing to serve...
 //      \ get rid of editor toolbar altogether (options button overlays the editor in top right) [run,save,delete kept]
 //      \ get rid of run button in editor pane (play button in the player) [nope, bad idea]
-//
+//      \ ? Make a game private/public [nope]
 //////////////////////////////////////////////////////////////////////
 // + save current source in LocalStorage
 // + web service

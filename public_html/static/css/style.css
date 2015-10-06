@@ -61,6 +61,13 @@ body {
     overflow: hidden;
 }
 
+/* firefox float clear fix */
+
+.toolbar>button {
+    float: left;
+    margin-right: 10px;
+}
+
 #gameSearch {
     display: inline-block;
     width: 20em;
