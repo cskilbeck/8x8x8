@@ -13,6 +13,7 @@
         $scope.$parent.pane = 'Games';
         $scope.games = [];
         $scope.user_id = user.id();
+        $scope.viewStyle = localStorage.getItem('viewStyle') || 'box';
 
         $scope.$emit('pane:loaded', 'games');
 
@@ -60,6 +61,10 @@
         $scope.$on('user:updated', function(msg, details) {
             $scope.user_id = user.id();
 //          getGames(true);
+        });
+
+        $scope.$on('$destroy', function() {
+            localStorage.setItem('viewStyle', $scope.viewStyle);
         });
 
         $scope.refreshGameList = function() {

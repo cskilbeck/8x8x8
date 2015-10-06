@@ -176,11 +176,12 @@
             if(game.game_title && game.game_title.length > 0) {
                 user.login("Sign in to save " + game.game_title)
                 .then(function(details) {
-                    if(game.game_id === 'new') {
+                    if(game.game_id === 'new' || game.user_id !== user.id()) {
                         game.create(game)
                         .then(function(result) {
                             codeChanges = 0;
                             game_id = result.game_id;
+                            console.log("new game id =", game_id);
                             $location.path('/edit/' + game_id);
                             $scope.$apply();
                             startEditor();

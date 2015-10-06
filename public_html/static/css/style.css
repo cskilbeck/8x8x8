@@ -57,6 +57,7 @@ body {
     padding: 10px;
     height: 50px;
     width: 100%;
+    min-width: 500px;
     margin-right: 300px;
     overflow: hidden;
 }
@@ -318,7 +319,6 @@ pre.helpcode {
 }
 
 .flex-item {
-    margin: 10px;
     padding-top: 6px;
     padding-right: 10px;
     padding-left: 10px;
@@ -334,22 +334,39 @@ pre.helpcode {
     -webkit-align-self: auto;
     -ms-flex-item-align: auto;
     align-self: auto;
+    overflow: hidden;
+    background: white;
+    position: relative;
+}
+
+.flex-item.box {
     width: 200px;
     min-width: 200px;
     height: 160px;
-    overflow: hidden;
-    background: white;
-    border: 1px solid #CCC;
-    position: relative;
+    margin: 10px;
 
+    border: 1px solid #CCC;
     border-radius: 5px;
     -webkit-border-radius: 5px;
     -moz-border-radius: 5px;
     -ms-border-radius: 5px;
 }
 
-.dropshadow {
+.flex-item.row {
+    margin: 0px;
+    border: none;
+    border-top: 1px solid #ccc;
+    width: 100%;
+    min-width: 240px;
+    height: 90px;
+}
+
+.dropshadow.box {
     box-shadow: 2px 2px 20px 1px #EEE;
+}
+
+.dropshadow.row {
+/*    box-shadow: 2px 2px 20px 1px #EEE;*/
 }
 
 .game-title {
@@ -357,7 +374,18 @@ pre.helpcode {
     font-size: 14px;
     white-space: nowrap;
     width: 100%;
+}
+
+.game-title.box {
     text-align: center;
+}
+
+.game-title.row {
+    margin-left: 5px;
+    text-align: left;
+    display: table-cell;
+    width: 16em;
+    overflow: hidden;
 }
 
 .game-username {
@@ -365,7 +393,17 @@ pre.helpcode {
     font-size: 14px;
     white-space: nowrap;
     width: 100%;
+}
+
+.game-username.box {
     text-align: center;
+    display: block;
+}
+
+.game-username.row {
+    padding-left: 1em;
+    text-align: left;
+    display: table-cell;
 }
 
 .game-screenshot {
@@ -381,8 +419,17 @@ pre.helpcode {
 }
 
 .game-rating {
+}
+
+.game-rating.box {
     margin-top: 4px;
     text-align: center;
+}
+
+.game-rating.row {
+    position: absolute;
+    left: 90px;
+    bottom: 20px;
 }
 
 a[disabled='disabled'] {
