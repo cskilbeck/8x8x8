@@ -7,30 +7,30 @@
         </button>
         <a class='btn btn-sm btn-primary' href='/edit/new'>
             New Game
-        </a>&nbsp;
-        <input
-                id='gameSearch'
+        </a>
+        &nbsp;
+        <input  id='gameSearch'
                 type='text'
                 class='form-control input-sm horizinput'
                 placeholder='Search'
                 maxlength=32 />
         <div class='btn-group pull-right'>
-            <button class='btn'><i class='fa fa-lg fa-th' ng-click='viewStyle = "box"'></i></button>
-            <button class='btn'><i class='fa fa-lg fa-th-list' ng-click='viewStyle = "row"'></i></button>
+            <button class='btn btn-default' ng-click='view("box")'><i class='fa fa-lg fa-th'></i></button>
+            <button class='btn btn-default' ng-click='view("row")'><i class='fa fa-lg fa-th-list'></i></button>
         </div>
     </div>
     <div id='gameslist'>
-        <div class='flex-container'>
+        <div class='flex-container cloakable'>
             <div ng-repeat='g in games'
-                    class='flex-item {{viewStyle}} gameLink dropshadow'
+                    class='dropshadow gameLink' ng-class="'flex-item ' + viewStyle"
                     ng-click='playIt($event, g.game_id)'
                     ng-mousedown='clicked($index)'
                     ng-mouseleave='unclicked($index)'
                     ng-mouseup='unclicked($index)'
                     id='game_{{$index}}'>
-                <div class='game-title {{viewStyle}}'>{{g.game_title}}</div>
-                <div class='game-username {{viewStyle}}'>by {{g.user_username}}</div>
-                <div class='game-rating {{viewStyle}}'>
+                <div ng-class="'game-title ' + viewStyle">{{g.game_title}}</div>
+                <div ng-class="'game-username ' + viewStyle">by {{g.user_username}}</div>
+                <div ng-class="'game-rating ' + viewStyle">
                     <i ng-repeat='i in [1,2,3,4,5]' class='{{star(i, g)}}star fa fa-star'></i>
                 </div>
                 <div class='game-screenshot'>

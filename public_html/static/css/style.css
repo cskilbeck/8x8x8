@@ -376,6 +376,10 @@ pre.helpcode {
     width: 100%;
 }
 
+.cloaked {
+    visibility: hidden;
+}
+
 .game-title.box {
     text-align: center;
 }
@@ -432,21 +436,33 @@ pre.helpcode {
     bottom: 20px;
 }
 
-a[disabled='disabled'] {
-    cursor: not-allowed;
-}
-
-div#social>a>i.fa.fa-2x.fa-facebook-square[disabled='disabled']:hover,
-div#social>a>i.fa.fa-2x.fa-facebook-square[disabled='disabled'],
-div#social>a>i.fa.fa-2x.fa-twitter-square[disabled='disabled']:hover,
-div#social>a>i.fa.fa-2x.fa-twitter-square[disabled='disabled'] {
-    color: #337ab7;
-}
-
 .gameLink:hover {
     cursor: pointer;
 }
 
 #editorOptionsForm > .row {
     margin-left: 40px;
+}
+
+a.share {
+    width: 32px;
+    height: 32px;
+    display: inline-block;
+}
+
+a.share * {
+    display: none;
+}
+
+a.share-facebook {
+    background: url(/static/img/logos.png) 0px 0px no-repeat;
+}
+
+a.share-twitter {
+    background: url(/static/img/logos.png) 0px -32px no-repeat;
+}
+
+.netspin {
+    margin-top: 10px;
+    margin-left: 10px;
 }

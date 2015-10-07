@@ -12,6 +12,8 @@
 # DONE (chs): bcrypt password
 #----------------------------------------------------------------------
 
+print "====================================================\nServer restart\n====================================================\n\n"
+
 import sys, types, os, time, datetime, struct, re, random
 import web, pprint, json, iso8601, unicodedata, urlparse
 import bcrypt
@@ -22,12 +24,13 @@ import MySQLdb.cursors
 import png, StringIO
 from PIL import Image, ImageDraw
 import dbase_nogit as DB
+import sendemail
 
 #----------------------------------------------------------------------
 # globals
 
 app = None
-render = web.template.render('templates/')
+render = web.template.render('/usr/local/www/256pixels.net/public_html/templates/')
 
 dbvars = DB.Vars()
 print "Using database at", dbvars.host
@@ -617,6 +620,11 @@ class register(Handler):
                     result['user_id'] = self.lastrowid()
                     result['user_username'] = data['username']
                     result['user_session'] = data['session']
+
+                    text = 'Hello %(username)s,\n\nThanks for registering your account at 256 Pixels!\n\nThe 256 Pixels team.' % data
+                    html = '''Hello %(username)s,<br><p>Thanks for registering your account at 256 Pixels!</p><p>The 256 Pixels team.</p>''' % data
+
+                    sendemail.now(data['email'], 'Welcome to 256 Pixels', text, html)
                 else:
                     raise web.HTTPError("401 Can't create account")
         return JSON(result)
@@ -711,14 +719,6 @@ class endSession(Handler):
 class favicon:
     def GET(self):
         return ICON(open('favicon.ico', 'rb').read())
-
-#----------------------------------------------------------------------
-# /
-
-class index:
-    def GET(self, path):
-        print web.ctx.path
-        return HTML(open('index.html').read())
 
 #----------------------------------------------------------------------
 # getscreenshot

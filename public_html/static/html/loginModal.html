@@ -1,5 +1,5 @@
 <div class="modal-header">
-    <button type="button" class="close" ng-click="cancel()" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <button type="button" class="close" ng-click="cancel()"><span>&times;</span></button>
     <h4 class="modal-title">{{details.msg}}</h4>
 </div>
     <form name="loginForm" ng-submit='handleLogin()' novalidate>
@@ -28,7 +28,8 @@
         </div>
     </div>
     <div class="modal-footer">
-        <button class="btn btn-primary" type="submit" ng-click="ok()" ng-disabled="loginForm.$invalid">OK</button>
-        <button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button
+        <span ng-show='loginInProgress'><i id='spinner' class='netspin pull-left fa fa-spinner fa-pulse'></i>&nbsp;</span>
+        <button class="btn btn-primary" type="submit" ng-click="ok()" ng-disabled="loginForm.$invalid || loginInProgress">OK</button>
+        <button class="btn btn-warning" type="button" ng-click="cancel()" ng-disabled='loginInProgress'>Cancel</button
     </div>
 </form>

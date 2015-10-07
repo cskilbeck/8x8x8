@@ -37,7 +37,6 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //
 // - user registration/login/forgot password
 //      - user profile modal dialog to change username\email\password
-//      - bcrypt password on client before transmission
 //      - permission bits
 //      - proper session security
 //      ? groups of users (and admins) for schools
@@ -63,6 +62,7 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      \ get rid of editor toolbar altogether (options button overlays the editor in top right) [run,save,delete kept]
 //      \ get rid of run button in editor pane (play button in the player) [nope, bad idea]
 //      \ ? Make a game private/public [nope]
+//      \- bcrypt password on client before transmission [https instead]
 //////////////////////////////////////////////////////////////////////
 // + save current source in LocalStorage
 // + web service
@@ -135,3 +135,4 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 // + work out how to run it from [azure|aws|digitalocean] on Debian [DigitalOcean]
 //      + database on another machine
 //      + compressed assets (editor require() stuff and glyphicons not working) [near enough]
+// +! save as new user loses changes !

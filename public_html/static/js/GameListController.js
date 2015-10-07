@@ -5,8 +5,8 @@
 
     var expanded = {};
 
-    mainApp.controller('GameListController', ['$scope', '$routeParams', 'dialog', 'user', 'ajax', 'gamelist', '$rootScope', 'game', '$location',
-    function ($scope, $routeParams, dialog, user, ajax, gamelist, $rootScope, game, $location) {
+    mainApp.controller('GameListController', ['$scope', '$routeParams', 'dialog', 'user', 'ajax', 'gamelist', '$rootScope', 'game', '$location', '$timeout',
+    function ($scope, $routeParams, dialog, user, ajax, gamelist, $rootScope, game, $location, $timeout) {
 
         var unique = Date.now().toString();
 
@@ -14,6 +14,14 @@
         $scope.games = [];
         $scope.user_id = user.id();
         $scope.viewStyle = localStorage.getItem('viewStyle') || 'box';
+
+        $scope.view = function(v) {
+            $scope.viewStyle = v;
+            $('.cloakable').addClass('cloaked');
+            $timeout(function() {
+                $('.cloakable').removeClass('cloaked');
+            }, 0);
+        };
 
         $scope.$emit('pane:loaded', 'games');
 

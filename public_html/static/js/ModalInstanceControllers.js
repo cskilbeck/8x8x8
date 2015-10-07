@@ -6,18 +6,21 @@
 
         $scope.details = details;
         $scope.details.failed = false;
+        $scope.loginInProgress = false;
 
         $timeout(function() {
             status.focus($('#email').focus());
         }, 350);
 
         $scope.ok = function () {
+            $scope.loginInProgress = true;
             $scope.details.failed = false;
             user.dologin($scope.details)
             .then(function(data) {
                 $modalInstance.close(data);
                 status(user.name() + " signed in");
             }, function(response) {
+                $scope.loginInProgress = false;
                 status.error('Login failed');
                 $scope.details.failed = true;
                 $scope.$apply();
@@ -29,7 +32,9 @@
         };
 
         $scope.showRegistration = function () {
-            $modalInstance.close({'registration': 'required'});
+            $modalInstance.close({
+                registration: 'required'
+            });
         };
     }]);
 
@@ -38,6 +43,7 @@
 
         $scope.details = details;
         $scope.message = 'Fill in required fields...';
+        $scope.registrationInProgress = false;
         $scope.details.failed = false;
 
         $timeout(function() {
@@ -45,12 +51,15 @@
         }, 350);
 
         $scope.ok = function () {
-
+            
+            $scope.registrationInProgress = true;
+            
             $scope.details.failed = false;
             user.register($scope.details)
             .then(function(response) {
                 $modalInstance.close(response.data);
             }, function(response) {
+                $scope.registrationInProgress = false;
                 $scope.message = response.statusText;
                 $scope.details.failed = true;
                 $scope.$apply();

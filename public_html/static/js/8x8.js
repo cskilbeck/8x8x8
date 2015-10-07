@@ -47,10 +47,10 @@ Object.defineProperty(Error.prototype, 'toJSON', {
     "use strict";
 
     var W = 16, H = 16,
-        animFrameID,
         context, canvas,
         paused = false, step = false,
         client,
+        resetRequest,
         lastKeyPressed,
         lastKeyReleased,
         keyPress = [], keyRelease = [],
@@ -99,7 +99,9 @@ Object.defineProperty(Error.prototype, 'toJSON', {
         ],
         screen = [];
 
-    function reset() {
+    function resetIt() {
+        client = null;
+        resetRequest = false;
         screen = [];
         keyPress = [];
         keyRelease = [];
@@ -110,6 +112,10 @@ Object.defineProperty(Error.prototype, 'toJSON', {
         lastkey = 0;
         frame = 0;
         frameCounter = 0;
+    }
+
+    function doReset() {
+        resetRequest = true;
     }
 
     function drawScreen() {
@@ -131,13 +137,13 @@ Object.defineProperty(Error.prototype, 'toJSON', {
         x >>>= 0;
         y >>>= 0;
         if(x >= 0 && x < W && y >= 0 && y < H) {
-            return screen[x + y * W];
+            return screen[x + y * W] || 0;
         }
         return 0;
     }
 
     function doGetColor(x, y) {
-        return colorNames[doGet(x, y)];
+        return colorNames[doGet(x, y) || 0];
     }
 
     function doClear(color) {
@@ -246,6 +252,9 @@ Object.defineProperty(Error.prototype, 'toJSON', {
 
     function onFrame() {
         var i, hasUpdate;
+        if(resetRequest) {
+            startIt();
+        }
         if(client && client.$updateFunction && !exception) {
             hasUpdate = true;
             if(step || ((frame % frameDelay) === 0 && !paused)) {
@@ -268,12 +277,10 @@ Object.defineProperty(Error.prototype, 'toJSON', {
             step = false;
             drawScreen();
         }
-        if(hasUpdate) {
-            animFrameID = requestAnimationFrame(onFrame);
-        }
         else {
             focusEditor();
         }
+        requestAnimationFrame(onFrame);
     }
 
     function reportError(e) {
@@ -306,21 +313,18 @@ Object.defineProperty(Error.prototype, 'toJSON', {
     window.keyheld = function(k) { return doHeld(k); };
     window.keypress = function(k) { return doPressed(k); };
     window.keyrelease = function(k) { return doReleased(k); };
+    window.reset = function() { return doReset(); };
 
-    window.startIt = function() {
+    function startIt() {
+        resetIt();
         try {
-            reset();
-            client = (typeof ClientScript !== 'undefined') ? new ClientScript() : null;
-            drawScreen();
-            if(animFrameID) {
-                cancelAnimationFrame(animFrameID);
-            }
-            animFrameID = requestAnimationFrame(onFrame);
+            client = (ClientScript !== undefined) ? new ClientScript() : null;
         }
         catch(e) {
             reportError(e);
         }
-    };
+        drawScreen();
+    }
 
     // Allow anyone, anywhere to send us some script which we will blindly execute!
     // Check origin!
@@ -379,7 +383,13 @@ Object.defineProperty(Error.prototype, 'toJSON', {
         }
     });
 
+    if(window.game && window.game.frameDelay !== undefined) {
+        frameDelay = window.game.frameDelay;
+        console.log("game.frameDelay =", frameDelay);
+    }
+
     drawScreen();
     startIt();
+    requestAnimationFrame(onFrame);
 
 }());

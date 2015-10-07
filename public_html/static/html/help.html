@@ -120,6 +120,17 @@ setpixel(15, 15, 5);</pre></p>
         </div>
         <div class='well'>
             <div class='row'>
+                <div class='col-md-2'><strong><pre>reset()</pre></strong></div>
+                <div class='col-md-9'>Restarts the game, as if the user had clicked the 'Run' button<br><br>
+                    <i>This will restart the game if lives is 0</i><br>
+                    <pre class='helpcode'>if(lives === 0) {
+    reset();
+}</pre></p>
+                </div>
+            </div>
+        </div>
+        <div class='well'>
+            <div class='row'>
                 <div class='col-md-2'><strong><pre>update(frame)</pre></strong></div>
                 <div class='col-md-9'>You provide this function. It will be called repeatedly at a rate specified by the 'speed' setting.<br>
                 The parameter 'frame' is increased by 1 each time the function is called.<br><br>

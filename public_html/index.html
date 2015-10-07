@@ -121,12 +121,12 @@
                                 <i ng-repeat='i in [1,2,3,4,5]' ng-mouseover='rateHover(i, game)' ng-click='rateClick(i, game)' class='{{rating(i, game)}}'></i>
                             </span>
                         </div>
-                        <div id='social'>
-                            <a ng-disabled='!canShare(game)' ng-click='canShare(game) && shareIt(game)'><i ng-disabled='!canShare(game)' class="fa fa-2x fa-facebook-square"></i></a>
-                            <a ng-disabled='!canShare(game)' ng-click='canShare(game) && shareTwitter(game)'><i ng-disabled='!canShare(game)' class="fa fa-2x fa-twitter-square"></i></a>
+                        <div>
+                            <a href='' ng-click='shareIt(game)' class='share share-facebook'><i>!</i></a>
+                            <a href='' ng-click='shareTwitter(game)' class='share share-twitter'><i>!</i></a>
                         </div>
                     </div>
-                    <div class='btn-group' role='group' aria-label='...'>
+                    <div class='btn-group' role='group'>
                         <button type='button' class='btn btn-default' id='restartButton' ng-click='restart()'><i class='fa fa-lg fa-fast-backward'></i></button>
                         <button type='button' class='btn btn-default' id='pauseButton' ng-click='pause()'><i id='play' class='fa fa-lg fa-pause'></i></button>
                         <button type='button' class='btn btn-default' id='stepButton' ng-click='step()'><i class='fa fa-lg fa-step-forward'></i></button>
@@ -147,61 +147,55 @@
                     </div>
                 </div>
             </div>
+
             <div style='z-index: 1; position: absolute; right: 0; background: #EEE; overflow: hidden;'>
-<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<!-- player_ad -->
-<ins class="adsbygoogle"
-     style="display:inline-block;width:300px;height:250px"
-     data-ad-client="ca-pub-8644367080783637"
-     data-ad-slot="5952804307"></ins>
-<script>
-(adsbygoogle = window.adsbygoogle || []).push({});
-</script>
+                <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+                <ins class="adsbygoogle" style="display:inline-block;width:300px;height:250px" data-ad-client="ca-pub-8644367080783637" data-ad-slot="5952804307"></ins>
+                <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+            </div>
+
+            <!-- footer -->
+            <div id='mainfooter' class='row'>
+                <span id='networkIndicator'><i id='spinner' ng-class='[ "fa", { "fa-spinner fa-pulse": status.isBusy() }, {"fa-check": !status.isBusy() } ]'></i>&nbsp;</span>
+                <span id='statusBar' ng-class='{ "statusError": status.isError() }'>{{status.getText()}}</span>
+            </div>
+
+            <!-- header -->
+            <div id='mainheader'>
+                <nav class="navbar navbar-default navbar-fixed-top" role='navigation' id='navbar'>
+                    <div class='container-fluid'>
+                        <div class="navbar-header">
+                            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+                                <span class="sr-only">Toggle navigation</span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                            </button>
+                            <a id='homelink' class="navbar-brand" href="/"><i class='fa fa-home'></i>&nbsp;&nbsp;256 Pixels</a>
+                        </div>
+                        <div id="navbar" class="navbar-collapse collapse">
+                            <ul class="nav navbar-nav">
+                                <li id='navgames' class='active'><a href="/list">Games</a></li>
+                                <li id='navhelp'><a href="/help">Help</a></li>
+                            </ul>
+                            <ul class="nav navbar-nav navbar-right">
+                                <li>
+                                    <form class='navbar-form navbar-right nomargin'>
+                                        <div class='form-group'>
+                                            <span class='navbar-text'>{{usernameMessage}}</span>
+                                            <button ng-show='showProfileButton' class='btn btn-xs btn-warning navbar-btn btn-sm'>Profile</button>
+                                            &nbsp;
+                                            <button type="button" class="btn btn-xs navbar-btn btn-sm btn-primary" ng-click='toggleLogin()'>{{signInMessage}}&nbsp;
+                                                <i class='{{signInClass}}'></i>
+                                            </button>
+                                        </div>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </nav>
             </div>
         </div>
-
-        <!-- footer -->
-        <div id='mainfooter' class='row'>
-            <span id='networkIndicator'><i id='spinner' ng-class='[ "fa", { "fa-refresh fa-spin": status.isBusy() }, {"fa-check": !status.isBusy() } ]'></i>&nbsp;</span>
-            <span id='statusBar' ng-class='{ "statusError": status.isError() }'>{{status.getText()}}</span>
-        </div>
-
-        <!-- header -->
-        <div id='mainheader'>
-            <nav class="navbar navbar-default navbar-fixed-top" role='navigation' id='navbar'>
-                <div class='container-fluid'>
-                    <div class="navbar-header">
-                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-                            <span class="sr-only">Toggle navigation</span>
-                            <span class="icon-bar"></span>
-                            <span class="icon-bar"></span>
-                            <span class="icon-bar"></span>
-                        </button>
-                        <a id='homelink' class="navbar-brand" href="/"><i class='fa fa-home'></i>&nbsp;&nbsp;256 Pixels</a>
-                    </div>
-                    <div id="navbar" class="navbar-collapse collapse">
-                        <ul class="nav navbar-nav">
-                            <li id='navgames' class='active'><a href="/list">Games</a></li>
-                            <li id='navhelp'><a href="/help">Help</a></li>
-                        </ul>
-                        <ul class="nav navbar-nav navbar-right">
-                            <li>
-                                <form class='navbar-form navbar-right nomargin'>
-                                    <div class='form-group'>
-                                        <span class='navbar-text'>{{usernameMessage}}</span>
-                                        <button ng-show='showProfileButton' class='btn btn-xs btn-warning navbar-btn btn-sm'>Profile</button>
-                                        &nbsp;
-                                        <button type="button" class="btn btn-xs navbar-btn btn-sm btn-primary" ng-click='toggleLogin()'>{{signInMessage}}&nbsp;
-                                            <i class='{{signInClass}}'></i>
-                                        </button>
-                                    </div>
-                                </form>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </nav>
-        </div>
-
     </body>
 </html>
