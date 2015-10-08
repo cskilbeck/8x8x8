@@ -24,7 +24,7 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 // - home page
 // ? make it like jsfiddle where games are all anonymous ? save without login would be cool... 
 //
-// - detect hangs and kill it (possible? with instrumentation via Esprima : for, while, do) (but how to keep the source line matched up? sounds hard...)
+// - detect hangs and kill it (possible? with instrumentation via Esprima : for, while, do) (but how to keep the source line matched up? sounds hard... https://github.com/CodeCosmos/codecosmos/blob/master/www/js/sandbox.js)
 // / instructions/documentation/tooltips/popovers
 //
 // - telemetry/analytics - ga(...) everywhere

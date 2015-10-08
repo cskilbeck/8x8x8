@@ -466,3 +466,10 @@ a.share-twitter {
     margin-top: 10px;
     margin-left: 10px;
 }
+
+/* bootstrap clash fix */
+
+.ace_search_field  {
+    color: black;
+}
+

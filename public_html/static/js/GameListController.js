@@ -17,10 +17,10 @@
 
         $scope.view = function(v) {
             $scope.viewStyle = v;
-            $('.cloakable').addClass('cloaked');
+            $('.cloakable').hide();
             $timeout(function() {
-                $('.cloakable').removeClass('cloaked');
-            }, 0);
+                $('.cloakable').show();
+            });
         };
 
         $scope.$emit('pane:loaded', 'games');

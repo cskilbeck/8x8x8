@@ -7,25 +7,23 @@ from email.mime.text import MIMEText
 import dbase_nogit as DB
 import threading
 
-def _send(address, subject, text, html):
-    dbvars = DB.Vars()
+def _send(fromname, fromaddr, name, address, subject, text, html):
     msg = MIMEMultipart('alternative')
     msg['Subject'] = subject
-    msg['From'] = 'admin@256pixels.net'
-    msg['To'] = address
+    msg['From'] = "{0} <{1}>".format(fromname, fromaddr)
+    msg['To'] = "{0} <{1}>".format(name, address)
     part1 = MIMEText(text, 'plain')
     part2 = MIMEText('<html><head></head><body>%s</body></html>' % html, 'html')
     msg.attach(part1)
     msg.attach(part2)
-    print "Sending welcome mail to", address
     s = smtplib.SMTP('smtp.gmail.com', 587, '256pixels.net', 20)
     s.ehlo()
     s.starttls()
     s.ehlo()
-    s.login(dbvars.mailuser, dbvars.mailpwd)
-    s.sendmail('admin@256pixels.net', address, msg.as_string())
+    s.login(DB.Vars.mailuser, DB.Vars.mailpwd)
+    s.sendmail(fromaddr, address, msg.as_string())
     s.quit()
     print "Sent welcome mail to", address
 
-def now(address, subject, text, html):
-    threading.Thread(target=_send, args=(address, subject, text, html)).start()
+def now(fromname, fromaddr, name, address, subject, text, html):
+    threading.Thread(target=_send, args=(fromname, fromaddr, name, address, subject, text, html)).start()

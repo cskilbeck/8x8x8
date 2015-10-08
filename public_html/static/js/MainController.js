@@ -1,5 +1,5 @@
-mainApp.controller('MainController', ['$scope', '$modal', 'user', 'ajax', '$rootScope', 'status',
-function($scope, $modal, user, ajax, $rootScope, status) {
+mainApp.controller('MainController', ['$scope', '$modal', 'user', 'ajax', '$rootScope', 'status', '$location',
+function($scope, $modal, user, ajax, $rootScope, status, $location) {
     "use strict";
 
     $scope.status = status;
@@ -61,7 +61,13 @@ function($scope, $modal, user, ajax, $rootScope, status) {
         }
     };
 
+    $scope.editProfile = function() {
+        if(user.isLoggedIn()) { // just in case
+            user.editProfile().then($scope.apply);
+        }
+    };
+
     clearNavBar();
-    user.refreshSession();
+    user.refreshSession($location.search());
 
 }]);

@@ -1,5 +1,5 @@
-mainApp.factory('user', [ '$rootScope', '$modal', 'ajax', 'cookie', 'status',
-function ($rootScope, $modal, ajax, cookie, status) {
+mainApp.factory('user', [ '$rootScope', '$modal', 'ajax', 'cookie', 'status', 'dialog',
+function ($rootScope, $modal, ajax, cookie, status, dialog) {
     "use strict";
 
     var details = {
@@ -9,6 +9,48 @@ function ($rootScope, $modal, ajax, cookie, status) {
             user_session: 0
         },
 
+        handleReason = function(reason, loginDetails) {
+            var q = Q.defer();
+            switch(reason) {
+                case 'registration-required':
+                    loginDetails.dialogTitle = 'Register';
+                    loginDetails.editingProfile = false;
+                    loginDetails.update = false;
+                    $modal.open({
+                        animation: true,
+                        size: 'x-small',
+                        templateUrl: '/static/html/registerModal.html',
+                        controller: 'RegisterModalInstanceController',
+                        resolve: {
+                            details: function() {
+                                return loginDetails;
+                            }
+                        }
+                    }).result.then(function(result) {
+                        user.update(result, 'register');
+                        q.resolve(result);
+                    }, function(reason) {
+                        q.reject();
+                    });
+                    break;
+                case 'resetpassword-complete':
+                    dialog.small.inform("Password reset", "We've sent an email to " + loginDetails.email + " with instructions for resetting your password.\n\nThanks!")
+                    .then(function() {
+                        q.reject();
+                    });
+                    break;
+                case 'resetpassword-failed':
+                    dialog.small.inform("Password reset failed", "Sorry, we don't seem to have a record of " + loginDetails.email + " in our system, are you sure you have the right address?")
+                    .then(function() {
+                        q.reject();
+                    });
+                    break;
+                default:
+                    q.reject();
+                }
+                return q.promise;
+            },
+
         user = {
 
             isLoggedIn: function() {
@@ -16,7 +58,12 @@ function ($rootScope, $modal, ajax, cookie, status) {
             },
 
             register: function(details) {
-                return ajax.post('register', details, 'Registering ' + details.email);
+                if(details.update) {
+                    return ajax.post('details', details, 'Updating details for ' + details.email);
+                }
+                else {
+                    return ajax.post('register', details, 'Registering ' + details.email);
+                }
             },
 
             dologin: function(details) {
@@ -52,31 +99,15 @@ function ($rootScope, $modal, ajax, cookie, status) {
                                 return loginDetails;
                             }
                         }
-                    }).result.then(function (result) {
-                        if(result.registration === 'required') {
-                            $modal.open({
-                                animation: true,
-                                size: 'x-small',
-                                templateUrl: '/static/html/registerModal.html',
-                                controller: 'RegisterModalInstanceController',
-                                resolve: {
-                                    details: function() {
-                                        return loginDetails;
-                                    }
-                                }
-                            }).result.then(function(result) {
-                                user.update(result, 'register');
-                                q.resolve(result);
-                            }, function(xhr) {
-                                q.reject(xhr);
-                            });
-                        }
-                        else {
-                            user.update(result, 'login');
-                            q.resolve(result);
-                        }
-                    }, function(xhr) {
-                        q.reject(xhr);
+                    }).result
+                    .then(function (result) {
+                        user.update(result, 'login');
+                        q.resolve(result);
+                    }, function(reason) {
+                        handleReason(reason, loginDetails)
+                        .then(function() {
+                            q.reject();
+                        });
                     });
                 } else {
                     q.resolve(details);
@@ -84,7 +115,47 @@ function ($rootScope, $modal, ajax, cookie, status) {
                 return q.promise;
             },
 
-            refreshSession: function() {
+            editProfile: function() {
+                var q = Q.defer(),
+                    details = {
+                                username: user.name(),
+                                user_id: user.id(),
+                                email: user.email(),
+                                editingProfile: true,
+                                update: true,
+                                changePassword: false,
+                                newPasswordTitle: "New ",
+                                oldpassword: '',
+                                password: '',
+                                password2: '',
+                                failed: false,
+                                msg: "Edit profile",
+                                dialogTitle: "Edit profile"
+                            };
+
+                $modal.open({
+                    animation: true,
+                    size: 'x-small',
+                    templateUrl: '/static/html/registerModal.html',
+                    controller: 'RegisterModalInstanceController',
+                    resolve: {
+                        details: function() {
+                            return details;
+                        }
+                    }
+                }).result.then(function(result) {
+                    user.update(result, 'profile');
+                    q.resolve(result);
+                }, function(reason) {
+                    handleReason(reason, details)
+                    .then(function() {
+                        q.reject();
+                    });
+                });
+                return q.promise;
+            },
+
+            refreshSession: function(query) {
                 var user_session = cookie.get('user_session') || '0',
                     user_id = cookie.get('user_id') || '0',
                     data = {
@@ -95,9 +166,57 @@ function ($rootScope, $modal, ajax, cookie, status) {
                     },
                     q = Q.defer();
 
+                if(Object.prototype.hasOwnProperty.call(query, 'resetpassword') &&
+                    Object.prototype.hasOwnProperty.call(query, 'email')) {
+                    // they want to reset their password - pop up the register dialog so they can change their profile
+                    var details =  {
+                        username: '',
+                        user_id: 0,
+                        email: query.email,
+                        code: query.resetpassword,
+                        changePassword: true,
+                        password: '',
+                        password2: '',
+                        failed: false,
+                        msg: "Edit details",
+                        dialogTitle: 'Edit your details'
+                    };
+                    // get username from database 1st (could log them in here...)
+                    ajax.get('userdetails', {
+                        code: query.resetpassword,
+                        email: query.email
+                    })
+                    .then(function(response) {
+                        $modal.open({
+                            animation: true,
+                            size: 'x-small',
+                            templateUrl: '/static/html/registerModal.html',
+                            controller: 'RegisterModalInstanceController',
+                            resolve: {
+                                details: function() {
+                                    details.update = true;
+                                    details.editingProfile = false;
+                                    details.username = response.data.user_username;
+                                    details.user_id = response.data.user_id;
+                                    return details;
+                                }
+                            }
+                        }).result.then(function(result) {
+                            user.update(result, 'register');
+                            q.resolve(result);
+                        }, function(reason) {
+                            // couldn't get user details
+                            q.reject();
+                        });
+                    }, function(response) {
+                        dialog.small.inform("Invalid reset code", "Sorry, no dice - reset code has expired or is invalid or email address is invalid");
+                        q.reject();
+                    });
+                }
+
                 // if cookie session is set but different from current one (either because)
 
-                if(!isNaN(data.user_session) && data.user_session !== user.session()) {
+                else if(!isNaN(data.user_session) && data.user_session !== user.session()) {
                     ajax.get('refreshSession', data)
                     .then(function(response) {
                         data.user_session = response.data.user_session;
@@ -142,6 +261,7 @@ function ($rootScope, $modal, ajax, cookie, status) {
                     eventInteration: false
                 });
                 ajax.set_user(user);
+                console.log(d);
                 cookie.set('user_id', details.user_id, 30);
                 cookie.set('user_username', details.user_username, 30);
                 cookie.set('user_session', details.user_session, 30);

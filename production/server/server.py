@@ -15,7 +15,7 @@
 print "====================================================\nServer restart\n====================================================\n\n"
 
 import sys, types, os, time, datetime, struct, re, random
-import web, pprint, json, iso8601, unicodedata, urlparse
+import web, pprint, json, iso8601, unicodedata, urlparse, urllib
 import bcrypt
 from contextlib import closing
 from base64 import b64encode
@@ -32,12 +32,18 @@ import sendemail
 app = None
 render = web.template.render('/usr/local/www/256pixels.net/public_html/templates/')
 
-dbvars = DB.Vars()
-print "Using database at", dbvars.host
+print "Using database at", DB.Vars.host
+
+# pick up any changes in these modules
+reload(DB)
+reload(sendemail)
 
 urls = (
     '/login', 'login',                      # user logging in
     '/register', 'register',                # user registration
+    '/details', 'details',                  # user details update
+    '/resetpw', 'resetpw',                  # reset password
+    '/userdetails', 'userdetails',          # get user details to prepare for password reset
     '/refreshSession', 'refreshSession',    # refresh a user session
     '/endSession', 'endSession',            # log out
     '/create', 'create',                    # C creating a new game
@@ -116,10 +122,10 @@ def session():
 # open the database
 
 def opendb():
-    conn = mdb.connect( host        = dbvars.host,
-                        user        = dbvars.user,
-                        passwd      = dbvars.passwd,
-                        db          = dbvars.db,
+    conn = mdb.connect( host        = DB.Vars.host,
+                        user        = DB.Vars.user,
+                        passwd      = DB.Vars.passwd,
+                        db          = DB.Vars.db,
                         use_unicode = True,
                         cursorclass = MySQLdb.cursors.DictCursor,
                         charset     = 'utf8')
@@ -149,7 +155,7 @@ class Handler:
             with closing(opendb()) as self.db:
                 with closing(self.db.cursor()) as self.cur:
                     output = self.output(handlerFunc(self, *args))
-                    return output
+                    return output if type(output) != dict else JSON(output)
 
         except ValueError, e:
             pprint.pprint(e)
@@ -219,10 +225,27 @@ def BIN(x):
     web.header('Content-type', 'application/octet-stream')
     return x
 
+def TEXT(x):
+    web.header('Content-type', 'text/plain')
+    return x
+
 #----------------------------------------------------------------------
-# check parameter types and values in the web.input
+# class data - decorator to check parameter types and values in the web.input
 
 class data(object):
+
+    # some common rules
+    email = { 'type': str, 'regex': r"^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$" }
+    password = { 'type': str, 'min': 6, 'max': 64 }
+    optionalpassword = { 'type': str, 'optional': True, 'min': 6, 'max': 64 }
+    username = { 'type': str, 'min': 3, 'max': 32 }
+    game_title = { 'type': str, 'min': 2, 'max': 32 }
+    game_instructions = { 'default': '', 'min': 0, 'max': 240 }
+    game_framerate = { 'default': 0, 'min': 0, 'max': 5 }
+    game_rating = { 'type': int, 'min': 1, 'max': 5 }
+    screenshot = { 'type': str, 'min': 128, 'max': 128 }
+    resetcode = { 'type': str, 'regex': '[XYT34567H9AKCDEF]{6}' }
+    optionalresetcode = { 'type': str, 'optional': True, 'regex': '[XYT34567H9AKCDEF]{6}' }
 
     def __init__(self, paramSpec):
         self.paramSpec = paramSpec
@@ -248,6 +271,8 @@ class data(object):
             # print "ENV:", pprint.pformat(web.ctx.environ)
             # print "Data:", pprint.pformat(web.data())
 
+            print pprint.pformat(data)
+
             params = self.paramSpec.get('params', {})
 
             validate = False
@@ -257,8 +282,9 @@ class data(object):
                 params['user_session'] = int
 
             for name in params:
-                default = params[name]
-                deftype = type(default)
+                param = params[name]
+                optional = False
+                deftype = type(param)
                 val = data.get(name, None)
                 # if val is str:
                 #     val = unicodedata.normalize('NFKD', val).encode('ascii','ignore')
@@ -266,38 +292,59 @@ class data(object):
                     if val is None:
                         raise web.HTTPError('401 Missing parameter %s' % (name,))
                     try:
-                        val = default(val)  # chs: handle unicode?
+                        val = param(val)  # chs: handle unicode?
                     except TypeError:
-                        raise ValueError('%s cannot be cast to %s' % (name, default.__name__))
+                        raise ValueError('%s cannot be cast to %s' % (name, param.__name__))
+
                 elif deftype == dict:
-                    defval = default.get('default', None)
-                    deftype = default.get('type', None)
+                    optional = param.get('optional', False)
+                    defval = param.get('default', None)
+                    deftype = param.get('type', None)
                     if deftype is None:
                         if defval is None:
                             raise ValueError('Invalid paramSpec')
                         deftype = type(defval)
-                    val = deftype(defval) if val is None else deftype(val)
+                    if not optional:
+                        val = deftype(defval) if val is None else deftype(val)  # coerce to the right type (from string, usually)
+                    elif val is not None:
+                        print "VAL WAS", repr(val)
+                        val = deftype(val)
+                        print "VAL NOW", repr(val)
 
-                    minval = default.get('min', None)   # for int, float: min value, for str, min length
-                    if minval is not None:
-                        if deftype in [int, float]:
-                            val = max(minval, val)
-                        elif deftype == str:
-                            pass # min for str is not really useful (what should it be padding with?)
+                    print name, "= [" + repr(val) + "]"
 
-                    maxval = default.get('max', None)   # same a minval but max
-                    if maxval is not None:
-                        if deftype in [int, float]:
-                            val = min(maxval, val)
-                        elif deftype == str:
-                            val = val[:maxval]
+                    if val is not None:
+                        minval = param.get('min', None)   # for int, float: min value, for str, min length
+                        maxval = param.get('max', None)   # same as minval but max
+                        regex = param.get('regex', None)
+
+                        if regex is not None:
+                            if deftype is not str:
+                                raise ValueError('Invalid paramSpec - regex supplied but {0} is not a str'.format(name))
+                            if re.match(regex, val) is None:
+                                print val
+                                raise web.HTTPError('401 value for {0} is not valid'.format(name))
+
+                        if minval is not None:
+                            if deftype in [int, float] and val < minval:
+                                raise web.HTTPError('401 value for {0} is too low'.format(name))
+                            elif deftype == str and len(val) < minval:
+                                raise web.HTTPError('401 value for {0} is too short'.format(name))
+
+                        if maxval is not None:
+                            if deftype in [int, float] and val > maxval:
+                                raise web.HTTPError('401 value for {0} is too high'.format(name))
+                            elif deftype == str and len(val) > maxval:
+                                raise web.HTTPError('401 value for {0} is too long'.format(name))
+
                 elif deftype in [int, float, str, unicode]:
-                    val = default if val is None else deftype(val)
-                elif deftype == datetime.datetime:
-                    val = default if val is None else iso8601.parse_date(val)
+                    val = param if val is None else deftype(val)
 
-                if val is None:
-                    raise KeyError('Parameter %s is missing (expected: %s)' % (name, default.__name__))
+                elif deftype == datetime.datetime:
+                    val = param if val is None else iso8601.parse_date(val)
+
+                if val is None and not optional:
+                    raise KeyError('Required parameter %s is missing (expected: %s)' % (name, deftype.__name__))
                 else:
                     result[name] = val
 
@@ -329,9 +376,9 @@ class list(Handler):
         'params': {
             'user_id': 0,
             'game_id': 0,
-            'justmygames': 0,
-            'search': '',
-            'length': { 'default': 20, 'type': int, 'max': 100, 'min': 1 },
+            'justmygames': int,
+            'search': { 'default': '', 'max': 32 },
+            'length': { 'default': 20, 'max': 100, 'min': 1 },
             'offset': { 'default': 0, 'min': 0 }
             }
         })
@@ -350,7 +397,7 @@ class list(Handler):
                         FROM games
                             LEFT JOIN users
                                 ON users.user_id = games.user_id
-                            LEFT JOIN (SELECT *
+                            LEFT JOIN (SELECT game_id, rating_stars
                                         FROM ratings
                                         WHERE user_id = %(user_id)s) AS myratings
                                 ON games.game_id = myratings.game_id
@@ -368,15 +415,17 @@ class list(Handler):
 class count(Handler):
     @data({
         'params': {
-            'user_id': int,
-            'search': ''
+            'user_id': 0,
+            'justmygames': 0,
+            'search': { 'default': '', 'min': 0, 'max': 32 }
             }
         })
     def Get(self, data):
         data['search'] = searchTerm(data['search'])
         self.execute('''SELECT COUNT(*) AS count
                         FROM games
-                        WHERE (%(user_id)s < 0 OR games.user_id = %(user_id)s)
+                        WHERE (%(user_id)s = 0 OR games.user_id = %(user_id)s)
+                            AND (%(justmygames)s = 0 OR games.user_id = %(user_id)s)
                             AND game_title LIKE %(search)s''', data)
         return JSON(self.fetchone())
 
@@ -407,7 +456,7 @@ class gameid(Handler):
     @data({
         'params': {
             'user_id': int,
-            'name': str
+            'name': data.game_title
             }
         })
     def Get(self, data):
@@ -426,10 +475,10 @@ class create(Handler):
     @data({
         'validate': True,
         'params': {
-            'game_title': str,
-            'game_source': str,
-            'game_instructions': '',
-            'game_framerate': int
+            'game_title': data.game_title,
+            'game_source': '',
+            'game_instructions': data.game_instructions,
+            'game_framerate': data.game_framerate
             }
         })
     def Post(self, data):
@@ -450,7 +499,7 @@ class settings(Handler):
         'validate': True,
         'params': {
             'game_id': int,
-            'game_framerate': 0,
+            'game_framerate': data.game_framerate,
             'game_instructions': ''
             }
         })
@@ -468,7 +517,7 @@ class rename(Handler):
         'validate': True,
         'params': {
             'game_id': int,
-            'name': str
+            'name': data.game_title
             }
         })
     def Post(self, data):
@@ -505,7 +554,7 @@ class rate(Handler):
         'validate': True,
         'params': {
             'game_id': int,
-            'rating': int
+            'rating': data.game_rating
             }
         })
     def Post(self, data):
@@ -530,10 +579,10 @@ class save(Handler):
         'validate': True,
         'params': {
             'game_id': int,
-            'game_title': str,
-            'game_instructions': str,
-            'game_framerate': int,
-            'game_source': str
+            'game_title': data.game_title,
+            'game_instructions': '',
+            'game_framerate': data.game_framerate,
+            'game_source': ''
             }
         })
     def Post(self, data):
@@ -556,7 +605,7 @@ class screenshot(Handler):
     @data({
         'validate': True,
         'params': {
-            'screen': str,
+            'screen': data.screenshot,
             'game_id': int
             }
         })
@@ -589,14 +638,89 @@ class delete(Handler):
         return JSON({ 'deleted': self.rowcount() })
 
 #----------------------------------------------------------------------
+# /api/details
+
+def checkPassword(hashed, password):
+    try:
+        attempt = bcrypt.hashpw(password, hashed)
+        if attempt != hashed:
+            raise web.HTTPError('401 Incorrect password')
+    except ValueError:
+        raise web.HTTPError('401 Incorrect password!')
+
+# must have either resetcode or oldpassword
+
+class details(Handler):
+    @data({
+        'params': {
+            'user_id': int,
+            'code': data.optionalresetcode,
+            'email': data.email,
+            'oldpassword': data.optionalpassword,
+            'password': data.optionalpassword,
+            'username': data.username
+            }
+        })
+    def Post(self, data):
+        row = None
+        if data['code'] is None:
+            self.execute('''SELECT user_password
+                            FROM users
+                            WHERE user_id = %(user_id)s''', data)
+            if self.rowcount() != 1:
+                raise web.HTTPError('401 Incorrect user_id')
+            row = self.fetchone()
+            checkPassword(row['user_password'], data['oldpassword'])
+
+        if data['oldpassword'] is None:
+            self.execute('''SELECT user_password
+                            FROM users
+                            WHERE user_id = %(user_id)s
+                            AND user_resetpasswordcode=%(code)s
+                            AND user_resetpasswordexpire > NOW()''', data)
+            if self.rowcount() != 1:
+                raise web.HTTPError('401 Bad reset code')
+            row = self.fetchone()
+
+        if row is None:
+            raise web.HTTPError('401 need password or reset code!')
+
+        data['session'] = getRandomInt()
+
+        # new password?
+        if data['password'] is not None:
+            data['hashed'] = bcrypt.hashpw(data['password'], bcrypt.gensalt(12))
+        else:
+            data['hashed'] = row['user_password']
+
+        # stash new details
+        self.execute('''UPDATE users
+                        SET user_email = %(email)s,
+                            user_password = %(hashed)s,
+                            user_username = %(username)s,
+                            user_session = %(session)s
+                        WHERE user_id = %(user_id)s''', data)
+        if self.rowcount() != 1:
+            raise web.HTTPError("401 Can't update account")
+        return JSON({
+                'user_id': data['user_id'],
+                'user_username': data['username'],
+                'user_session': data['session'],
+                'user_email': data['email']
+            })
+
+#----------------------------------------------------------------------
 # /api/register
+
+# if data['update'] != 0:
+#   UPDATE not INSERT
 
 class register(Handler):
     @data({
         'params': {
-            'email': str,
-            'password': str,
-            'username': str
+            'email': data.email,
+            'password': data.password,
+            'username': data.username
             }
         })
     def Post(self, data):
@@ -606,28 +730,89 @@ class register(Handler):
                         WHERE user_email=%(email)s''', data)
         if self.fetchone()['count'] != 0:
             raise web.HTTPError('409 Email already taken')
-        else:
-            self.execute('''SELECT COUNT(*) AS count FROM users
-                            WHERE user_username=%(username)s''', data)
-            if self.fetchone()['count'] != 0:
-                raise web.HTTPError('409 Username already taken')
-            else:
-                data['session'] = getRandomInt()
-                data['hashed'] = bcrypt.hashpw(data['password'], bcrypt.gensalt(12))
-                self.execute('''INSERT INTO users (user_email, user_password, user_username, user_created, user_session)
-                                VALUES (%(email)s, %(hashed)s, %(username)s, NOW(), %(session)s)''', data)
-                if self.rowcount() == 1:
-                    result['user_id'] = self.lastrowid()
-                    result['user_username'] = data['username']
-                    result['user_session'] = data['session']
-
-                    text = 'Hello %(username)s,\n\nThanks for registering your account at 256 Pixels!\n\nThe 256 Pixels team.' % data
-                    html = '''Hello %(username)s,<br><p>Thanks for registering your account at 256 Pixels!</p><p>The 256 Pixels team.</p>''' % data
-
-                    sendemail.now(data['email'], 'Welcome to 256 Pixels', text, html)
-                else:
-                    raise web.HTTPError("401 Can't create account")
+        self.execute('''SELECT COUNT(*) AS count FROM users
+                        WHERE user_username=%(username)s''', data)
+        if self.fetchone()['count'] != 0:
+            raise web.HTTPError('409 Username already taken')
+        if(len(data['password']) < 6):
+            raise web.HTTPError('401 Password too short')
+        data['session'] = getRandomInt()
+        data['hashed'] = bcrypt.hashpw(data['password'], bcrypt.gensalt(12))
+        self.execute('''INSERT INTO users (user_email, user_password, user_username, user_created, user_session)
+                        VALUES (%(email)s, %(hashed)s, %(username)s, NOW(), %(session)s)''', data)
+        if self.rowcount() != 1:
+            raise web.HTTPError("401 Can't create account")
+        result['user_id'] = self.lastrowid()
+        result['user_username'] = data['username']
+        result['user_session'] = data['session']
+        text = 'Hello %(username)s,\n\nThanks for registering your account at 256 Pixels!\n\nThe 256 Pixels team.' % data
+        html = '''Hello %(username)s,<br><p>Thanks for registering your account at 256 Pixels!</p><p>The 256 Pixels team.</p>''' % data
+        sendemail.now('256 Pixels', 'admin@256pixels.net', data['username'], data['email'], 'Welcome to 256 Pixels', text, html)
         return JSON(result)
+
+#----------------------------------------------------------------------
+
+class userdetails(Handler):
+
+    @data({
+        'params': {
+            'email': data.email,
+            'code': data.resetcode
+            }
+        })
+    def Get(self, data):
+        self.execute('''SELECT user_username, user_id
+                        FROM users
+                        WHERE user_email = %(email)s
+                            AND user_resetpasswordcode = %(code)s
+                            AND user_resetpasswordexpire > NOW()''', data)
+        row = self.fetchone()
+        if row is None:
+            raise web.HTTPError('404 Email not found or bad code')
+        return JSON(row)
+
+#----------------------------------------------------------------------
+# /api/resetpw
+
+class resetpw(Handler):
+
+    template = """Hello %(username)s,%(br)s
+%(br)s
+PASSWORD RESET REQUEST%(br)s
+%(br)s
+%(br)s
+Someone has requested a password reset for an account on 256 Pixels with this email address. If this wasn't you, please ignore this email. Otherwise, you can visit this link to reset your password: %(link)s%(br)s
+%(br)s
+The 256 Pixels team.%(br)s
+"""
+
+    @staticmethod
+    def code():
+        return ("%06X" % (getRandomInt() & 0xFFFFFF,)).replace('0', 'X').replace('1', 'Y').replace('2', 'T').replace('8', 'H').replace('B', 'K') # XYT34567H9AKCDEF
+
+    @data({
+        'params': {
+            'email': data.email
+            }
+        })
+    def Get(self, data):
+        code = resetpw.code()
+        data['resetcode'] = code
+        self.execute('''UPDATE users
+                        SET user_resetpasswordcode = %(resetcode)s,
+                            user_resetpasswordexpire = NOW() + INTERVAL 1 HOUR
+                        WHERE user_email = %(email)s''', data)
+        if self.rowcount() != 1:
+            raise web.HTTPError('404 Email not found')
+        self.execute('SELECT user_username FROM users WHERE user_email = %(email)s', data)
+        row = self.fetchone()
+        if row is not None:
+            link = "https://256pixels.net?resetpassword={0}&email={1}".format(code, urllib.quote(data['email']))
+            user = { 'username': row['user_username'] }
+            text = resetpw.template % dict(user, br = '', link = link)
+            html = resetpw.template % dict(user, br = '<br>', link = "<a href = '{0}'>{0}</a>".format(link))
+            sendemail.now('256 Pixels', 'admin@256pixels.net', row['user_username'], data['email'], 'Password reset request at 256 Pixels', text, html)
+            return JSON({ 'email_sent': True })
 
 #----------------------------------------------------------------------
 # /api/login
@@ -635,28 +820,19 @@ class register(Handler):
 class login(Handler):
     @data({
         'params': {
-            'email': str,
-            'password': str
+            'email': data.email,
+            'password': data.password
             }
         })
     def Post(self, data):
         result = {}
-
         self.execute('''SELECT user_id, user_password
                         FROM users
                         WHERE user_email = %(email)s''', data)
-        print self.rowcount()
         if self.rowcount() != 1:
             raise web.HTTPError('401 Incorrect email address')
-
         row = self.fetchone()
-        hashed = row['user_password']
-
-        try:
-            if bcrypt.hashpw(data['password'], hashed) != hashed:
-                raise web.HTTPError('401 Incorrect password')
-        except ValueError:
-            raise web.HTTPError('401 Incorrect password!')
+        checkPassword(row['user_password'], data['password'])
 
         data['user_id'] = row['user_id']
         data['session'] = getRandomInt()
@@ -682,7 +858,8 @@ class refreshSession(Handler):
         'params': {
             'user_id': int,
             'user_session': int,
-            'user_username': str
+            'user_email': data.email,
+            'user_username': data.username
         }
     })
     def Get(self, data):
@@ -691,6 +868,7 @@ class refreshSession(Handler):
                         SET user_session = %(new_session)s
                         WHERE user_id = %(user_id)s
                             AND user_username = %(user_username)s
+                            AND user_email = %(user_email)s
                             AND user_session = %(user_session)s''', data)
         if self.rowcount() != 1:
             raise web.HTTPError('404 Session not found')

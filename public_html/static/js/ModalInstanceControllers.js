@@ -28,33 +28,68 @@
         };
 
         $scope.cancel = function () {
-            $modalInstance.dismiss('cancel');
+            $modalInstance.dismiss('cancelled');
         };
 
         $scope.showRegistration = function () {
-            $modalInstance.close({
-                registration: 'required'
+            $modalInstance.dismiss('registration-required');
+        };
+
+        $scope.resetpw = function() {
+            $scope.loginInProgress = true;
+            ajax.get('resetpw', { email: details.email })
+            .then(function(response) {
+                $modalInstance.dismiss('resetpassword-complete');
+            }, function(response) {
+                $modalInstance.dismiss('resetpassword-failed');
             });
         };
+
     }]);
 
     mainApp.controller('RegisterModalInstanceController', ['$scope', '$modal', '$modalInstance', 'details', 'ajax', 'user', '$timeout', 'status',
     function ($scope, $modal, $modalInstance, details, ajax, user, $timeout, status) {
 
         $scope.details = details;
+        console.log(details);
         $scope.message = 'Fill in required fields...';
         $scope.registrationInProgress = false;
         $scope.details.failed = false;
+
+        // details.needOldPassword - true if showProfilebutton, false if register or resetpassword
+        // details.changePassword - true if register or resetpassword or 
 
         $timeout(function() {
             status.focus($('#username'));
         }, 350);
 
+        $scope.resetpw = function() {
+            $scope.loginInProgress = true;
+            ajax.get('resetpw', { email: details.email })
+            .then(function(response) {
+                $modalInstance.dismiss('resetpassword-complete');
+            }, function(response) {
+                $modalInstance.dismiss('resetpassword-failed');
+            });
+        };
+
         $scope.ok = function () {
             
             $scope.registrationInProgress = true;
-            
+
             $scope.details.failed = false;
+
+            if(!$scope.details.changePassword) {
+                delete $scope.details.password;
+                delete $scope.details.password2;
+            }
+
+            if(!$scope.details.editingProfile) {
+                delete $scope.details.oldpassword;
+            }
+
+            console.log("DETAILS:", $scope.details);
+
             user.register($scope.details)
             .then(function(response) {
                 $modalInstance.close(response.data);
@@ -67,7 +102,7 @@
         };
 
         $scope.cancel = function () {
-            $modalInstance.dismiss('cancel');
+            $modalInstance.dismiss('cancelled');
         };
 
         $scope.passmatch = function() {
