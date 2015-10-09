@@ -1,37 +1,3 @@
-(function() {
-    "use strict";
-
-    var lastTime = 0,
-        vendors = [
-        "moz",
-        "ms",
-        "o",
-        "webkit" ],
-        x;
-    for(x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-        window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
-    }
-
-    if (!window.requestAnimationFrame) {
-        window.requestAnimationFrame = function(callback, element) {
-            var currTime = new Date().getTime(),
-                timeToCall = Math.max(0, 16 - (currTime - lastTime)),
-                id = window.setTimeout(function() {
-                        callback(currTime + timeToCall);
-                    }, timeToCall);
-            lastTime = currTime + timeToCall;
-            return id;
-        };
-    }
-
-    if (!window.cancelAnimationFrame) {
-        window.cancelAnimationFrame = function(id) {
-            clearTimeout(id);
-        };
-    }
-}());
-
 Object.defineProperty(Error.prototype, 'toJSON', {
     value: function () {
         var alt = {};
@@ -51,6 +17,7 @@ Object.defineProperty(Error.prototype, 'toJSON', {
         paused = false, step = false,
         client,
         resetRequest,
+        animFrameID = [],
         lastKeyPressed,
         lastKeyReleased,
         keyPress = [], keyRelease = [],
@@ -99,61 +66,149 @@ Object.defineProperty(Error.prototype, 'toJSON', {
         ],
         screen = [];
 
-    function resetIt() {
-        client = null;
-        resetRequest = false;
-        screen = [];
-        keyPress = [];
-        keyRelease = [];
-        keyHeld = [ false, false, false, false, false ];
-        keyHeldReal  = [ false, false, false, false, false ];
-        exception = false;
-        keyCount = 0;
-        lastkey = 0;
-        frame = 0;
-        frameCounter = 0;
-    }
+    window.eng = {
+        setpixel: function(x, y, color) {
+            x >>>= 0;
+            y >>>= 0;
+            if(typeof color === 'string') {
+                color = colorTable[color] || 0;
+            }
+            if(x >= 0 && x < W && y >= 0 && y < H) {
+                screen[x + y * W] = (color|0) & 15;
+            }
+        },
+        getpixel: function(x, y) {
+            return colorNames[eng.getpixeli(x, y) || 0];
+        },
+        getpixeli: function(x, y) {
+            x >>>= 0;
+            y >>>= 0;
+            if(x >= 0 && x < W && y >= 0 && y < H) {
+                return screen[x + y * W] || 0;
+            }
+            return 0;
+        },
+        keypress: function() {
+            if(lastKeyPressed === undefined) {
+                lastKeyPressed = keyPress.shift();
+            }
+            return keyNameFromCode(lastKeyPressed);
+        },
+        keyheld: function(key) {
+            return getKey(keyCodeFromName(key), keyHeld);
+        },
+        keyrelease: function() {
+            if(lastKeyReleased === undefined) {
+                lastKeyReleased = keyPress.shift();
+            }
+            return keyNameFromCode(lastKeyReleased);
+        },
+        reset: function() {
+            resetRequest = true;
+        },
+        clear: function(color) {
+            var i;
+            if(typeof color === 'string') {
+                color = colorTable[color] || 0;
+            }
+            for(i=0; i<W*H; ++i) {
+                screen[i] = color || 0;
+            }
+        },
+        onframe: function() {
+            eng.ctr = 0;
+            if(resetRequest) {
+                eng.restart();
+                resetRequest = false;
+            }
+            if(eng.updateFunction && eng.cont) {
+                if(step || ((frame % frameDelay) === 0 && !paused)) {
+                    eng.updateFunction(frameCounter++);
+                    eng.endframe();
+                }
+                if(step || !paused) {
+                    ++frame;
+                }
+                step = false;
+            }
+            eng.drawScreen();
+            startAnim();
+        },
+        drawScreen: function() {
+            mainApp.draw(canvas, context, screen, W, H);
+        },
+        fail: function(err) {
+            eng.cont = false;
+            postMessage('error', err);
+            // var errWrapper = new Error('[__reported__] ' + err.message);
+            // errWrapper.error = err;
+            // throw errWrapper;
+            throw err;
+        },
+        catchErrors: function(f) {
+            var self = this;
+            return function() {
+                if (self.errorHandler) {
+                    return f.apply(this, arguments);
+                }
+                self.errorHandler = true;
+                try {
+                    var res = f.apply(this, arguments);
+                    self.errorHandler = false;
+                    return res;
+                } catch (err) {
+                    self.errorHandler = false;
+                    self.fail(err);
+                    throw new Error("Unreachable");
+                }
+            };
+        },
+        endframe: function() {
+            var i;
+            lastKeyReleased = undefined;
+            lastKeyPressed = undefined;
+            for(i in keyHeldReal) {
+                keyHeld[i] = keyHeldReal[i];
+            }
+        },
+        restart: function() {
+            eng.cont = true;
+            eng.ctr = 0;
+            eng.maxctr = 30000;
+            eng.errorHandler = false;
 
-    function doReset() {
-        resetRequest = true;
-    }
+            keyPress = [];
+            keyRelease = [];
+            keyHeld = [ false, false, false, false, false ];
+            keyHeldReal  = [ false, false, false, false, false ];
+            keyCount = 0;
+            lastkey = 0;
+            frame = 0;
+            frameCounter = 0;
+            eng.clear();
 
-    function drawScreen() {
-        mainApp.draw(canvas, context, screen, W, H);
-    }
+            if(typeof eng.userFunction === 'function') {
+                eng.userFunction();
+            }
+            startAnim();
+        },
+        clientFunction: null,
+        userFunction: null,
+        updateFunction: null,
 
-    function doSet(x, y, color) {
-        x >>>= 0;
-        y >>>= 0;
-        if(typeof color === 'string') {
-            color = colorTable[color] || 0;
+        cont: true,
+        ctr: 0,
+        maxctr: 30000,
+        errorHandler: false
+    };
+
+    function startAnim() {
+        var id;
+        while(animFrameID.length > 0) {
+            id = animFrameID.pop();
+            cancelAnimationFrame(id);
         }
-        if(x >= 0 && x < W && y >= 0 && y < H) {
-            screen[x + y * W] = (color|0) & 15;
-        }
-    }
-
-    function doGet(x, y) {
-        x >>>= 0;
-        y >>>= 0;
-        if(x >= 0 && x < W && y >= 0 && y < H) {
-            return screen[x + y * W] || 0;
-        }
-        return 0;
-    }
-
-    function doGetColor(x, y) {
-        return colorNames[doGet(x, y) || 0];
-    }
-
-    function doClear(color) {
-        var i;
-        if(typeof color === 'string') {
-            color = colorTable[color] || 0;
-        }
-        for(i=0; i<W*H; ++i) {
-            screen[i] = color || 0;
-        }
+        animFrameID.push(requestAnimationFrame(eng.onframe));
     }
 
     function keyCodeFromName(str) {
@@ -166,25 +221,6 @@ Object.defineProperty(Error.prototype, 'toJSON', {
 
     function getKey(code, arr) {
         return (code >= 0 && code <= arr.length) ? arr[code] : false;
-    }
-
-    // TODO (chs): make keypressed() return same value until new frame fires
-    function doPressed() {
-        if(lastKeyPressed === undefined) {
-            lastKeyPressed = keyPress.shift();
-        }
-        return keyNameFromCode(lastKeyPressed);
-    }
-
-    function doReleased(key) {
-        if(lastKeyReleased === undefined) {
-            lastKeyReleased = keyPress.shift();
-        }
-        return keyNameFromCode(lastKeyReleased);
-    }
-
-    function doHeld(key) {
-        return getKey(keyCodeFromName(key), keyHeld);
     }
 
     function getKeyCode(key) {
@@ -250,39 +286,6 @@ Object.defineProperty(Error.prototype, 'toJSON', {
         }
     };
 
-    function onFrame() {
-        var i, hasUpdate;
-        if(resetRequest) {
-            startIt();
-        }
-        if(client && client.$updateFunction && !exception) {
-            hasUpdate = true;
-            if(step || ((frame % frameDelay) === 0 && !paused)) {
-                try {
-                    client.$updateFunction(frameCounter++);
-                }
-                catch(e) {
-                    exception = true;
-                    reportError(e);
-                }
-                lastKeyReleased = undefined;
-                lastKeyPressed = undefined;
-                for(i in keyHeldReal) {
-                    keyHeld[i] = keyHeldReal[i];
-                }
-            }
-            if(step || !paused) {
-                ++frame;
-            }
-            step = false;
-            drawScreen();
-        }
-        else {
-            focusEditor();
-        }
-        requestAnimationFrame(onFrame);
-    }
-
     function reportError(e) {
         postMessage('error', e);
     }
@@ -306,37 +309,24 @@ Object.defineProperty(Error.prototype, 'toJSON', {
 
     canvas = document.getElementById('canvas');
     context = canvas.getContext('2d');
-    window.setpixel = function(x, y, c) { return doSet(x, y, c); };
-    window.getpixel = function(x, y) { return doGetColor(x, y); };
-    window.getpixeli = function(x, y) { return doGet(x, y); };
-    window.clear = function(c) { return doClear(c); };
-    window.keyheld = function(k) { return doHeld(k); };
-    window.keypress = function(k) { return doPressed(k); };
-    window.keyrelease = function(k) { return doReleased(k); };
-    window.reset = function() { return doReset(); };
-
-    function startIt() {
-        resetIt();
-        try {
-            client = (ClientScript !== undefined) ? new ClientScript() : null;
-        }
-        catch(e) {
-            reportError(e);
-        }
-        drawScreen();
-    }
 
     // Allow anyone, anywhere to send us some script which we will blindly execute!
-    // Check origin!
+    // But we're running sandboxed, so network should be secure...
 
     function setup(data) {
         var oldScript = document.getElementById('clientscript'),
             newScript = document.createElement('script'),
             body = document.getElementsByTagName('body')[0];
-        body.removeChild(oldScript);
+        if(oldScript) {
+            body.removeChild(oldScript);
+        }
         newScript.setAttribute('id', 'clientscript');
         newScript.innerHTML = data;
-        body.appendChild(newScript);
+        body.appendChild(newScript);    // it runs here!
+        eng.clientFunction(eng);
+        if(eng.userFunction) {
+            eng.restart();
+        }
     }
 
     window.addEventListener('message', function(e) {
@@ -359,16 +349,17 @@ Object.defineProperty(Error.prototype, 'toJSON', {
                     break;
                 case 'restart':
                     step = true;
-                    startIt();
+                    resetRequest = true;
                     break;
                 case 'step':
                     step = true;
                     paused = true;
                     break;
                 case 'is-paused':
+                    postMessage('paused', paused);
                     break;
                 case 'clear-exception':
-                    reset();
+                    //reset();
                     break;
                 case 'screenshot':
                     postMessage('screenshot', screen);
@@ -379,17 +370,10 @@ Object.defineProperty(Error.prototype, 'toJSON', {
             }
         }
         catch(SyntaxError) {
-
+            // Bad JSON in the message
         }
     });
 
-    if(window.game && window.game.frameDelay !== undefined) {
-        frameDelay = window.game.frameDelay;
-        console.log("game.frameDelay =", frameDelay);
-    }
-
-    drawScreen();
-    startIt();
-    requestAnimationFrame(onFrame);
+    startAnim();
 
 }());

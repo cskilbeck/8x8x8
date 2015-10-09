@@ -52,8 +52,8 @@
         };
     }
 
-    mainApp.factory('game', ['ajax', 'user', '$rootScope', 'gamelist',
-    function(ajax, user, $rootScope, gamelist) {
+    mainApp.factory('game', ['ajax', 'user', '$rootScope', 'gamelist', 'status',
+    function(ajax, user, $rootScope, gamelist, status) {
         "use strict";
 
         var game = {
@@ -122,7 +122,8 @@
                     user_id: 0,
                     user_username: 0
                 }, game);
-                $rootScope.$broadcast('game:changed', game);
+                playGame(game, true);
+                refreshRating();
             },
 
             find: function(id, name) {
@@ -156,12 +157,27 @@
             },
 
             play: function(g, forceRestart) {
-                mergeInto(game, g);
-                game.editing = (g && g.editing) || false;
-                $rootScope.$broadcast('play', {
-                    game: g, 
-                    force: forceRestart
-                });
+                var s;
+                s = new mainApp.sandbox(g.game_source);
+                if(s.errors.length > 0) {
+                    // report 1st error
+                    console.log("FOUND ERROR:", s.errors[0]);
+                    status.error(s.errors[0].message);  // go to line/column
+                    $rootScope.$broadcast('editorGoto', s.errors[0]);
+                }
+                else {
+                    mergeInto(game, g);
+                    game.wrapper = s;
+                    game.editing = (g && g.editing) || false;
+                    $rootScope.$broadcast('play', {
+                        game: {
+                            game_id: game.game_id,
+                            game_framerate: game.game_framerate,
+                            source: s.code
+                        }, 
+                        force: forceRestart
+                    });
+                }
             },
 
             create: function(newgame) {
@@ -181,7 +197,8 @@
                     game.game_framerate = newgame.game_framerate;
                     game.user_id = user.id();   // owns it now...
                     game.user_username = user.name();
-                    $rootScope.$broadcast('game:changed', game);
+                    playGame(game, true);
+                    refreshRating();
                     clearChanges(game);
                     ga('send', {
                         hitType: 'event',

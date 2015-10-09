@@ -6,6 +6,7 @@ if (window.location.protocol != "https:")
 var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']);
 
 //////////////////////////////////////////////////////////////////////
+// - detect hangs and kill it (possible? with instrumentation via Esprima : for, while, do) (but how to keep the source line matched up? sounds hard... https://github.com/CodeCosmos/codecosmos/blob/master/www/js/sandbox.js)
 // - Browsers
 //      - Firefox
 //      - [IE9]
@@ -24,7 +25,6 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 // - home page
 // ? make it like jsfiddle where games are all anonymous ? save without login would be cool... 
 //
-// - detect hangs and kill it (possible? with instrumentation via Esprima : for, while, do) (but how to keep the source line matched up? sounds hard... https://github.com/CodeCosmos/codecosmos/blob/master/www/js/sandbox.js)
 // / instructions/documentation/tooltips/popovers
 //
 // - telemetry/analytics - ga(...) everywhere
@@ -36,7 +36,6 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 // - comments
 //
 // - user registration/login/forgot password
-//      - user profile modal dialog to change username\email\password
 //      - permission bits
 //      - proper session security
 //      ? groups of users (and admins) for schools
@@ -136,3 +135,4 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      + database on another machine
 //      + compressed assets (editor require() stuff and glyphicons not working) [near enough]
 // +! save as new user loses changes !
+//      +- user profile modal dialog to change username\email\password [buggy but good enough for now]

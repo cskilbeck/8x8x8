@@ -54,7 +54,12 @@
         });
 
         $scope.$on('frame:error', function(m, e) {
-            var parts = printStackTrace({ e: e })[0].match(/.*@.*\:(\d+):(\d+)/);
+            var parts = printStackTrace({ e: e })[0].match(/.*@.*\:(\d+):(\d+)/),
+                line = parseInt(parts[1]),
+                column = parseInt(parts[2]);
+            if(game.wrapper) {
+                line = game.wrapper.searchMap(line);
+            }
             gotoError(e.message, parseInt(parts[1]), parseInt(parts[2]));
         });
 
@@ -77,7 +82,7 @@
         });
 
         $scope.$on('editorGoto', function(m, o) {
-            gotoError(o.msg, o.line, o.column);
+            gotoError(o.message, o.line + 1, o.column + 1);
         });
 
         $scope.$parent.pane = 'Editor';

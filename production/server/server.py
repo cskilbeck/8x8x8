@@ -243,7 +243,7 @@ class data(object):
     game_instructions = { 'default': '', 'min': 0, 'max': 240 }
     game_framerate = { 'default': 0, 'min': 0, 'max': 5 }
     game_rating = { 'type': int, 'min': 1, 'max': 5 }
-    screenshot = { 'type': str, 'min': 128, 'max': 128 }
+    screenshot = { 'type': str, 'min': 256, 'max': 256 }
     resetcode = { 'type': str, 'regex': '[XYT34567H9AKCDEF]{6}' }
     optionalresetcode = { 'type': str, 'optional': True, 'regex': '[XYT34567H9AKCDEF]{6}' }
 
@@ -270,8 +270,6 @@ class data(object):
 
             # print "ENV:", pprint.pformat(web.ctx.environ)
             # print "Data:", pprint.pformat(web.data())
-
-            print pprint.pformat(data)
 
             params = self.paramSpec.get('params', {})
 
@@ -307,11 +305,7 @@ class data(object):
                     if not optional:
                         val = deftype(defval) if val is None else deftype(val)  # coerce to the right type (from string, usually)
                     elif val is not None:
-                        print "VAL WAS", repr(val)
                         val = deftype(val)
-                        print "VAL NOW", repr(val)
-
-                    print name, "= [" + repr(val) + "]"
 
                     if val is not None:
                         minval = param.get('min', None)   # for int, float: min value, for str, min length

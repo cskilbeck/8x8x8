@@ -69,24 +69,21 @@
 
         //////////////////////////////////////////////////////////////////////
 
+        // game_id, game_framerate, source
+
         function playGame(game, force) {
             if(force || game.game_id !== running_game_id) {
                 running_game_id = game.game_id;
                 status.clearError();
                 postMessage('clear-exception');
                 postMessage('set-frame-delay', game.game_framerate + 1);
-                postMessage('source', preScript + game.game_source + postScript);
+                postMessage('source', game.source);
                 postMessage('unpause');
                 postMessage('restart');
                 status.focus(frameWindow);
                 $scope.$applyAsync();
             }
         }
-
-        $scope.$on('game:changed', function(e, m) {
-            playGame(game, true);
-            refreshRating();
-        });
 
         //////////////////////////////////////////////////////////////////////
 
@@ -208,7 +205,7 @@
 
         $scope.$on('play', function(e, dt) {
             if(dt.game) {
-                playGame(game, dt.force);
+                playGame(dt.game, dt.force);
                 refreshRating();
             }
         });
