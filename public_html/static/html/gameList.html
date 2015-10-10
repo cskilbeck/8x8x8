@@ -25,9 +25,9 @@
         </div>
         <div class='btn-group pull-right'>
             <ul class='pagination pull-right'>
-                <li ng-repeat='p in pages' ng-class='["linkNoHref", { active: $index === currentPage }, { disabled: pageDisabled($index) }]' >
-                    <a ng-click='choosePage($index)'>
-                        <span>{{p}}</span>
+                <li ng-repeat='p in pages' ng-class='["linkNoHref", { active: p.value === currentPage }, { disabled: pageDisabled($index) }]' >
+                    <a ng-click='choosePage(p)'>
+                        <span class='{{p.class}}'>{{p.text}}</span>
                     </a>
                 </li>
             </ul>
@@ -36,8 +36,8 @@
             {{results}}
         </div>
     </div>
-    <div id='gameslist'>
-        <div class='flex-container cloakable'>
+    <div id='gameslist' class="cloakable">
+        <div class='flex-container'>
             <div ng-repeat='g in games'
                     class='dropshadow gameLink' ng-class="'flex-item ' + viewStyle"
                     ng-click='playIt($event, g.game_id)'

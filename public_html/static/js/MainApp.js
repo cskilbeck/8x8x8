@@ -6,7 +6,6 @@ if (window.location.protocol != "https:")
 var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']);
 
 //////////////////////////////////////////////////////////////////////
-// - detect hangs and kill it (possible? with instrumentation via Esprima : for, while, do) (but how to keep the source line matched up? sounds hard... https://github.com/CodeCosmos/codecosmos/blob/master/www/js/sandbox.js)
 // - Browsers
 //      - Firefox
 //      - [IE9]
@@ -14,6 +13,7 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      - IE11
 //      - Chrome
 //      - Safari
+// - responsive toolbar height/wrap
 // - editor focus nightmare, & send all non-editor keypresses to the player
 // - game_lastsaved and caching not working
 // - ratings - make it better than a simple average (http://www.evanmiller.org/)
@@ -23,7 +23,6 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      - standalone player rating (-> link to source)
 // - unicode
 // - home page
-// ? make it like jsfiddle where games are all anonymous ? save without login would be cool... 
 //
 // / instructions/documentation/tooltips/popovers
 //
@@ -35,7 +34,7 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //
 // - comments
 //
-// - user registration/login/forgot password
+// - user
 //      - permission bits
 //      - proper session security
 //      ? groups of users (and admins) for schools
@@ -48,7 +47,6 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 // - game list
 //      - paging in game list
 //      - quick search buttons: my games, top games, most played, recently added, recently changed
-//      - row/box layout option
 //
 // - api
 //      / fix the get/set pixel/color APIs for numbers/strings
@@ -61,6 +59,7 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      \ get rid of run button in editor pane (play button in the player) [nope, bad idea]
 //      \ ? Make a game private/public [nope]
 //      \- bcrypt password on client before transmission [https instead]
+// \? make it like jsfiddle where games are all anonymous ? save without login would be cool...  [nah]
 //////////////////////////////////////////////////////////////////////
 // + save current source in LocalStorage
 // + web service
@@ -136,3 +135,5 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 // +! save as new user loses changes !
 //      +- user profile modal dialog to change username\email\password [buggy but good enough for now]
 //      +- make the search text work (timeout on change)
+// +- detect hangs and kill it (possible? with instrumentation via Esprima : for, while, do) (but how to keep the source line matched up? sounds hard... https://github.com/CodeCosmos/codecosmos/blob/master/www/js/sandbox.js)
+//      +- row/box layout option

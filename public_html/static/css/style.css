@@ -482,10 +482,6 @@ a.share-twitter {
     cursor: pointer;
 }
 
-.linkNoHref .disabled:hover {
-    cursor: not-allowed;
-}
-
 #gamesTotal {
     padding-top: 7px;
     margin-right: 20px;

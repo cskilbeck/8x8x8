@@ -377,7 +377,6 @@ class list(Handler):
             }
         })
     def Get(self, data):
-        print pprint.pformat(data)
         result = {}
         data['search'] = searchTerm(data['search'])
         self.execute('''SELECT COUNT(*) AS count
@@ -412,7 +411,6 @@ class list(Handler):
         rows = self.fetchall()
         result['count'] = len(rows)
         result['games'] = rows;
-        print pprint.pformat(result)
         return JSON(result)
 
 #----------------------------------------------------------------------
