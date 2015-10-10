@@ -45,8 +45,10 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      / sprites & collision
 //
 // - game list
-//      - paging in game list
-//      - quick search buttons: my games, top games, most played, recently added, recently changed
+//      - view 10/20/50/100 per page
+//      - quick search buttons: my games, top ranked, most played, recently added, recently changed
+//      - top games: clear search, order by ranking desc
+//      - order by: name, created, modified, creator, rank, playcount
 //
 // - api
 //      / fix the get/set pixel/color APIs for numbers/strings
@@ -137,3 +139,4 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      +- make the search text work (timeout on change)
 // +- detect hangs and kill it (possible? with instrumentation via Esprima : for, while, do) (but how to keep the source line matched up? sounds hard... https://github.com/CodeCosmos/codecosmos/blob/master/www/js/sandbox.js)
 //      +- row/box layout option
+//      +- paging in game list

@@ -319,7 +319,7 @@ pre.helpcode {
 }
 
 .flex-item {
-    padding-top: 6px;
+    padding-top: 2px;
     padding-right: 10px;
     padding-left: 10px;
     -webkit-box-ordinal-group: 1;
@@ -352,21 +352,25 @@ pre.helpcode {
     -ms-border-radius: 5px;
 }
 
-.flex-item.row {
+.flex-item.list {
     margin: 0px;
     border: none;
     border-top: 1px solid #ccc;
     width: 100%;
     min-width: 240px;
-    height: 90px;
+    height: 80px;
 }
 
 .dropshadow.box {
     box-shadow: 2px 2px 20px 1px #EEE;
 }
 
-.dropshadow.row {
+.dropshadow.list {
 /*    box-shadow: 2px 2px 20px 1px #EEE;*/
+}
+
+.cloaked {
+    visibility: hidden;
 }
 
 .game-title {
@@ -376,53 +380,38 @@ pre.helpcode {
     width: 100%;
 }
 
-.cloaked {
-    visibility: hidden;
+.game-username {
+    font-weight: lighter;
+    font-size: 14px;
+    white-space: nowrap;
 }
+
+/* BOX */
 
 .game-title.box {
     text-align: center;
 }
 
-.game-title.row {
-    margin-left: 5px;
-    text-align: left;
-    display: table-cell;
-    width: 16em;
-    overflow: hidden;
-}
-
-.game-username {
-    font-weight: lighter;
-    font-size: 14px;
-    white-space: nowrap;
-    width: 100%;
-}
-
 .game-username.box {
     text-align: center;
     display: block;
+    width: 100%;
 }
 
-.game-username.row {
-    padding-left: 1em;
-    text-align: left;
-    display: table-cell;
+.game-instructions.box {
+    display: none;
 }
 
-.game-screenshot {
+.game-screenshot.box {
     position: absolute;
     right: 15px;
     bottom: 15px;
 }
 
-.game-buttons {
+.game-buttons.box {
     position: absolute;
     left: 15px;
     bottom: 15px;
-}
-
-.game-rating {
 }
 
 .game-rating.box {
@@ -430,17 +419,60 @@ pre.helpcode {
     text-align: center;
 }
 
-.game-rating.row {
+/* LIST */
+
+.game-title.list {
     position: absolute;
     left: 90px;
-    bottom: 20px;
+    width: 230px;
+    top: 7px;
+    text-align: left;
+    overflow: hidden;
+}
+
+.game-username.list {
+    position: absolute;
+    left: 90px;
+    width: 230px;
+    top: 24px;
+    overflow: hidden;
+}
+
+.game-instructions.list {
+    position: absolute;
+    left: 325px;
+    right: 10px;
+    top: 7px;
+    bottom: 10px;
+    overflow: hidden;
+    font-weight: lighter;
+    font-size: 14px;
+    text-align: left;
+}
+
+.game-screenshot.list {
+    position: absolute;
+    left: 20px;
+    top: 7px;
+}
+
+.game-buttons.list {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+}
+
+.game-rating.list {
+    position: absolute;
+    left: 90px;
+    bottom: 10px;
 }
 
 .gameLink:hover {
     cursor: pointer;
 }
 
-#editorOptionsForm > .row {
+#editorOptionsForm > .list {
     margin-left: 40px;
 }
 

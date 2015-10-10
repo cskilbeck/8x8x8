@@ -9,9 +9,9 @@
 
         var timer,
             searched,
-            pagesShown = 5, // needs to be odd
+            pagesWindowSize = 5, // needs to be odd
             totalPages = 1,
-            pageSize = 2;
+            pageSize = 10;
 
         $scope.$parent.pane = 'Games';
         $scope.games = [];
@@ -27,18 +27,19 @@
 
         $scope.view = function(v) {
             $scope.viewStyle = v;
-            $('.cloakable').hide();     // hide gamelist while $apply is in progress
+            $('.cloakable').hide();     // hide gamelist while $digests are in progress
             $timeout(function() {
                 $('.cloakable').show(); // to avoid ugly style flickering
             }, 100);
         };
 
         $scope.$watchGroup(['search', 'currentPage'], function() {
+            var sc = $scope.search !== searched;
             if(timer) {
                 $timeout.cancel(timer);
             }
             timer = $timeout(function() {
-                if($scope.search !== searched) {
+                if(sc) {
                     $scope.currentPage = 1;
                 }
                 getGames(true)
@@ -46,7 +47,7 @@
                     searched = $scope.search;
                 });
                 timer = null;
-            }, 500);
+            }, sc ? 500 : 0);
         });
 
         $scope.pageDisabled = function(p) {
@@ -85,18 +86,18 @@
                 totalPages = (gameList.total + pageSize - 1) / pageSize | 0;
                 $scope.pages = [];
                 if(totalPages > 1) {
-                    if(totalPages > pagesShown) {
+                    if(totalPages > pagesWindowSize) {
                         $scope.pages.push({ class:'fa fa-fast-backward', text:'', offset: -totalPages });
-                        $scope.pages.push({ class:'fa fa-backward', text:'', offset: -pagesShown });
+                        $scope.pages.push({ class:'fa fa-backward', text:'', offset: -pagesWindowSize });
                     }
-                    l = Math.max(1, $scope.currentPage - (pagesShown / 2 | 0)) ;
-                    h = Math.min(l + pagesShown - 1, totalPages);
-                    l = Math.max(1, h - pagesShown + 1);
+                    l = Math.max(1, $scope.currentPage - (pagesWindowSize / 2 | 0)) ;
+                    h = Math.min(l + pagesWindowSize - 1, totalPages);
+                    l = Math.max(1, h - pagesWindowSize + 1);
                     for(i = l; i <= h; ++i) {
                         $scope.pages.push({class:'', text:i, value: i});
                     }
-                    if(totalPages > pagesShown) {
-                        $scope.pages.push({ class:'fa fa-forward', text:'', offset: pagesShown});
+                    if(totalPages > pagesWindowSize) {
+                        $scope.pages.push({ class:'fa fa-forward', text:'', offset: pagesWindowSize});
                         $scope.pages.push({ class:'fa fa-fast-forward', text:'', offset: totalPages });
                     }
                 }
