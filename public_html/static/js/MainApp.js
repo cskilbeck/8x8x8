@@ -47,7 +47,6 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //
 // - game list
 //      - paging in game list
-//      - make the search text work (timeout on change)
 //      - quick search buttons: my games, top games, most played, recently added, recently changed
 //      - row/box layout option
 //
@@ -136,3 +135,4 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      + compressed assets (editor require() stuff and glyphicons not working) [near enough]
 // +! save as new user loses changes !
 //      +- user profile modal dialog to change username\email\password [buggy but good enough for now]
+//      +- make the search text work (timeout on change)

@@ -372,12 +372,21 @@ class list(Handler):
             'game_id': 0,
             'justmygames': int,
             'search': { 'default': '', 'max': 32 },
-            'length': { 'default': 20, 'max': 100, 'min': 1 },
+            'length': { 'default': 5, 'max': 50, 'min': 1 },
             'offset': { 'default': 0, 'min': 0 }
             }
         })
     def Get(self, data):
+        print pprint.pformat(data)
+        result = {}
         data['search'] = searchTerm(data['search'])
+        self.execute('''SELECT COUNT(*) AS count
+                        FROM games
+                        WHERE (%(justmygames)s = 0 OR games.user_id = %(user_id)s)
+                            AND (%(game_id)s = 0 OR games.game_id = %(game_id)s)
+                            AND game_title LIKE %(search)s''', data)
+        result['total'] = self.fetchone()['count']
+        print result['total']
         self.execute('''SELECT games.game_id,
                                 games.user_id,
                                 game_title,
@@ -401,7 +410,10 @@ class list(Handler):
                         ORDER BY game_lastsaved DESC, game_created DESC
                         LIMIT %(length)s OFFSET %(offset)s''', data)
         rows = self.fetchall()
-        return JSON({ 'count': len(rows), 'games': rows })
+        result['count'] = len(rows)
+        result['games'] = rows;
+        print pprint.pformat(result)
+        return JSON(result)
 
 #----------------------------------------------------------------------
 # /api/count

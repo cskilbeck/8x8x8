@@ -40,17 +40,29 @@ function(ajax, user) {
 
         // get the list of games
         // TODO (chs): search term and paging parameters (and respect the cache is they're unchanged - eg coming back to the pane)
-        getlist: function(force) {
-            var i, q = Q.defer();
+        getlist: function(force, search, currentPage, pageSize) {
+            var i, count, total, q = Q.defer();
             if(list.length === 0 || force) {
-                ajax.get('list', { user_id: user.id(), justmygames: 0 } )
+                ajax.get('list', {
+                    user_id: user.id(),
+                    justmygames: 0,
+                    search: search || '*',
+                    length: pageSize,
+                    offset: currentPage * pageSize
+                })
                 .then(function(response) {
+                    count = response.data.count;
+                    total = response.data.total;
                     list = response.data.games || [];
                     for(i in list) {
                         list[i].hover_rating = list[i].rating_stars || 0;
                         list[i].bin_screenshot = drawScreenshot(unhex(list[i].screenshot));
                     }
-                    q.resolve(list);
+                    q.resolve({
+                        count: response.data.count,
+                        total: response.data.total,
+                        games: list
+                    });
                 }, function(response) {
                     q.reject(response);
                 });

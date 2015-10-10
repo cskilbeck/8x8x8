@@ -11,46 +11,6 @@
         eng,
         Syntax = estraverse.Syntax;
 
-    function stackHints(stack, map) {
-        var lines = stack.match(/^\s+at.*\$\d+\s*.*<anonymous>:\d+:.*$/mg);
-        return (lines || []).reduce(function(res, line) {
-            var m = line.match(/(\S*)\$(\d+)\s*.*<anonymous>:(\d+)/);
-            if (m) {
-                res.push({
-                    name: m[1],
-                    line: searchMap(map, 0 | m[3]),
-                    fn_line: 0 | m[2],
-                    gen_line: 0 | m[3]
-                });
-            }
-            return res;
-        }, []);
-    }
-
-    function postSuccess(code, id) {
-        postMessage({
-            msg: 'success',
-            val: code,
-            id: id
-        });
-    }
-
-    function postFail(id, ast, map, genCode, err) {
-        postMessage({
-            msg: 'error',
-            id: id,
-            val: {
-                name: err.name,
-                message: err.message,
-                stack: err.stack,
-                stackHints: stackHints(err.stack, map),
-                __ast: ast,
-                __map: map,
-                __genCode: genCode
-            }
-        });
-    }
-
     // This implements the jankiest possible "source map", where we keep an array
     // of [generatedLine, knownSourceLine]. Seems to essentially work.
     function SourceNode(line, col, _sourceMap, generated) {
@@ -99,23 +59,10 @@
         return this.toStringWithSourceMap().code;
     };
 
-    // THIS RUNS IN THE CONTEXT OF THE FRAME
-    // Ho Hum
-
-        // window.onerror = function onerror(message, url, lineNumber) {
-        //     if (message.search('[__reported__]') !== -1) {
-        //         return true;
-        //     }
-        //     __sys.cont = false;
-        //     __sys.postFail({
-        //         name: 'UnhandledError',
-        //         message: message,
-        //         url: url,
-        //         line: lineNumber,
-        //         stack: ''
-        //     });
-        //     return false;
-        // };
+    // This is used by escodegen
+    window.sourceMap = {
+        SourceNode: SourceNode
+    };
 
     function runWrapper($userCode, __sys) {
         var clear = __sys.clear;
@@ -310,11 +257,6 @@
             }
         });
     }
-
-    // This is used by escodegen
-    window.sourceMap = {
-        SourceNode: SourceNode
-    };
 
     // mainApp.sandbox('var a = 1; function update(frame) { clear(0); }').code
 

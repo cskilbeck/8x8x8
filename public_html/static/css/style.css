@@ -473,3 +473,20 @@ a.share-twitter {
     color: black;
 }
 
+.pagination {
+    margin-top: 0px;
+    margin-right: 10px;
+}
+
+.linkNoHref:hover {
+    cursor: pointer;
+}
+
+.linkNoHref .disabled:hover {
+    cursor: not-allowed;
+}
+
+#gamesTotal {
+    padding-top: 7px;
+    margin-right: 20px;
+}

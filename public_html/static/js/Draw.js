@@ -1,4 +1,4 @@
-if(typeof mainApp === 'undefined') {
+if(typeof mainApp === typeof void 0) {
     mainApp = {};
 }
 
@@ -21,7 +21,8 @@ if(typeof mainApp === 'undefined') {
             '#F80', // orange
             '#FF0', // yellow
             '#FFF'  // white
-        ];
+        ],
+        pixels = [];
 
     function ellipse(ctx, cx, cy, w, h, rounded){
         var lx = cx - w,
@@ -37,6 +38,31 @@ if(typeof mainApp === 'undefined') {
         ctx.bezierCurveTo(rx, cy + ym, cx + xm, by, cx, by);
         ctx.bezierCurveTo(cx - xm, by, lx, cy + ym, lx, cy);
         ctx.bezierCurveTo(lx, cy - ym, cx - xm, ty, cx, ty);
+        ctx.fill();
+    }
+
+    function initpixels(w, h) {
+        var i,
+            context,
+            canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        context = canvas.getContext('2d');
+        for(i=0; i<colors.length; ++i) {
+
+            context.globalAlpha = 1;
+            context.fillStyle = '#122';
+            context.fillRect(0, 0, w, h);
+
+            context.fillStyle = colors[i];
+            context.globalAlpha = 0.8;
+            ellipse(context, w / 2, w / 2, w / 2 - 1, h / 2 - 1, 1.75);
+
+            context.globalAlpha = 1.0;
+            ellipse(context, w / 2, w / 2, w / 2 - 2, h / 2 - 2, 1.75);
+
+            pixels.push(context.getImageData(0, 0, w, h));
+        }
     }
 
     function draw(canvas, context, screen, W, H) {
@@ -46,20 +72,15 @@ if(typeof mainApp === 'undefined') {
             ch = canvas.height,
             xm = cw / W,
             ym = ch / H,
-            xm2 = xm / 2,
-            ym2 = ym / 2,
-            i = 0;
-        context.fillStyle = '#122';
-        context.fillRect(0, 0, cw, ch);
-        for(y = ym2; y < ch; y += ym) {
-            for(x = xm2; x < cw; x += xm) {
-                context.fillStyle = colors[screen[i++] & 15];
-                context.globalAlpha = 0.8;
-                ellipse(context, x, y, xm2 - 1, ym2 - 1, 1.75);
-                context.fill();
-                context.globalAlpha = 1.0;
-                ellipse(context, x, y, xm2 - 2, ym2 - 2, 1.75);
-                context.fill();
+            i = 0,
+            p;
+        if(pixels.length === 0) {
+            initpixels(xm, ym);
+        }
+        for(y = 0; y < ch; y += ym) {
+            for(x = 0; x < cw; x += xm) {
+                p = screen[i++] & 15 || 0;
+                context.putImageData(pixels[p], x, y);
             }
         }
     }

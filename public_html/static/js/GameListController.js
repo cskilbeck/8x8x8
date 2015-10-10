@@ -1,26 +1,75 @@
+
 // DONE (chs): save/restore state of which rows in gamelist were expanded [kinda, it just started working... wierd...]
 
 (function() {
     "use strict";
 
-    var expanded = {};
-
     mainApp.controller('GameListController', ['$scope', '$routeParams', 'dialog', 'user', 'ajax', 'gamelist', '$rootScope', 'game', '$location', '$timeout',
     function ($scope, $routeParams, dialog, user, ajax, gamelist, $rootScope, game, $location, $timeout) {
 
-        var unique = Date.now().toString();
+        var timer,
+            searched,
+            pageSize = 5;
 
         $scope.$parent.pane = 'Games';
         $scope.games = [];
         $scope.user_id = user.id();
         $scope.viewStyle = localStorage.getItem('viewStyle') || 'box';
+        $scope.search = '';
+        $scope.pages = [];
+        $scope.currentPage = 1;
+        $scope.results = '';
 
         $scope.view = function(v) {
             $scope.viewStyle = v;
-            $('.cloakable').hide();
+            $('.cloakable').hide();     // hide gamelist while $apply is in progress
             $timeout(function() {
-                $('.cloakable').show();
+                $('.cloakable').show(); // to avoid ugly style flickering
             });
+        };
+
+        function refreshGames() {
+
+        }
+
+        $scope.$watchGroup(['search', 'currentPage'], function() {
+            if(timer) {
+                $timeout.cancel(timer);
+            }
+            timer = $timeout(function() {
+                if($scope.search !== searched) {
+                    $scope.currentPage = 1;
+                }
+                getGames(true)
+                .then(function() {
+                    searched = $scope.search;
+                });
+                timer = null;
+            }, 500);
+        });
+
+        $scope.pageDisabled = function(p) {
+            var np = $scope.pages.length - 1;
+            return ((p === 0 && $scope.currentPage === 1) ||
+                    (p === np && $scope.currentPage === np - 1));
+        };
+
+        $scope.choosePage = function(p) {
+            if(!$scope.pageDisabled(p)) {
+                if(p === 0 && $scope.currentPage > 1) {
+                    $scope.currentPage -= 1;
+                }
+                else if(p == $scope.pages.length - 1 && $scope.currentPage < $scope.pages.length - 2) {
+                    $scope.currentPage += 1;
+                }
+                else {
+                    $scope.currentPage = p;
+                }
+            }
+        };
+
+        $scope.newGame = function() {
+            $location.path('/edit/new');
         };
 
         $scope.$emit('pane:loaded', 'games');
@@ -28,9 +77,20 @@
         $('#refreshButton').tooltip();
 
         function getGames(force) {
-            var q = Q.defer();
-            gamelist.getlist(force).then(function(gameList) {
-                $scope.games = gameList;
+            var i, pc, q = Q.defer();
+            gamelist.getlist(force, $scope.search, $scope.currentPage - 1, pageSize)
+            .then(function(gameList) {
+                $scope.results = ($scope.search.length ? 'Found ' : '') + gameList.total + ' game' + (gameList.total !== 1 ? 's' : '');
+                pc = (gameList.total + pageSize - 1) / pageSize | 0;
+                $scope.pages = [];
+                if(pc > 1) {
+                    $scope.pages = ['«'];
+                    for(i = 0; i < pc; ++i) {
+                        $scope.pages.push(i + 1);
+                    }
+                    $scope.pages.push('»');
+                }
+                $scope.games = gameList.games;
                 $scope.$applyAsync();
                 q.resolve(gameList);
             }, function(response) {

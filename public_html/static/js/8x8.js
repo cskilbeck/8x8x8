@@ -26,7 +26,7 @@ Object.defineProperty(Error.prototype, 'toJSON', {
         keyHeldReal  = [ false, false, false, false, false ],
         exception = false,
         keyCount = 0, lastkey,
-        frame = 0, frameCounter = 0, frameDelay = 1,
+        frame = 0, frameCounter = 0,
         keynames = ['space', 'left', 'up', 'right', 'down'],
         colorTable = {
             black: 0,
@@ -122,7 +122,7 @@ Object.defineProperty(Error.prototype, 'toJSON', {
                 resetRequest = false;
             }
             if(eng.updateFunction && eng.cont) {
-                if(step || ((frame % frameDelay) === 0 && !paused)) {
+                if(step || ((frame % eng.frameDelay) === 0 && !paused)) {
                     eng.updateFunction(frameCounter++);
                     eng.endframe();
                 }
@@ -196,6 +196,7 @@ Object.defineProperty(Error.prototype, 'toJSON', {
         userFunction: null,
         updateFunction: null,
 
+        frameDelay: 1,
         cont: true,
         ctr: 0,
         maxctr: 30000,
@@ -337,7 +338,7 @@ Object.defineProperty(Error.prototype, 'toJSON', {
             data = payload.data;
             switch(message) {
                 case 'set-frame-delay':
-                    frameDelay = data;
+                    eng.frameDelay = data;
                     break;
                 case 'toggle-pause':
                     paused = !paused;
