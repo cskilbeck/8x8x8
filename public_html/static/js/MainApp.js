@@ -5,14 +5,10 @@ if (window.location.protocol != "https:")
 
 var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']);
 
+mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  
 //////////////////////////////////////////////////////////////////////
-// - Browsers
-//      - Firefox
-//      - [IE9]
-//      - IE10
-//      - IE11
-//      - Chrome
-//      - Safari
+// - Browser support
 // - responsive toolbar height/wrap
 // - editor focus nightmare, & send all non-editor keypresses to the player
 // - game_lastsaved and caching not working
@@ -23,36 +19,25 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']
 //      - standalone player rating (-> link to source)
 // - unicode
 // - home page
-//
 // / instructions/documentation/tooltips/popovers
-//
 // - telemetry/analytics - ga(...) everywhere
-//
-// - mobile
-//      - mobile player mouse/touch support (swipe UDLR & tap)
-//      - player in mobile browsers
-//
-// - comments
-//
+// - mobile player mouse/touch support (swipe UDLR & tap)
+// - player in mobile browsers
+// ? comments
 // - user
-//      - permission bits
+//      - user permission bits
 //      - proper session security
 //      ? groups of users (and admins) for schools
 //      - delete/deactivate user accounts and username recycling (delete games and ratings? and then re-rate all the games they rated!? hmph...)
-//
 // - tutorials
-//      - tetris
-//      / sprites & collision
-//
+//      - tetris tutorial
+//      / sprites & collision tutorials
 // - game list
 //      - view 10/20/50/100 per page
 //      - quick search buttons: my games, top ranked, most played, recently added, recently changed
 //      - top games: clear search, order by ranking desc
 //      - order by: name, created, modified, creator, rank, playcount
-//
-// - api
-//      / fix the get/set pixel/color APIs for numbers/strings
-//
+// / fix the get/set pixel/color APIs for numbers/strings
 //////////////////////////////////////////////////////////////////////
 // \ forking
 // \ make minify.py handle multiple SCRIPT/STYLEBLOCKs

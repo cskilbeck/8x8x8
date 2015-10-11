@@ -73,6 +73,7 @@
 
         function playGame(game, force) {
             if(force || game.game_id !== running_game_id) {
+                $('#mainsidebar').show();
                 running_game_id = game.game_id;
                 status.clearError();
                 postMessage('clear-exception');

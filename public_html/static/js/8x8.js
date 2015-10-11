@@ -237,7 +237,7 @@ Object.defineProperty(Error.prototype, 'toJSON', {
     }
 
     function postMessage(message, data) {
-        if(parent && parent.window) {
+        if(window.self !== window.top) {
             parent.window.postMessage(JSON.stringify({ message: message, data: data }), "https://256pixels.net");
         }
     }
@@ -246,25 +246,44 @@ Object.defineProperty(Error.prototype, 'toJSON', {
         postMessage('focus-editor');
     }
 
+    var keyMap = {
+        tap: 32,
+        left: 37,
+        up: 38,
+        right: 39,
+        down: 40
+    };
+
+    function handleKeyPress(k) {
+        var key = getKeyCode(k);
+        lastkey = k;
+        if(key !== null) {
+            if(keyPress.length >= 20) {
+                keyPress.shift();
+            }
+            keyPress.push(key);
+            keyHeld[key] = true;
+            keyHeldReal[key] = true;
+        }
+    }
+
+    function handleKeyRelease(k) {
+        var key = getKeyCode(e.keyCode);
+        if(key !== null) {
+            if(keyRelease.length >= 20) {
+                keyRelease.shift();
+            }
+            keyRelease.push(key);
+            keyHeldReal[key] = false;
+        }
+    }
+
     document.onkeydown = function(e) {
-        var key;
         if(e.keyCode === 27) {
             focusEditor();
         }
-        if(keyCount > 0 && e.keyCode === lastkey) {
-        }
-        else
-        {
-            lastkey = e.keyCode;
-            key = getKeyCode(e.keyCode);
-            if(key !== null) {
-                if(keyPress.length >= 20) {
-                    keyPress.shift();
-                }
-                keyPress.push(key);
-                keyHeld[key] = true;
-                keyHeldReal[key] = true;
-            }
+        if(keyCount === 0 || e.keyCode !== lastkey) {
+            handleKeyPress(e.keyCode);
         }
         ++keyCount;
         if(keys.indexOf(e.keyCode) >= 0) {
@@ -273,15 +292,8 @@ Object.defineProperty(Error.prototype, 'toJSON', {
     };
 
     document.onkeyup = function(e) {
-        var key = getKeyCode(e.keyCode);
+        handleKeyRelease(e.keyCode);
         keyCount = lastkey = 0;
-        if(key !== null) {
-            if(keyRelease.length >= 20) {
-                keyRelease.shift();
-            }
-            keyRelease.push(key);
-            keyHeldReal[key] = false;
-        }
         if(keys.indexOf(e.keyCode) >= 0) {
             e.preventDefault();
         }
@@ -329,6 +341,12 @@ Object.defineProperty(Error.prototype, 'toJSON', {
             eng.restart();
         }
     }
+
+    touchEnable(canvas);
+    canvas.addEventListener('touch', function(e) {
+        handleKeyPress(keymap[e.detail]);
+        handleKeyRelease(keymap[e.detail]);
+    });
 
     window.addEventListener('message', function(e) {
         var payload, message, data;

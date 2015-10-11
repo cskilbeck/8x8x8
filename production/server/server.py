@@ -26,17 +26,16 @@ from PIL import Image, ImageDraw
 import dbase_nogit as DB
 import sendemail
 
+DB = reload(DB)
+sendemail = reload(sendemail)
+
 #----------------------------------------------------------------------
 # globals
 
 app = None
 render = web.template.render('/usr/local/www/256pixels.net/public_html/templates/')
 
-print "Using database at", DB.Vars.host
-
-# pick up any changes in these modules
-reload(DB)
-reload(sendemail)
+print "Using database at", DB.Vars.host, "(" + DB.Vars.message + ")"
 
 urls = (
     '/login', 'login',                      # user logging in
@@ -385,7 +384,6 @@ class list(Handler):
                             AND (%(game_id)s = 0 OR games.game_id = %(game_id)s)
                             AND game_title LIKE %(search)s''', data)
         result['total'] = self.fetchone()['count']
-        print result['total']
         self.execute('''SELECT games.game_id,
                                 games.user_id,
                                 game_title,

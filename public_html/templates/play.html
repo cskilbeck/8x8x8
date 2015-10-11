@@ -20,6 +20,8 @@ $code
 <!DOCTYPE html>
 <html lang='en'>
     <head>
+        <meta name="viewport"            content="width=256px" />
+
         <meta property="og:url"          content="http://256pixels.net/play/$id()" />
         <meta property="og:title"        content="$title()">
         <meta property="og:description"  content="$description()">
@@ -48,7 +50,17 @@ $code
           ga('send', 'pageview');
         </script>
 
+        <script>
+           function blockMove() {
+                event.preventDefault();
+            }
+        </script>
         <style>
+            @media screen and (max-width: 767px) {
+                body {
+                    background: #EEE;
+                }
+            }
             body {
                 text-align: center;
                 overflow: hidden;
@@ -72,13 +84,14 @@ $code
         $title()<br>
         <br>
         </div>
-        <canvas id='canvas' width='256px' height='256px'></canvas>
+        <canvas ontouchmove="blockMove()" ontouchstart="blockMove()" id='canvas' width='256px' height='256px'></canvas>
         <div id='instructions'>
         $:instructions()
         </div>
         <div>
         </div>
         <script src='//256pixels.net/static/js/Draw.js'></script>
+        <script src='//256pixels.net/static/js/swipe.js'></script>
         <script src='//256pixels.net/static/js/8x8.js'></script>
         <script type='text/javascript'>
             eng.clientFunction = function(__sys) {

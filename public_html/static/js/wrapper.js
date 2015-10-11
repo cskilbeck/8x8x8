@@ -64,15 +64,16 @@
         SourceNode: SourceNode
     };
 
+    // TODO (chs): add in all the things that need to be masked
     function runWrapper($userCode, __sys) {
-        var clear = __sys.clear;
-        var setpixel = __sys.setpixel;
-        var getpixel = __sys.getpixel;
-        var getpixeli = __sys.getpixeli;
-        var keypress = __sys.keypress;
-        var keyrelease = __sys.keyrelease;
-        var keyheld = __sys.keyheld;
-        var reset = __sys.reset;
+        var clear = __sys.clear,
+            setpixel = __sys.setpixel,
+            getpixel = __sys.getpixel,
+            getpixeli = __sys.getpixeli,
+            keypress = __sys.keypress,
+            keyrelease = __sys.keyrelease,
+            keyheld = __sys.keyheld,
+            reset = __sys.reset;
         __sys.userFunction = __sys.catchErrors($userCode);
     }
 

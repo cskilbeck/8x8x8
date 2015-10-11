@@ -16,7 +16,7 @@
         $scope.$parent.pane = 'Games';
         $scope.games = [];
         $scope.user_id = user.id();
-        $scope.viewStyle = localStorage.getItem('viewStyle') || 'box';
+        $scope.viewStyle = mainApp.isMobile ? 'list' : (localStorage.getItem('viewStyle') || 'box');
         $scope.search = '';
         $scope.pages = [];
         $scope.currentPage = 1;
@@ -176,11 +176,16 @@
         };
 
         $scope.playIt = function(event, id) {
-            gamelist.get(id)
-            .then(function(result) {
-                result.editing = false;
-                game.play(result, true);
-            });
+            if(mainApp.isMobile) {
+                location.href = 'http://256pixels.net/play/' + id;
+            }
+            else {
+                gamelist.get(id)
+                .then(function(result) {
+                    result.editing = false;
+                    game.play(result, true);
+                });
+            }
         };
 
         $scope.editIt = function(event, id) {
