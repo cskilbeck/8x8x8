@@ -1,5 +1,5 @@
-mainApp.factory('user', [ '$rootScope', '$modal', 'ajax', '$cookies', 'status', 'dialog',
-function ($rootScope, $modal, ajax, $cookies, status, dialog) {
+mainApp.factory('user', [ '$rootScope', '$modal', 'ajax', 'status', 'dialog',
+function ($rootScope, $modal, ajax, status, dialog) {
     "use strict";
 
     var details = {
@@ -13,6 +13,19 @@ function ($rootScope, $modal, ajax, $cookies, status, dialog) {
             return {
                 expires: new Date(now.getFullYear(), now.getMonth() + 1, now.getDate())
             };
+        },
+
+        save_token = function(token) {
+            localStorage.setItem('token', token);
+            console.log("Token:", token);
+        },
+
+        delete_token = function() {
+            localStorage.removeItem('token');
+        },
+
+        get_token = function() {
+            return localStorage.getItem('token');
         },
 
         handleReason = function(reason, loginDetails) {
@@ -107,7 +120,7 @@ function ($rootScope, $modal, ajax, $cookies, status, dialog) {
                         }
                     }).result
                     .then(function (result) {
-                        localStorage.setItem('token', result.token);
+                        save_token(result.token);
                         user.update(result, 'login');
                         q.resolve(result);
                     }, function(reason) {
@@ -163,8 +176,7 @@ function ($rootScope, $modal, ajax, $cookies, status, dialog) {
             },
 
             refreshSession: function(query) {
-                var user_token = localStorage.getItem('token'),
-                    user_id = $cookies.get('user_id') || '0',
+                var user_token = get_token(),
                     q = Q.defer();
 
                 if(Object.prototype.hasOwnProperty.call(query, 'resetpassword') &&
@@ -203,7 +215,7 @@ function ($rootScope, $modal, ajax, $cookies, status, dialog) {
                                 }
                             }
                         }).result.then(function(result) {
-                            localStorage.setItem('token', result.token);
+                            save_token(result.token);
                             user.update(result, 'register');
                             q.resolve(result);
                         }, function(reason) {
@@ -218,7 +230,7 @@ function ($rootScope, $modal, ajax, $cookies, status, dialog) {
                 else if(user_token) {
                     ajax.get('refreshSession')
                     .then(function(response) {
-                        localStorage.setItem('token', response.data.token);
+                        save_token(response.data.token);
                         user.update(response.data, 'refreshSession');
                         status('Welcome back ' + data.user_username);
                         q.resolve();
@@ -237,7 +249,7 @@ function ($rootScope, $modal, ajax, $cookies, status, dialog) {
 
             logout: function() {
                 var q = Q.defer();
-                localStorage.removeItem('token');
+                delete_token();
                 details = {
                             user_id: 0,
                             user_username: "",

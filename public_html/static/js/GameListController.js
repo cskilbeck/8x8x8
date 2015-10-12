@@ -8,7 +8,8 @@
     function ($scope, $routeParams, dialog, user, ajax, gamelist, $rootScope, game, $location, $timeout) {
 
         var timer,
-            searched,
+            oldCurrentPage = 1,
+            searched = '',
             pagesWindowSize = 5, // needs to be odd
             totalPages = 1,
             pageSize = 10;
@@ -42,10 +43,13 @@
                 if(sc) {
                     $scope.currentPage = 1;
                 }
-                getGames(true)
-                .then(function() {
-                    searched = $scope.search;
-                });
+                if($scope.currentPage != oldCurrentPage || sc) {
+                    getGames(true)
+                    .then(function() {
+                        oldCurrentPage = $scope.currentPage;
+                        searched = $scope.search;
+                    });
+                }
                 timer = null;
             }, sc ? 500 : 0);
         });

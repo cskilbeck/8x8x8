@@ -12,7 +12,7 @@
         $httpProvider.interceptors.push('tokenInterceptor');
     }]);
 
-    mainApp.factory('tokenInterceptor', ['$q', '$cookies', function($q, $cookies) {
+    mainApp.factory('tokenInterceptor', ['$q', function($q) {
         return {
             'request': function(config) {
                 var token = localStorage.getItem('token');
@@ -24,8 +24,8 @@
         };
     }]);
 
-    mainApp.factory('ajax', ['$rootScope', '$http', 'status', '$cookies',
-    function($rootScope, $http, status, $cookies) {
+    mainApp.factory('ajax', ['$rootScope', '$http', 'status',
+    function($rootScope, $http, status) {
         "use strict";
 
         function valid(data) {

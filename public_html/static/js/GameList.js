@@ -41,6 +41,7 @@ function(ajax, user) {
         // get the list of games
         // TODO (chs): search term and paging parameters (and respect the cache is they're unchanged - eg coming back to the pane)
         getlist: function(force, search, currentPage, pageSize) {
+            console.log("Getlist");
             var i, count, total, q = Q.defer();
             if(list.length === 0 || force) {
                 ajax.get('list', {
@@ -148,7 +149,7 @@ function(ajax, user) {
             }, function(response) {
                 q.reject(response);
             });
-            return q.promise; 
+            return q.promise;
         },
 
         // re-get the list of games next time someone asks for it
