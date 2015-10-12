@@ -1,57 +1,82 @@
-// courtesy of http://padilicious.com/
 (function(globals) {
 
-    globals.touchEnable = function(element, options, callback) {
+    var settings = {
+            tapTime: 100,               // longest tap allowed in ms
+            minLengthSquared: 25 * 25   // length that causes a swipe, in viewport pixels
+        };
 
-        var settings = {
-                tapTime: 350,               // longest tap allowed in ms
-                minLength: 72               // length that causes a swipe, in viewport pixels
-            };
+    var ox, oy, t, ID = 0, ck = null, tapper;
 
-        var ox, oy, t, ID = 0;
+    var downThreshold = 0.75 * Math.PI,
+        upThreshold = 0.25 * Math.PI;
 
-        element.addEventListener('touchstart', function(event) {
-            event.preventDefault();
-            if(event.touches.length == 1) {
-                ox = event.touches[0].pageX;
-                oy = event.touches[0].pageY;
-                ID = event.touches[0].identifier;
-                t = Date.now();
-            } else {
-                ID = 0;
-            }
-        });
-        
-        element.addEventListener('touchmove', function(event) {
-            var dx, dy, r;
-            event.preventDefault();
-            if(event.touches.length === 1 && event.touches[0].identifier === ID) {
-                dx = event.touches[0].pageX - ox;
-                dy = event.touches[0].pageY - oy;
-                if (Math.sqrt(dx * dx + dy * dy) >= settings.minLength ) {
-                    element.dispatchEvent(new CustomEvent('touch', { detail: swipeDirection(Math.atan2(Y, X) / Math.PI) }));
-                    ID = 0;
-                }
-            } else {
-                ID = 0;
-            }
-        });
-        
-        element.addEventListener('touchend', function(event) {
-            event.preventDefault();
-            if(event.touches.length === 1 && event.touches[0].identifier === ID) {
-                if(Date.now() - t < settings.tapTime) {
-                    element.dispatchEvent(new CustomEvent('touch', { detail: 'tap' }));
-                    element.dispatchEvent(new Event('tap'));
-                }
-                ID = 0;
-            }
-        });
+    function send(x) {
+        //element.dispatchEvent(new CustomEvent('swipe', { detail: x }));
+        console.log(x);
+    }
 
-        function swipeDirection(a) {
-            var ma = Math.abs(a);
-            return ma > 0.75 ? 'down' : ma < 0.25 ? 'up': a > 0 ? 'right' : 'left';
+    function swipeDirection(e) {
+        var dx = e.pageX - ox,
+            dy = e.pageY - oy,
+            a = Math.atan2(dy, dx),
+            ma = a < 0 ? -a : a;
+        return dx * dx + dy * dy < settings.minLengthSquared ? 'center' :
+                ma > downThreshold ? 'left' :
+                ma < upThreshold ? 'right' :
+                a > 0 ? 'down' :
+                'up';
+    }
+
+    function start(e) {
+        e.preventDefault();
+        if(e.touches.length == 1) {
+            ox = e.touches[0].pageX;
+            oy = e.touches[0].pageY;
+            ID = e.touches[0].identifier;
+            t = Date.now();
+            send({ direction: 'center', action: 'press' });
+            ck = 'center';
+            tapper = true;
+        } else {
+            ID = 0;
         }
+    }
+
+    function move(e) {
+        var r;
+        e.preventDefault();
+        if(e.touches.length === 1 && e.touches[0].identifier === ID) {
+            r = swipeDirection(e.touches[0]);
+            if(ck !== r) {
+                send({ direction: ck, action: 'release' });
+                send({ direction: r, action: 'press' });
+                if(r !== 'center') {
+                    tapper = false;
+                }
+                ck = r;
+            }
+        } else {
+            ID = 0;
+        }
+    }
+
+    function end(e) {
+        e.preventDefault();
+        if(e.changedTouches.length === 1 && e.changedTouches[0].identifier === ID) {
+            send({ direction: ck, action: 'release' });
+            if(tapper && Date.now() - t < settings.tapTime) {
+                send({ direction: 'center', action: 'tapped' });
+            }
+            tapper = false;
+            ck = null;
+            ID = 0;
+        }
+    }
+
+    globals.touchEnable = function(element) {
+        element.addEventListener('touchstart', start, true);
+        element.addEventListener('touchmove', move, true);
+        element.addEventListener('touchend', end, true);
     };
 
 })(window);

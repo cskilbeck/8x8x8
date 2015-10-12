@@ -7,7 +7,6 @@ CREATE TABLE `users`(
     user_email VARCHAR(255) UNIQUE NOT NULL,
     user_username VARCHAR(200) UNIQUE NOT NULL,
     user_password VARCHAR(100) NOT NULL,
-    user_session INT UNSIGNED,
     user_options VARCHAR(8192),
     user_created DATETIME);
 

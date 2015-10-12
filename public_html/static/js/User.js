@@ -1,12 +1,18 @@
-mainApp.factory('user', [ '$rootScope', '$modal', 'ajax', 'cookie', 'status', 'dialog',
-function ($rootScope, $modal, ajax, cookie, status, dialog) {
+mainApp.factory('user', [ '$rootScope', '$modal', 'ajax', '$cookies', 'status', 'dialog',
+function ($rootScope, $modal, ajax, $cookies, status, dialog) {
     "use strict";
 
     var details = {
             user_id: 0,
             user_username: "",
-            user_email: "",
-            user_session: 0
+            user_email: ""
+        },
+
+        expire = function (days) {
+            var now = new Date();
+            return {
+                expires: new Date(now.getFullYear(), now.getMonth() + 1, now.getDate())
+            };
         },
 
         handleReason = function(reason, loginDetails) {
@@ -101,6 +107,7 @@ function ($rootScope, $modal, ajax, cookie, status, dialog) {
                         }
                     }).result
                     .then(function (result) {
+                        localStorage.setItem('token', result.token);
                         user.update(result, 'login');
                         q.resolve(result);
                     }, function(reason) {
@@ -156,14 +163,8 @@ function ($rootScope, $modal, ajax, cookie, status, dialog) {
             },
 
             refreshSession: function(query) {
-                var user_session = cookie.get('user_session') || '0',
-                    user_id = cookie.get('user_id') || '0',
-                    data = {
-                        user_session: parseInt(user_session),
-                        user_id: parseInt(user_id),
-                        user_username: cookie.get('user_username'),
-                        user_email: cookie.get('user_email')
-                    },
+                var user_token = localStorage.getItem('token'),
+                    user_id = $cookies.get('user_id') || '0',
                     q = Q.defer();
 
                 if(Object.prototype.hasOwnProperty.call(query, 'resetpassword') &&
@@ -181,7 +182,7 @@ function ($rootScope, $modal, ajax, cookie, status, dialog) {
                         msg: "Edit details",
                         dialogTitle: 'Edit your details'
                     };
-                    // get username from database 1st (could log them in here...)
+                    // get username from database 1st
                     ajax.get('userdetails', {
                         code: query.resetpassword,
                         email: query.email
@@ -202,6 +203,7 @@ function ($rootScope, $modal, ajax, cookie, status, dialog) {
                                 }
                             }
                         }).result.then(function(result) {
+                            localStorage.setItem('token', result.token);
                             user.update(result, 'register');
                             q.resolve(result);
                         }, function(reason) {
@@ -213,13 +215,10 @@ function ($rootScope, $modal, ajax, cookie, status, dialog) {
                         q.reject();
                     });
                 }
-
-                // if cookie session is set but different from current one (either because)
-
-                else if(!isNaN(data.user_session) && data.user_session !== user.session()) {
-                    ajax.get('refreshSession', data)
+                else if(user_token) {
+                    ajax.get('refreshSession')
                     .then(function(response) {
-                        data.user_session = response.data.user_session;
+                        localStorage.setItem('token', response.data.token);
                         user.update(response.data, 'refreshSession');
                         status('Welcome back ' + data.user_username);
                         q.resolve();
@@ -238,20 +237,18 @@ function ($rootScope, $modal, ajax, cookie, status, dialog) {
 
             logout: function() {
                 var q = Q.defer();
-                ajax.get('endSession', { user_id: details.user_id, user_session: details.user_session }, 'Logging ' + details.user_username + ' out...')
-                .then(function() {
-                    user.update({user_id: 0, user_session: 0}, 'logout');
-                    $rootScope.$broadcast('user:logout');
-                    q.resolve();
-                }, function() {
-                    user.update({user_id: 0, user_session: 0}, 'logoutFailed');
-                    $rootScope.$broadcast('user:logout');
-                    q.reject();
-                });
+                localStorage.removeItem('token');
+                details = {
+                            user_id: 0,
+                            user_username: "",
+                            user_email: ""
+                        };
+                q.resolve();
                 return q.promise;
             },
 
             update: function(d, reason) {
+                var exp = expire(365);
                 details = d;
                 ga('send', {
                     hitType: 'event',
@@ -260,13 +257,7 @@ function ($rootScope, $modal, ajax, cookie, status, dialog) {
                     eventValue: details.user_id,
                     eventInteration: false
                 });
-                ajax.set_user(user);
-                console.log(d);
-                cookie.set('user_id', details.user_id, 30);
-                cookie.set('user_username', details.user_username, 30);
-                cookie.set('user_session', details.user_session, 30);
-                cookie.set('user_email', details.user_email, 30);
-                if(details.user_session !== 0) {
+                if(details.user_id !== 0) {
                     $rootScope.$broadcast('user:updated', details);
                 }
             },
@@ -277,10 +268,6 @@ function ($rootScope, $modal, ajax, cookie, status, dialog) {
 
             name: function() {
                 return details.user_username || "Anonymous";
-            },
-
-            session: function() {
-                return details.user_session;
             },
 
             email: function() {

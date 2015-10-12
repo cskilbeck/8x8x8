@@ -51,13 +51,12 @@
     function ($scope, $modal, $modalInstance, details, ajax, user, $timeout, status) {
 
         $scope.details = details;
-        console.log(details);
         $scope.message = 'Fill in required fields...';
         $scope.registrationInProgress = false;
         $scope.details.failed = false;
 
         // details.needOldPassword - true if showProfilebutton, false if register or resetpassword
-        // details.changePassword - true if register or resetpassword or 
+        // details.changePassword - true if register or resetpassword or
 
         $timeout(function() {
             status.focus($('#username'));
@@ -74,7 +73,7 @@
         };
 
         $scope.ok = function () {
-            
+
             $scope.registrationInProgress = true;
 
             $scope.details.failed = false;
@@ -87,8 +86,6 @@
             if(!$scope.details.editingProfile) {
                 delete $scope.details.oldpassword;
             }
-
-            console.log("DETAILS:", $scope.details);
 
             user.register($scope.details)
             .then(function(response) {

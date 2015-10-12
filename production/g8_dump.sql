@@ -68,7 +68,6 @@ CREATE TABLE `users` (
   `user_email` varchar(255) NOT NULL,
   `user_username` varchar(200) NOT NULL,
   `user_password` varchar(100) NOT NULL,
-  `user_session` int(10) unsigned DEFAULT NULL,
   `user_created` datetime DEFAULT NULL,
   `user_resetpasswordcode` char(6) DEFAULT NULL,
   `user_resetpasswordexpire` datetime DEFAULT NULL,

@@ -3,10 +3,10 @@
 if (window.location.protocol != "https:")
     window.location.href = "https:" + window.location.href.substring(window.location.protocol.length);
 
-var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap']);
+var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap', 'ngResource']);
 
 mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  
+
 //////////////////////////////////////////////////////////////////////
 // - Browser support
 // - responsive toolbar height/wrap

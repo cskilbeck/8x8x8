@@ -8,31 +8,34 @@
         session: function() { return 0; }
     };
 
-    mainApp.factory('ajax', ['$rootScope', '$http', 'status',
-    function($rootScope, $http, status) {
+    mainApp.config(['$httpProvider', function($httpProvider) {
+        $httpProvider.interceptors.push('tokenInterceptor');
+    }]);
+
+    mainApp.factory('tokenInterceptor', ['$q', '$cookies', function($q, $cookies) {
+        return {
+            'request': function(config) {
+                var token = localStorage.getItem('token');
+                if(token) {
+                    config.headers.authorization = "Bearer " + token;
+                }
+                return config || $q.when(config);
+            }
+        };
+    }]);
+
+    mainApp.factory('ajax', ['$rootScope', '$http', 'status', '$cookies',
+    function($rootScope, $http, status, $cookies) {
         "use strict";
 
         function valid(data) {
-            if(data === undefined) {
-                data = {};
-            }
-            if(data.user_id === undefined) {
-                data.user_id = user.id();
-            }
-            if(data.user_session === undefined) {
-                data.user_session = user.session();
-            }
-            return data;
+            return data || {};
         }
 
         var ajax = {
 
-            set_user: function(u) {
-                user = u;
-            },
-
             submit: function(fn, url, params, data, msg) {
-                var q = Q.defer();
+                var token, q = Q.defer();
                 status.busy(true);
                 msg = msg || '';
                 if(msg) {

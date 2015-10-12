@@ -174,7 +174,7 @@
                             game_id: game.game_id,
                             game_framerate: game.game_framerate,
                             source: s.code
-                        }, 
+                        },
                         force: forceRestart
                     });
                 }

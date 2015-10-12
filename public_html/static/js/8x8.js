@@ -268,7 +268,7 @@ Object.defineProperty(Error.prototype, 'toJSON', {
     }
 
     function handleKeyRelease(k) {
-        var key = getKeyCode(e.keyCode);
+        var key = getKeyCode(k);
         if(key !== null) {
             if(keyRelease.length >= 20) {
                 keyRelease.shift();
@@ -343,10 +343,6 @@ Object.defineProperty(Error.prototype, 'toJSON', {
     }
 
     touchEnable(canvas);
-    canvas.addEventListener('touch', function(e) {
-        handleKeyPress(keymap[e.detail]);
-        handleKeyRelease(keymap[e.detail]);
-    });
 
     window.addEventListener('message', function(e) {
         var payload, message, data;

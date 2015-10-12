@@ -4,7 +4,7 @@
 # TODO (chs): make it unicode
 #
 # FINISH (chs): parameter validation: min, max, minlength, maxlength, prepend, append, replace, enums?
-# FINISH (chs): proper login/session thing
+# FINISH (chs): proper login/session thing (use JWT)
 #
 # DONE (chs): parameter validation and conditioning engine
 # DONE (chs): DRY the REST functions
@@ -12,20 +12,23 @@
 # DONE (chs): bcrypt password
 #----------------------------------------------------------------------
 
+# When they login or register, create
+
 print "====================================================\nServer restart\n====================================================\n\n"
 
 import sys, types, os, time, datetime, struct, re, random
 import web, pprint, json, iso8601, unicodedata, urlparse, urllib
 import bcrypt
 from contextlib import closing
-from base64 import b64encode
 import MySQLdb as mdb
 import MySQLdb.cursors
 import png, StringIO
 from PIL import Image, ImageDraw
 import dbase_nogit as DB
 import sendemail
+import JWT
 
+JWT = reload(JWT)
 DB = reload(DB)
 sendemail = reload(sendemail)
 
@@ -40,11 +43,10 @@ print "Using database at", DB.Vars.host, "(" + DB.Vars.message + ")"
 urls = (
     '/login', 'login',                      # user logging in
     '/register', 'register',                # user registration
+    '/refreshSession', 'refreshSession',    # get a new JWT
     '/details', 'details',                  # user details update
     '/resetpw', 'resetpw',                  # reset password
     '/userdetails', 'userdetails',          # get user details to prepare for password reset
-    '/refreshSession', 'refreshSession',    # refresh a user session
-    '/endSession', 'endSession',            # log out
     '/create', 'create',                    # C creating a new game
     '/source', 'source',                    # R get source, name, instructions of a game
     '/details', 'details',                  # R get details of a game (name, instructions, screenshot)
@@ -116,6 +118,14 @@ def session():
     else:
         s = web.config._session
     return s
+
+#----------------------------------------------------------------------
+
+def create_token(payload, lifetime = 60 * 60 * 24 * 30):
+    return JWT.create(DB.Vars.secret, payload, lifetime)
+
+def extract_token(token):
+    return JWT.extract(DB.Vars.secret, token)
 
 #----------------------------------------------------------------------
 # open the database
@@ -207,6 +217,7 @@ class Handler:
 def JSON(x):
     web.header('Content-type', 'application/json')
     return json.dumps(x, separators = (',',':'), default = date_handler)
+    #return ")]}',\n" + json.dumps(x, separators = (',',':'), default = date_handler)
 
 def PNG(x):
     web.header('Content-type', 'image/png')
@@ -267,16 +278,27 @@ class data(object):
                     # TODO (chs): add more content-type handlers (I thought web.input was supposed to )
                     # TODO (chs): handle UNICODE?
 
-            # print "ENV:", pprint.pformat(web.ctx.environ)
+            # print "ENV:", pprint.pformat(web.ctx.env)
             # print "Data:", pprint.pformat(web.data())
 
             params = self.paramSpec.get('params', {})
 
-            validate = False
+            # Validate Authorization token
             if self.paramSpec.get('validate', False):
-                validate = True
-                params['user_id'] = int
-                params['user_session'] = int
+                token = web.ctx.environ.get('HTTP_AUTHORIZATION')
+                print "TOKEN:", token
+                if token is None:
+                    raise web.HTTPError('401 Auth required')
+                if token[:7] != 'Bearer ':
+                    raise web.HTTPError('401 Invalid Auth header')
+                try:
+                    jwt = extract_token(token[7:])
+                    print "GOT:", pprint.pformat(jwt)
+                except ValueError as v:
+                    raise web.HTTPError('401 ' + v)
+
+                # should check that payload is proper here...
+                result['user_id'] = jwt['payload']['user_id']
 
             for name in params:
                 param = params[name]
@@ -341,14 +363,6 @@ class data(object):
                 else:
                     result[name] = val
 
-            if validate:
-                slf.execute('''SELECT COUNT(*) AS count
-                                FROM users
-                                WHERE user_id = %(user_id)s
-                                    AND user_session = %(user_session)s''', result)
-                if slf.fetchone()['count'] != 1:
-                    raise web.HTTPError('401 Invalid user session')
-
             return original_func(slf, result, *args, **kwargs)
 
         return new_function
@@ -362,7 +376,7 @@ def searchTerm(s):
 #----------------------------------------------------------------------
 # /api/list
 
-# rating_stars should be 0 for games where this user has not rated the game 
+# rating_stars should be 0 for games where this user has not rated the game
 
 class list(Handler):
     @data({
@@ -563,7 +577,7 @@ class rate(Handler):
         self.execute('''INSERT INTO ratings (rating_timestamp, game_id, user_id, rating_stars)
                         VALUES(NOW(), %(game_id)s, %(user_id)s, %(rating)s)
                         ON DUPLICATE KEY UPDATE rating_timestamp = NOW(), rating_stars = %(rating)s''', data)
-        self.execute('''UPDATE games 
+        self.execute('''UPDATE games
                         SET game_rating =
                             (SELECT (SELECT SUM(rating_stars) FROM ratings WHERE game_id = %(game_id)s) / (SELECT COUNT(*) FROM ratings WHERE game_id = %(game_id)s))
                         WHERE game_id = %(game_id)s''', data)
@@ -574,7 +588,6 @@ class rate(Handler):
 
 #----------------------------------------------------------------------
 # /api/save
-# DONE (chs): require session to save game
 
 class save(Handler):
     @data({
@@ -621,7 +634,6 @@ class screenshot(Handler):
 #----------------------------------------------------------------------
 # /api/delete
 
-# TODO (chs): check user_session!
 # TODO (chs): make it a DELETE operation
 
 class delete(Handler):
@@ -687,27 +699,24 @@ class details(Handler):
         if row is None:
             raise web.HTTPError('401 need password or reset code!')
 
-        data['session'] = getRandomInt()
-
         # new password?
         if data['password'] is not None:
             data['hashed'] = bcrypt.hashpw(data['password'], bcrypt.gensalt(12))
         else:
-            data['hashed'] = row['user_password']
+            data['hashed'] = row['user_password'] # no, keep the old one
 
-        # stash new details
+        # update user record with new details
         self.execute('''UPDATE users
                         SET user_email = %(email)s,
                             user_password = %(hashed)s,
-                            user_username = %(username)s,
-                            user_session = %(session)s
+                            user_username = %(username)s
                         WHERE user_id = %(user_id)s''', data)
         if self.rowcount() != 1:
             raise web.HTTPError("401 Can't update account")
         return JSON({
+                'token': create_token({ 'user_id': data['user_id'] }),
                 'user_id': data['user_id'],
                 'user_username': data['username'],
-                'user_session': data['session'],
                 'user_email': data['email']
             })
 
@@ -738,15 +747,14 @@ class register(Handler):
             raise web.HTTPError('409 Username already taken')
         if(len(data['password']) < 6):
             raise web.HTTPError('401 Password too short')
-        data['session'] = getRandomInt()
         data['hashed'] = bcrypt.hashpw(data['password'], bcrypt.gensalt(12))
-        self.execute('''INSERT INTO users (user_email, user_password, user_username, user_created, user_session)
-                        VALUES (%(email)s, %(hashed)s, %(username)s, NOW(), %(session)s)''', data)
+        self.execute('''INSERT INTO users (user_email, user_password, user_username, user_created)
+                        VALUES (%(email)s, %(hashed)s, %(username)s, NOW() )''', data)
         if self.rowcount() != 1:
             raise web.HTTPError("401 Can't create account")
         result['user_id'] = self.lastrowid()
         result['user_username'] = data['username']
-        result['user_session'] = data['session']
+        result['token'] = create_token({ 'user_id': result['user_id'] })
         text = 'Hello %(username)s,\n\nThanks for registering your account at 256 Pixels!\n\nThe 256 Pixels team.' % data
         html = '''Hello %(username)s,<br><p>Thanks for registering your account at 256 Pixels!</p><p>The 256 Pixels team.</p>''' % data
         sendemail.now('256 Pixels', 'admin@256pixels.net', data['username'], data['email'], 'Welcome to 256 Pixels', text, html)
@@ -817,6 +825,23 @@ The 256 Pixels team.%(br)s
             return JSON({ 'email_sent': True })
 
 #----------------------------------------------------------------------
+# /api/refreshSession
+
+class refreshSession(Handler):
+    @data({
+        'validate': True
+        })
+    def Get(self, data):
+        self.execute('''SELECT user_id, user_email, user_username
+                        FROM users
+                        WHERE user_id = %(user_id)s''', data)
+        if self.rowcount() != 1:
+            raise web.HTTPError('401 no such user')
+        row = self.fetchone()
+        row['token'] = create_token({ 'user_id': data['user_id'] })
+        return JSON(row)
+
+#----------------------------------------------------------------------
 # /api/login
 
 class login(Handler):
@@ -828,7 +853,7 @@ class login(Handler):
         })
     def Post(self, data):
         result = {}
-        self.execute('''SELECT user_id, user_password
+        self.execute('''SELECT user_id, user_password, user_username, user_email
                         FROM users
                         WHERE user_email = %(email)s''', data)
         if self.rowcount() != 1:
@@ -836,62 +861,9 @@ class login(Handler):
         row = self.fetchone()
         checkPassword(row['user_password'], data['password'])
 
-        data['user_id'] = row['user_id']
-        data['session'] = getRandomInt()
-        self.execute('''UPDATE users
-                        SET user_session = %(session)s
-                        WHERE user_email = %(email)s''', data)
-        if self.rowcount() != 1:
-            raise web.HTTPError("500 Can't update session for %(email)s!?" % data)
-
-        self.execute('''SELECT user_id, user_username, user_session, user_email
-                        FROM users
-                        WHERE user_email = %(email)s''', data)
-        if self.rowcount() != 1:
-            raise web.HTTPError('500 Login error')
-        row = self.fetchone()
+        row['token'] = create_token({ 'user_id': row['user_id'] })
+        row.pop('user_password')
         return JSON(row)
-
-#----------------------------------------------------------------------
-# /api/refreshSession
-
-class refreshSession(Handler):
-    @data({
-        'params': {
-            'user_id': int,
-            'user_session': int,
-            'user_email': data.email,
-            'user_username': data.username
-        }
-    })
-    def Get(self, data):
-        data['new_session'] = getRandomInt()
-        self.execute('''UPDATE users
-                        SET user_session = %(new_session)s
-                        WHERE user_id = %(user_id)s
-                            AND user_username = %(user_username)s
-                            AND user_email = %(user_email)s
-                            AND user_session = %(user_session)s''', data)
-        if self.rowcount() != 1:
-            raise web.HTTPError('404 Session not found')
-        data['user_session'] = data['new_session']
-        return JSON(data)
-
-#----------------------------------------------------------------------
-# /api/endSession
-
-class endSession(Handler):
-    @data({
-        'validate': True,
-    })
-    def Get(self, data):
-        self.execute('''UPDATE users
-                        SET user_session = NULL    
-                        WHERE user_id = %(user_id)s
-                            AND user_session = %(user_session)s''', data)
-        if self.rowcount() != 1:
-            raise web.HTTPError('401 Error terminating session')
-        return JSON({ 'status': 'ok' })
 
 #----------------------------------------------------------------------
 # favicon.ico
