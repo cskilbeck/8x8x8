@@ -23,9 +23,6 @@
         $scope.currentPage = 1;
         $scope.results = '';
 
-        // each page has class and content
-        // class can be '' if content not '' and vice versa
-
         $scope.view = function(v) {
             $scope.viewStyle = v;
             $('.cloakable').hide();     // hide gamelist while $digests are in progress
