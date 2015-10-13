@@ -34,7 +34,7 @@
         $scope.currentPage = 1;
         $scope.results = '';
 
-        $scope.searchParams = angular.extend(util.load('searchParams'), {
+        $scope.searchParams = angular.extend(util.load('searchParams') || {}, {
             text: '',
             orderBy: 0,
             justMyGames: 0,

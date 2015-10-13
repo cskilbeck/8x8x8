@@ -9,6 +9,7 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap',
 mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 //////////////////////////////////////////////////////////////////////
+// ! angular-strap and angular-ui $modal clash...
 // - Browser support
 // - responsive toolbar height/wrap
 // - editor focus nightmare, & send all non-editor keypresses to the player

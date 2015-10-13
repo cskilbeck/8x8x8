@@ -341,7 +341,6 @@ class data(object):
                                 raise ValueError('Invalid paramSpec - regex supplied but {0} is not a str'.format(name))
                             re_result = re.match(regex, val)
                             if re_result is None:
-                                print val
                                 error('401 value for {0} is not valid'.format(name))
                             val = re_result.group(0)
 
@@ -368,8 +367,7 @@ class data(object):
                 else:
                     result[name] = val
 
-                print pprint.pformat(result)
-
+            #print pprint.pformat(result)
             return original_func(slf, result, *args, **kwargs)
 
         return new_function
@@ -428,7 +426,7 @@ class list(Handler):
                         WHERE (%%(justmygames)s = 0 OR games.user_id = %%(user_id)s)
                             AND (%%(game_id)s = 0 OR games.game_id = %%(game_id)s)
                             AND (game_title LIKE %%(search)s)
-                        ORDER BY %(orderBy)s
+                        ORDER BY %(orderBy)s, game_title ASC, user_username ASC
                         LIMIT %%(length)s OFFSET %%(offset)s''' % data
         self.execute(q, data)
         rows = self.fetchall()
