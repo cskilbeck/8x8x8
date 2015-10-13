@@ -1,27 +1,49 @@
-
-// DONE (chs): save/restore state of which rows in gamelist were expanded [kinda, it just started working... wierd...]
-
 (function() {
     "use strict";
 
-    mainApp.controller('GameListController', ['$scope', '$routeParams', 'dialog', 'user', 'ajax', 'gamelist', '$rootScope', 'game', '$location', '$timeout',
-    function ($scope, $routeParams, dialog, user, ajax, gamelist, $rootScope, game, $location, $timeout) {
+    var orders = [
+        'game_rating desc',
+        'game_lastsaved desc',
+        'game_created desc',
+        'game_rating desc'      // TODO (chs) implement game_playcount
+    ];
+
+    var newSearchParams;
+
+    mainApp.controller('PopoverCtrl', ['$scope', '$rootScope',
+    function($scope, $rootScope) {
+        $scope.searchParams = newSearchParams;
+    }]);
+
+    mainApp.controller('GameListController', ['$scope', '$routeParams', 'dialog', 'user', 'ajax', 'gamelist', '$rootScope', 'game', '$location', '$timeout', 'util', '$templateCache',
+    function ($scope, $routeParams, dialog, user, ajax, gamelist, $rootScope, game, $location, $timeout, util, $templateCache) {
 
         var timer,
-            oldCurrentPage = 1,
-            searched = '',
             pagesWindowSize = 5, // needs to be odd
             totalPages = 1,
-            pageSize = 10;
+            oldParams = {};
+
+        // for the options popover
+        $templateCache.put('search-popover-template.html', $('#mytemplate').html());
 
         $scope.$parent.pane = 'Games';
         $scope.games = [];
         $scope.user_id = user.id();
-        $scope.viewStyle = mainApp.isMobile ? 'list' : (localStorage.getItem('viewStyle') || 'box');
-        $scope.search = '';
+        $scope.viewStyle = mainApp.isMobile ? 'list' : (util.load('viewStyle') || 'box');
         $scope.pages = [];
         $scope.currentPage = 1;
         $scope.results = '';
+
+        $scope.searchParams = angular.extend(util.load('searchParams'), {
+            text: '',
+            orderBy: 0,
+            justMyGames: 0,
+            pageSize: 10
+        });
+
+        console.log($scope.searchParams);
+
+        newSearchParams = $scope.searchParams;
 
         $scope.view = function(v) {
             $scope.viewStyle = v;
@@ -31,22 +53,21 @@
             }, 100);
         };
 
-        $scope.$watchGroup(['search', 'currentPage'], function() {
-            var sc = $scope.search !== searched;
+        $scope.$watchGroup(['searchParams.text', 'searchParams.orderBy', 'searchParams.justMyGames', 'searchParams.pageSize', 'currentPage'], function() {
+            console.log($scope.searchParams);
+            var sc = $scope.searchParams.text != oldParams.text;
             if(timer) {
                 $timeout.cancel(timer);
             }
             timer = $timeout(function() {
-                if(sc) {
+                if(!angular.equals($scope.searchParams, oldParams)) {
+                    util.save('searchParams', $scope.searchParams);
                     $scope.currentPage = 1;
                 }
-                if($scope.currentPage != oldCurrentPage || sc) {
-                    getGames(true)
-                    .then(function() {
-                        oldCurrentPage = $scope.currentPage;
-                        searched = $scope.search;
-                    });
-                }
+                getGames(true)
+                .then(function() {
+                    angular.copy($scope.searchParams, oldParams);
+                });
                 timer = null;
             }, sc ? 500 : 0);
         });
@@ -75,16 +96,14 @@
 
         $scope.$emit('pane:loaded', 'games');
 
-        $('#refreshButton').tooltip();
-
         function getGames(force) {
             var i, l, h, pc, q = Q.defer();
-            gamelist.getlist(force, $scope.search, $scope.currentPage - 1, pageSize)
+            gamelist.getlist(force, $scope.searchParams.text, $scope.currentPage - 1, $scope.searchParams.pageSize, orders[$scope.searchParams.orderBy], $scope.searchParams.justMyGames)
             .then(function(gameList) {
-                $scope.results = ($scope.search.length ? 'Found ' : '') + gameList.total + ' game' + (gameList.total !== 1 ? 's' : '');
+                $scope.results = ($scope.searchParams.text.length ? 'Found ' : '') + gameList.total + ' game' + (gameList.total !== 1 ? 's' : '');
 
                 // total page count, we'll show N at most
-                totalPages = (gameList.total + pageSize - 1) / pageSize | 0;
+                totalPages = (gameList.total + $scope.searchParams.pageSize - 1) / $scope.searchParams.pageSize | 0;
                 $scope.pages = [];
                 if(totalPages > 1) {
                     if(totalPages > pagesWindowSize) {
@@ -144,7 +163,7 @@
         });
 
         $scope.$on('$destroy', function() {
-            localStorage.setItem('viewStyle', $scope.viewStyle);
+            util.save('viewStyle', $scope.viewStyle);
         });
 
         $scope.refreshGameList = function() {
@@ -201,6 +220,45 @@
         $scope.unclicked = function(index) {
             $('#game_' + index).addClass('dropshadow');
         };
+
+        $scope.showGames = function(x) {
+            $scope.searchParams.justMyGames = x;
+        };
+
+        $scope.topGames = function() {
+            $scope.searchParams.orderBy = 0;
+        };
+
+        $scope.recentlyModified = function() {
+            $scope.searchParams.orderBy = 1;
+        };
+
+        $scope.newGames = function() {
+            $scope.searchParams.orderBy = 2;
+        };
+
+        $scope.mostPlayed = function() {
+            $scope.searchParams.orderBy = 3;
+        };
+
+        $scope.toShow = function(x) {
+            return ['All Games', 'My Games'][x];
+        };
+
+        $scope.setJMG = function(x) {
+            $scope.searchParams.justMyGames = x;
+            console.log(x);
+        };
+
+        $scope.showSearchOptions = function() {
+        };
+
+        $('#searchOptions').popover({
+            content: function() { return $("#searchOptionsTemplate").html(); },
+        });
+
+        $("[data-toggle = popover]").popover();
+        /* <div class="popover" role="tooltip"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div> */
 
         getGames(true);
 

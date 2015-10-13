@@ -1,7 +1,7 @@
 #----------------------------------------------------------------------
+# TODO (chs): separate validated api calls by url rather than flag in paramSpec
 # TODO (chs): autogenerate REST docs from parameter check dictionaries
 # TODO (chs): make delete undoable for N days
-# TODO (chs): make it unicode
 #
 # FINISH (chs): parameter validation: min, max, minlength, maxlength, prepend, append, replace, enums?
 # FINISH (chs): proper login/session thing (use JWT)
@@ -10,6 +10,7 @@
 # DONE (chs): DRY the REST functions
 # DONE (chs): screenshots!
 # DONE (chs): bcrypt password
+# DONE (chs): make it unicode
 #----------------------------------------------------------------------
 
 # When they login or register, create
@@ -41,7 +42,7 @@ render = web.template.render('/usr/local/www/256pixels.net/public_html/templates
 print "Using database at", DB.Vars.host, "(" + DB.Vars.message + ")"
 
 urls = (
-    '/login', 'login',                      # user logging in
+    '/public/login', 'login',               # user logging in
     '/register', 'register',                # user registration
     '/refreshSession', 'refreshSession',    # get a new JWT
     '/details', 'details',                  # user details update
@@ -143,6 +144,12 @@ def opendb():
 
 #----------------------------------------------------------------------
 
+def error(x):
+    print x
+    raise web.HTTPError(x)
+
+#----------------------------------------------------------------------
+
 class Handler:
 
     def output(self, output):
@@ -153,12 +160,12 @@ class Handler:
         print handler + " for " + web.ctx.path
 
         if not handler in self.__class__.__dict__:
-            raise web.HTTPError('401 Invalid method (%s not supported)' % (handler.upper(),))
+            error('401 Invalid method (%s not supported)' % (handler.upper(),))
 
         handlerFunc = self.__class__.__dict__[handler]
 
         if not callable(handlerFunc):
-            raise web.HTTPError('401 Invalid method (%s not supported)' % (handler.upper(),))
+            error('401 Invalid method (%s not supported)' % (handler.upper(),))
 
         try:
             with closing(opendb()) as self.db:
@@ -168,22 +175,22 @@ class Handler:
 
         except ValueError, e:
             pprint.pprint(e)
-            raise web.HTTPError('404 ' + str(e))
+            error('404 ' + str(e))
 
         except KeyError, e:
             pprint.pprint(e)
-            raise web.HTTPError('404 ' + str(e))
+            error('404 ' + str(e))
 
         except mdb.Error, e:
             pprint.pprint(e)
-            raise web.HTTPError('500 Database problem')
+            error('500 Database problem')
 
         except web.HTTPError, e:
             raise e
 
         except Exception, e:
             pprint.pprint(e)
-            raise web.HTTPError('500 Unknown error')
+            error('500 Unknown error')
 
     def POST(self, *args):
         return self.mainHandler("Post", *args)
@@ -216,8 +223,8 @@ class Handler:
 
 def JSON(x):
     web.header('Content-type', 'application/json')
-    return json.dumps(x, separators = (',',':'), default = date_handler)
-    #return ")]}',\n" + json.dumps(x, separators = (',',':'), default = date_handler)
+    return ")]}',\n" + json.dumps(x, separators = (',',':'), default = date_handler) # Add JSONP attack defense which Angular will strip
+    #return json.dumps(x, separators = (',',':'), default = date_handler)
 
 def PNG(x):
     web.header('Content-type', 'image/png')
@@ -245,17 +252,17 @@ def TEXT(x):
 class data(object):
 
     # some common rules
-    email = { 'type': str, 'regex': r"^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$" }
-    password = { 'type': str, 'min': 6, 'max': 64 }
-    optionalpassword = { 'type': str, 'optional': True, 'min': 6, 'max': 64 }
-    username = { 'type': str, 'min': 3, 'max': 32 }
-    game_title = { 'type': str, 'min': 2, 'max': 32 }
-    game_instructions = { 'default': '', 'min': 0, 'max': 240 }
+    email = { 'type': str, 'regex': re.compile(r"^(\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*)$") }
+    password = { 'type': unicode, 'min': 6, 'max': 64 }
+    optionalpassword = { 'type': unicode, 'optional': True, 'min': 6, 'max': 64 }
+    username = { 'type': unicode, 'min': 3, 'max': 32 }
+    game_title = { 'type': unicode, 'min': 2, 'max': 32 }
+    game_instructions = { 'default': u'', 'min': 0, 'max': 240 }
     game_framerate = { 'default': 0, 'min': 0, 'max': 5 }
     game_rating = { 'type': int, 'min': 1, 'max': 5 }
     screenshot = { 'type': str, 'min': 256, 'max': 256 }
-    resetcode = { 'type': str, 'regex': '[XYT34567H9AKCDEF]{6}' }
-    optionalresetcode = { 'type': str, 'optional': True, 'regex': '[XYT34567H9AKCDEF]{6}' }
+    resetcode = { 'type': str, 'regex': re.compile('([XYT34567H9AKCDEF]{6})') }
+    optionalresetcode = { 'type': str, 'optional': True, 'regex': re.compile('([XYT34567H9AKCDEF]{6})') }
 
     def __init__(self, paramSpec):
         self.paramSpec = paramSpec
@@ -276,7 +283,7 @@ class data(object):
                         data = web.input()
                         # now it will be strings...
                     # TODO (chs): add more content-type handlers (I thought web.input was supposed to )
-                    # TODO (chs): handle UNICODE?
+                    # DONE (chs): handle UNICODE?
 
             # print "ENV:", pprint.pformat(web.ctx.env)
             # print "Data:", pprint.pformat(web.data())
@@ -286,16 +293,14 @@ class data(object):
             # Validate Authorization token
             if self.paramSpec.get('validate', False):
                 token = web.ctx.environ.get('HTTP_AUTHORIZATION')
-                print "TOKEN:", token
                 if token is None:
-                    raise web.HTTPError('401 Auth required')
+                    error('401 Auth required')
                 if token[:7] != 'Bearer ':
-                    raise web.HTTPError('401 Invalid Auth header')
+                    error('401 Invalid Auth header')
                 try:
                     jwt = extract_token(token[7:])
-                    print "GOT:", pprint.pformat(jwt)
                 except ValueError as v:
-                    raise web.HTTPError('401 ' + v)
+                    error('401 ' + v)
 
                 # should check that payload is proper here...
                 result['user_id'] = jwt['payload']['user_id']
@@ -305,11 +310,9 @@ class data(object):
                 optional = False
                 deftype = type(param)
                 val = data.get(name, None)
-                # if val is str:
-                #     val = unicodedata.normalize('NFKD', val).encode('ascii','ignore')
                 if deftype == type:
                     if val is None:
-                        raise web.HTTPError('401 Missing parameter %s' % (name,))
+                        error('401 Missing parameter %s' % (name,))
                     try:
                         val = param(val)  # chs: handle unicode?
                     except TypeError:
@@ -336,21 +339,23 @@ class data(object):
                         if regex is not None:
                             if deftype is not str:
                                 raise ValueError('Invalid paramSpec - regex supplied but {0} is not a str'.format(name))
-                            if re.match(regex, val) is None:
+                            re_result = re.match(regex, val)
+                            if re_result is None:
                                 print val
-                                raise web.HTTPError('401 value for {0} is not valid'.format(name))
+                                error('401 value for {0} is not valid'.format(name))
+                            val = re_result.group(0)
 
                         if minval is not None:
                             if deftype in [int, float] and val < minval:
-                                raise web.HTTPError('401 value for {0} is too low'.format(name))
-                            elif deftype == str and len(val) < minval:
-                                raise web.HTTPError('401 value for {0} is too short'.format(name))
+                                error('401 value for {0} is too low'.format(name))
+                            elif deftype in [str, unicode] and len(val) < minval:
+                                error('401 value for {0} is too short'.format(name))
 
                         if maxval is not None:
                             if deftype in [int, float] and val > maxval:
-                                raise web.HTTPError('401 value for {0} is too high'.format(name))
-                            elif deftype == str and len(val) > maxval:
-                                raise web.HTTPError('401 value for {0} is too long'.format(name))
+                                error('401 value for {0} is too high'.format(name))
+                            elif deftype in [str, unicode] and len(val) > maxval:
+                                error('401 value for {0} is too long'.format(name))
 
                 elif deftype in [int, float, str, unicode]:
                     val = param if val is None else deftype(val)
@@ -362,6 +367,8 @@ class data(object):
                     raise KeyError('Required parameter %s is missing (expected: %s)' % (name, deftype.__name__))
                 else:
                     result[name] = val
+
+                print pprint.pformat(result)
 
             return original_func(slf, result, *args, **kwargs)
 
@@ -384,12 +391,14 @@ class list(Handler):
             'user_id': 0,
             'game_id': 0,
             'justmygames': int,
-            'search': { 'default': '', 'max': 32 },
-            'length': { 'default': 5, 'max': 50, 'min': 1 },
+            'orderBy': { 'default': 'game_rating desc', 'regex': re.compile('((game_lastsaved|game_created|user_username|game_title|game_rating)((\s+(asc|desc))?))') },
+            'search': { 'default': u'', 'max': 32 },
+            'length': { 'default': 5, 'max': 100, 'min': 1 },
             'offset': { 'default': 0, 'min': 0 }
             }
         })
     def Get(self, data):
+
         result = {}
         data['search'] = searchTerm(data['search'])
         self.execute('''SELECT COUNT(*) AS count
@@ -398,7 +407,8 @@ class list(Handler):
                             AND (%(game_id)s = 0 OR games.game_id = %(game_id)s)
                             AND game_title LIKE %(search)s''', data)
         result['total'] = self.fetchone()['count']
-        self.execute('''SELECT games.game_id,
+        # TODO (chs) find a way to specify order parameter safely
+        q = '''SELECT games.game_id,
                                 games.user_id,
                                 game_title,
                                 game_lastsaved,
@@ -413,13 +423,14 @@ class list(Handler):
                                 ON users.user_id = games.user_id
                             LEFT JOIN (SELECT game_id, rating_stars
                                         FROM ratings
-                                        WHERE user_id = %(user_id)s) AS myratings
+                                        WHERE user_id = %%(user_id)s) AS myratings
                                 ON games.game_id = myratings.game_id
-                        WHERE (%(justmygames)s = 0 OR games.user_id = %(user_id)s)
-                            AND (%(game_id)s = 0 OR games.game_id = %(game_id)s)
-                            AND (game_title LIKE %(search)s)
-                        ORDER BY game_lastsaved DESC, game_created DESC
-                        LIMIT %(length)s OFFSET %(offset)s''', data)
+                        WHERE (%%(justmygames)s = 0 OR games.user_id = %%(user_id)s)
+                            AND (%%(game_id)s = 0 OR games.game_id = %%(game_id)s)
+                            AND (game_title LIKE %%(search)s)
+                        ORDER BY %(orderBy)s
+                        LIMIT %%(length)s OFFSET %%(offset)s''' % data
+        self.execute(q, data)
         rows = self.fetchall()
         result['count'] = len(rows)
         result['games'] = rows;
@@ -433,7 +444,7 @@ class count(Handler):
         'params': {
             'user_id': 0,
             'justmygames': 0,
-            'search': { 'default': '', 'min': 0, 'max': 32 }
+            'search': { 'default': u'', 'min': 0, 'max': 32 }
             }
         })
     def Get(self, data):
@@ -460,7 +471,7 @@ class source(Handler):
                             LEFT JOIN users ON users.user_id = games.user_id # user must exist for each game...
                         WHERE game_id = %(game_id)s''', data)
         if self.rowcount() != 1:
-            raise web.HTTPError('404 Game not found')
+            error('404 Game not found')
         row = self.fetchone();
         web.http.lastmodified(correct_date(row['game_lastsaved']))    # TODO (chs): keep separate last-modified values for screenshot and game save
         return JSON(row)
@@ -481,7 +492,7 @@ class gameid(Handler):
                         WHERE game_title = %(name)s
                             AND user_id = %(user_id)s''', data)
         if self.rowcount() != 1:
-            raise web.HTTPError('404 Game not found')
+            error('404 Game not found')
         return JSON(self.fetchone())
 
 #----------------------------------------------------------------------
@@ -502,7 +513,7 @@ class create(Handler):
                         FROM games
                         WHERE game_title = %(game_title)s AND user_id = %(user_id)s''', data)
         if self.rowcount() != 0:
-            raise web.HTTPError('409 Game name already exists')
+            error('409 Game name already exists')
         self.execute('''INSERT INTO games (user_id, game_created, game_lastsaved, game_source, game_title, game_instructions, game_framerate)
                         VALUES (%(user_id)s, NOW(), NOW(), %(game_source)s, %(game_title)s, %(game_instructions)s, %(game_framerate)s)''' , data)
         return JSON({ 'created': self.rowcount(), 'game_id': self.lastrowid() })
@@ -558,7 +569,7 @@ class rating(Handler):
                         WHERE user_id = %(user_id)s
                             AND game_id = %(game_id)s''', data)
         if self.rowcount() == 0:
-            #raise web.HTTPError('404 user %(user_id)d has not rated game %(game_id)d' % data)
+            #error('404 user %(user_id)d has not rated game %(game_id)d' % data)
             return JSON({ 'rating_stars': 0 })  # meaning not yet rated by this user
         return JSON(self.fetchone())
 
@@ -595,9 +606,9 @@ class save(Handler):
         'params': {
             'game_id': int,
             'game_title': data.game_title,
-            'game_instructions': '',
+            'game_instructions': u'',
             'game_framerate': data.game_framerate,
-            'game_source': ''
+            'game_source': u''
             }
         })
     def Post(self, data):
@@ -648,7 +659,7 @@ class delete(Handler):
                         WHERE game_id = %(game_id)s
                             AND user_id = %(user_id)s''', data)
         if self.rowcount() == 0:
-            raise web.HTTPError('404 Game not found')
+            error('404 Game not found')
         return JSON({ 'deleted': self.rowcount() })
 
 #----------------------------------------------------------------------
@@ -658,9 +669,9 @@ def checkPassword(hashed, password):
     try:
         attempt = bcrypt.hashpw(password, hashed)
         if attempt != hashed:
-            raise web.HTTPError('401 Incorrect password')
+            error('401 Incorrect password')
     except ValueError:
-        raise web.HTTPError('401 Incorrect password!')
+        error('401 Incorrect password!')
 
 # must have either resetcode or oldpassword
 
@@ -682,7 +693,7 @@ class details(Handler):
                             FROM users
                             WHERE user_id = %(user_id)s''', data)
             if self.rowcount() != 1:
-                raise web.HTTPError('401 Incorrect user_id')
+                error('401 Incorrect user_id')
             row = self.fetchone()
             checkPassword(row['user_password'], data['oldpassword'])
 
@@ -693,11 +704,11 @@ class details(Handler):
                             AND user_resetpasswordcode=%(code)s
                             AND user_resetpasswordexpire > NOW()''', data)
             if self.rowcount() != 1:
-                raise web.HTTPError('401 Bad reset code')
+                error('401 Bad reset code')
             row = self.fetchone()
 
         if row is None:
-            raise web.HTTPError('401 need password or reset code!')
+            error('401 need password or reset code!')
 
         # new password?
         if data['password'] is not None:
@@ -712,7 +723,7 @@ class details(Handler):
                             user_username = %(username)s
                         WHERE user_id = %(user_id)s''', data)
         if self.rowcount() != 1:
-            raise web.HTTPError("401 Can't update account")
+            error("401 Can't update account")
         return JSON({
                 'token': create_token({ 'user_id': data['user_id'] }),
                 'user_id': data['user_id'],
@@ -740,18 +751,18 @@ class register(Handler):
                         FROM users
                         WHERE user_email=%(email)s''', data)
         if self.fetchone()['count'] != 0:
-            raise web.HTTPError('409 Email already taken')
+            error('409 Email already taken')
         self.execute('''SELECT COUNT(*) AS count FROM users
                         WHERE user_username=%(username)s''', data)
         if self.fetchone()['count'] != 0:
-            raise web.HTTPError('409 Username already taken')
+            error('409 Username already taken')
         if(len(data['password']) < 6):
-            raise web.HTTPError('401 Password too short')
+            error('401 Password too short')
         data['hashed'] = bcrypt.hashpw(data['password'], bcrypt.gensalt(12))
         self.execute('''INSERT INTO users (user_email, user_password, user_username, user_created)
                         VALUES (%(email)s, %(hashed)s, %(username)s, NOW() )''', data)
         if self.rowcount() != 1:
-            raise web.HTTPError("401 Can't create account")
+            error("401 Can't create account")
         result['user_id'] = self.lastrowid()
         result['user_username'] = data['username']
         result['token'] = create_token({ 'user_id': result['user_id'] })
@@ -778,7 +789,7 @@ class userdetails(Handler):
                             AND user_resetpasswordexpire > NOW()''', data)
         row = self.fetchone()
         if row is None:
-            raise web.HTTPError('404 Email not found or bad code')
+            error('404 Email not found or bad code')
         return JSON(row)
 
 #----------------------------------------------------------------------
@@ -813,7 +824,7 @@ The 256 Pixels team.%(br)s
                             user_resetpasswordexpire = NOW() + INTERVAL 1 HOUR
                         WHERE user_email = %(email)s''', data)
         if self.rowcount() != 1:
-            raise web.HTTPError('404 Email not found')
+            error('404 Email not found')
         self.execute('SELECT user_username FROM users WHERE user_email = %(email)s', data)
         row = self.fetchone()
         if row is not None:
@@ -836,7 +847,7 @@ class refreshSession(Handler):
                         FROM users
                         WHERE user_id = %(user_id)s''', data)
         if self.rowcount() != 1:
-            raise web.HTTPError('401 no such user')
+            error('401 no such user')
         row = self.fetchone()
         row['token'] = create_token({ 'user_id': data['user_id'] })
         return JSON(row)
@@ -857,7 +868,7 @@ class login(Handler):
                         FROM users
                         WHERE user_email = %(email)s''', data)
         if self.rowcount() != 1:
-            raise web.HTTPError('401 Incorrect email address')
+            error('401 Incorrect email address')
         row = self.fetchone()
         checkPassword(row['user_password'], data['password'])
 
@@ -931,7 +942,7 @@ class screen(Handler):
         self.execute('''SELECT game_screenshot, game_lastsaved FROM games
                         WHERE game_id = %(game_id)s''', locals())
         if self.rowcount() != 1:
-            raise web.HTTPError('404 game not found')
+            error('404 game not found')
         row = self.fetchone()
         web.http.lastmodified(correct_date(row['game_lastsaved']))    # TODO (chs): keep separate last-modified values for screenshot and game save
         return PNG(get_screenshot(row['game_screenshot']))

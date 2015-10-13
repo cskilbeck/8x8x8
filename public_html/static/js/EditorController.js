@@ -28,8 +28,8 @@
             }
         };
 
-    mainApp.controller('EditorController', ['$scope', '$modal', '$routeParams', 'user', 'ajax', '$rootScope', 'gamelist', 'dialog', '$location', 'game', 'status', '$timeout',
-    function ($scope, $modal, $routeParams, user, ajax, $rootScope, gamelist, dialog, $location, game, status, $timeout) {
+    mainApp.controller('EditorController', ['$scope', '$modal', '$routeParams', 'user', 'ajax', '$rootScope', 'gamelist', 'dialog', '$location', 'game', 'status', '$timeout', 'util',
+    function ($scope, $modal, $routeParams, user, ajax, $rootScope, gamelist, dialog, $location, game, status, $timeout, util) {
 
         var newGameID = $routeParams.game_id;
 
@@ -87,16 +87,7 @@
 
         $scope.$parent.pane = 'Editor';
 
-        (function() {
-            var opts = localStorage.getItem('editorOptions');
-            if(opts) {
-                editorOptions = JSON.parse(opts);
-            }
-            else {
-                // TODO (chs): roaming options - load it from the database
-            }
-
-        })();
+        editorOptions = util.load('editorOptions') || editorOptions;
 
         startEditor();
 
@@ -132,7 +123,7 @@
         $scope.saveState = function() {
             source = editor.getValue();
             session = editor.getSession();
-            localStorage.setItem('source', source);
+            util.save('source', source);
             // TODO (chs): roaming options: save it to the database
             return true;
         };
@@ -238,7 +229,7 @@
             if(editor) {
                 editor.setTheme('ace/theme/' + options.theme.toLowerCase());
                 editor.setOptions(options.options);
-                localStorage.setItem('editorOptions', JSON.stringify(editorOptions));
+                util.save('editorOptions', editorOptions);
             }
         }
 

@@ -87,7 +87,7 @@ function ($rootScope, $modal, ajax, status, dialog) {
 
             dologin: function(details) {
                 var q = Q.defer();
-                ajax.post('login', details, 'Logging in ' + details.email + '...')
+                ajax.post('public/login', details, 'Logging in ' + details.email + '...')
                 .then(function(response) {
                     q.resolve(response.data);
                 }, function(response) {
@@ -256,6 +256,7 @@ function ($rootScope, $modal, ajax, status, dialog) {
                             user_email: ""
                         };
                 q.resolve();
+                $rootScope.$broadcast('user:logout');
                 return q.promise;
             },
 

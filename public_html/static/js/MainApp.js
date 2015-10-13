@@ -1,9 +1,10 @@
 //////////////////////////////////////////////////////////////////////
 
-if (window.location.protocol != "https:")
+if (window.location.protocol != "https:") {
     window.location.href = "https:" + window.location.href.substring(window.location.protocol.length);
+}
 
-var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap', 'ngResource']);
+var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap', 'ngResource', 'mgcrea.ngStrap', 'mgcrea.ngStrap.tooltip']);
 
 mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
@@ -17,17 +18,13 @@ mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 //      - standalone player share buttons
 //      - standalone player link to source
 //      - standalone player rating (-> link to source)
-// - unicode
 // - home page
 // / instructions/documentation/tooltips/popovers
 // - telemetry/analytics - ga(...) everywhere
 // - mobile player mouse/touch support (swipe UDLR & tap)
 // - player in mobile browsers
-// ? comments
 // - user
 //      - user permission bits
-//      - proper session security
-//      ? groups of users (and admins) for schools
 //      - delete/deactivate user accounts and username recycling (delete games and ratings? and then re-rate all the games they rated!? hmph...)
 // - tutorials
 //      - tetris tutorial
@@ -47,6 +44,8 @@ mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 //      \ ? Make a game private/public [nope]
 //      \- bcrypt password on client before transmission [https instead]
 // \? make it like jsfiddle where games are all anonymous ? save without login would be cool...  [nah]
+// \? comments
+//      \? groups of users (and admins) for schools
 //////////////////////////////////////////////////////////////////////
 // + save current source in LocalStorage
 // + web service
@@ -125,3 +124,5 @@ mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 // +- detect hangs and kill it (possible? with instrumentation via Esprima : for, while, do) (but how to keep the source line matched up? sounds hard... https://github.com/CodeCosmos/codecosmos/blob/master/www/js/sandbox.js)
 //      +- row/box layout option
 //      +- paging in game list
+// +- unicode
+//      +- proper session security [JWT]
