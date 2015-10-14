@@ -112,7 +112,7 @@
         };
 
         // TODO (chs): fix these 4 functions for editing title & instructions, it's lamely done
-        
+
         $scope.$on('highlighter:activate', function(m, name) {
             switch(name) {
                 case 'title':
@@ -234,7 +234,7 @@
         };
 
         $scope.rateClick = function(index, g) {
-            if(g.game_id) {
+            if(g.game_id && !isNaN(parseInt(g.game_id))) {
                 var old = g.rating_stars;
                 g.hover_rating = g.rating_stars = index;
                 user.login("Sign in to rate this game")
@@ -288,6 +288,8 @@
         $scope.tweet = function(game) {
             return "https://twitter.com/intent/tweet";
         };
+
+        $scope.$on('refreshRating', refreshRating);
 
         function refreshRating() {
             if(!user.isLoggedIn() || !game.game_id || isNaN(parseInt(game.game_id))) {

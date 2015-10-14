@@ -23,6 +23,7 @@
         $scope.pages = [];
         $scope.currentPage = 1;
         $scope.results = '';
+        $scope.tb_expanded = false;
 
         var t = util.load('options') || {};
         $scope.options = angular.extend({
@@ -81,6 +82,7 @@
         };
 
         $scope.newGame = function() {
+            game.reset();
             $location.path('/edit/new');
         };
 

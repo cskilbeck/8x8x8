@@ -122,8 +122,8 @@
                     user_id: 0,
                     user_username: 0
                 }, game);
-                playGame(game, true);
-                refreshRating();
+                game.play(game, true);
+                $rootScope.$broadcast('refreshRating');
             },
 
             find: function(id, name) {

@@ -308,6 +308,10 @@ body {
     display: none;
 }
 
+.fa-13 {
+    font-size: 13px;
+}
+
 .toolbar {
     white-space: nowrap;
     padding: 10px;
@@ -316,6 +320,29 @@ body {
     min-width: 500px;
     margin-right: 300px;
     overflow: visible;
+    transition: height 0.35s;
+    border-bottom: 1px solid #CCC;
+}
+
+.toolbar.expanded {
+    height: 100px;
+    transition: height 0.35s;
+}
+
+.toolbar2 {
+    position: absolute;
+    left: 10px;
+    top: 55px;
+    width: 100%;
+    min-width: 500px;
+    height: 0px;
+    transition: height 0.35s;
+    overflow: hidden;
+}
+
+.toolbar.expanded>.toolbar2 {
+    height: 50px;
+    transition: height 0.35s;
 }
 
 .menuItem {
@@ -453,7 +480,6 @@ body {
     display: none;
 }
 
-
 div#mainheader {
     position: absolute;
     top: 0;
@@ -500,6 +526,14 @@ div#gameslist {
     right: 0;
     bottom: 0;
     overflow-y: auto;
+    transition: top 0.35s;
+    background: white;
+    z-index: 500;
+}
+
+div#gameslist.expanded {
+    transition: top 0.35s;
+    top: 100px;
 }
 
 div#editorContainer {
@@ -651,7 +685,7 @@ pre.helpcode {
 .flex-item.list {
     margin: 0px;
     border: none;
-    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
     width: 100%;
     min-width: 240px;
     height: 80px;

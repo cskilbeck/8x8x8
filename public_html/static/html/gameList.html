@@ -1,35 +1,24 @@
 <div class='maincontainer'>
 
-    <div class='toolbar form-inline'>
-        <button class='btn btn-sm btn-default'
-                id='refreshButton'
-                ng-click='refreshGameList()'>
-            <i class='fa fa-refresh'></i>
-        </button>
-        <button class='btn btn-sm btn-primary' ng-click='newGame()'>
-            New Game
-        </button>
-        <div class='input-group form-group'>
+    <div ng-class="['toolbar', 'form-inline', {'expanded': tb_expanded}]">
+        <div class='input-group'>
+            <div class='input-group-btn'>
+                <button class='btn btn-sm btn-default' ng-click='tb_expanded = !tb_expanded' title='Options'>
+                    <i class='fa fa-bars'></i>
+                </button>
+                <button class='btn btn-sm btn-default' ng-click='newGame()' title='New Game'>
+                    <i class='fa fa-file-o'></i>
+                </button>
+                <button class='btn btn-sm btn-default' ng-click='options.text=""' title='New Game'>
+                    <i class='fa fa-close fa-13'></i>
+                </button>
+            </div>
             <input  id='gameSearch'
                     type='text'
                     class='input-sm form-control'
                     placeholder='Search'
                     ng-model='options.text'
                     maxlength='32' />
-            <span class="input-group-btn">
-                <button class="btn btn-sm btn-default" type="button" ng-click='options.text = ""'><i class='fa fa-close'></i></button>
-                <button type="button"
-                        data-html='true'
-                        data-placement='right'
-                        class="btn btn-sm btn-default"
-                        data-prefix-class='searchOptionPopover'
-                        title="Options"
-                        data-content-template="/static/html/searchOptionsPopover.html"
-                        data-auto-close="1"
-                        bs-popover>
-                    <i class='fa fa-ellipsis-h'></i>
-                </button>
-            </span>
         </div>
         <div class='btn-group pull-right'>
             <ul class='pagination pagination-sm pull-right'>
@@ -43,8 +32,29 @@
         <div class='pull-right' id='gamesTotal'>
             {{results}}
         </div>
+        <div ng-class="['toolbar2', {'expanded': tb_expanded}]">
+            <div class='btn-group'>
+                <button type='button' class='btn btn-default btn-sm btn-info' ng-model='options.viewStyle' btn-radio="'box'"><i class='fa fa-lg fa-th'></i></button>
+                <button type='button' class='btn btn-default btn-sm btn-info' ng-model='options.viewStyle' btn-radio="'list'"><i class='fa fa-lg fa-th-list'></i></button>
+            </div>
+            <div class='btn-group'>
+                <button class='btn btn-default btn-sm btn-primary' ng-model='options.pageSize' btn-radio='2'>2</button>
+                <button class='btn btn-default btn-sm btn-primary' ng-model='options.pageSize' btn-radio='50'>50</button>
+                <button class='btn btn-default btn-sm btn-primary' ng-model='options.pageSize' btn-radio='100'>100</button>
+            </div>
+            <div class="btn-group">
+                <button type='button' class="btn btn-default btn-sm btn-success" ng-model="options.justMyGames" btn-radio="1">Mine</label>
+                <button type='button' class="btn btn-default btn-sm btn-success" ng-model="options.justMyGames" btn-radio="0">All</label>
+            </div>
+            <div class="btn-group">
+                <button type='button' class="btn btn-default btn-sm btn-warning" ng-model="options.orderBy" btn-radio="0">Rating</label>
+                <button type='button' class="btn btn-default btn-sm btn-warning" ng-model="options.orderBy" btn-radio="1">Played</label>
+                <button type='button' class="btn btn-default btn-sm btn-warning" ng-model="options.orderBy" btn-radio="2">Saved</label>
+                <button type='button' class="btn btn-default btn-sm btn-warning" ng-model="options.orderBy" btn-radio="3">Created</label>
+            </div>
+        </div>
     </div>
-    <div id='gameslist' class="cloakable">
+    <div id='gameslist' ng-class="['cloakable', {'expanded': tb_expanded}]">
         <div class='flex-container'>
             <div ng-repeat='g in games'
                     class='dropshadow gameLink' ng-class="'flex-item ' + options.viewStyle"
