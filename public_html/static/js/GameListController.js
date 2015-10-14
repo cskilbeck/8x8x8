@@ -96,7 +96,7 @@
                 totalPages = (gameList.total + $scope.options.pageSize - 1) / $scope.options.pageSize | 0;
                 $scope.pages = [];
                 if(totalPages > 1) {
-                    if(totalPages >= pagesWindowSize) {
+                    if(totalPages > pagesWindowSize) {
                         $scope.pages.push({ class:'fa fa-fast-backward', text:'', offset: -totalPages + 1 });
                         $scope.pages.push({ class:'fa fa-forward reversed', text:'', offset: -pagesWindowSize });
                         $scope.pages.push({ class:'fa fa-play reversed', text:'', offset: -1 });
@@ -105,7 +105,7 @@
                     for(i = pageBase; i <= h; ++i) {
                         $scope.pages.push({class:'', text:i, value: i});
                     }
-                    if(totalPages >= pagesWindowSize) {
+                    if(totalPages > pagesWindowSize) {
                         $scope.pages.push({ class:'fa fa-play', text:'', offset: 1 });
                         $scope.pages.push({ class:'fa fa-forward', text:'', offset: pagesWindowSize });
                         $scope.pages.push({ class:'fa fa-fast-forward', text:'', offset: totalPages - 1 });

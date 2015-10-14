@@ -308,8 +308,8 @@ body {
     display: none;
 }
 
-.fa-13 {
-    font-size: 13px;
+.fa-15 {
+    font-size: 15px;
 }
 
 .toolbar {
@@ -917,4 +917,8 @@ td .searchOptionsRow {
     -ms-transform: scale(-1, 1);
     -o-transform: scale(-1, 1);
     transform: scale(-1, 1);
+}
+
+.fa-clear-x:before {
+  content: '\00d7';
 }
