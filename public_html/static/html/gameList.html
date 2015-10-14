@@ -1,69 +1,5 @@
 <div class='maincontainer'>
 
-    <script type='text/template' id='mytemplate'>
-        <form name="popoverForm">
-            <div style='min-width:250px'>
-                <div class='btn-group' id='viewStyles'>
-                    <button class='btn btn-default btn-sm' ng-click='view("box")'><i class='fa fa-lg fa-th'></i></button>
-                    <button class='btn btn-default btn-sm' ng-click='view("list")'><i class='fa fa-lg fa-th-list'></i></button>
-                    <button class='btn btn-default btn-sm' ng-click='searchParams.pageSize=2'>2</button>
-                    <button class='btn btn-default btn-sm' ng-click='searchParams.pageSize=50'>50</button>
-                    <button class='btn btn-default btn-sm' ng-click='searchParams.pageSize=100'>100</i></button>
-                </div>
-                <fieldset class="searchOrders">
-                    <legend>Show</legend>
-                    <ul class='bulletless'>
-                        <li>
-                            <label>
-                                <input type="radio" name="radio0" id="shradio1" value="0" checked ng-model='searchParams.justMyGames'>
-                                {{toShow(0)}}
-                            </label>
-                        </li>
-                        <li>
-                            <label>
-                                <input type="radio" name="radio0" id="shradio2" value="1" ng-model='searchParams.justMyGames'>
-                                {{toShow(1)}}
-                            </label>
-                        </li>
-                    </ul>
-                </fieldset>
-                <fieldset class="searchOrders">
-                    <legend>Sort by</legend>
-                    <ul class='bulletless'>
-                        <li>
-                            <label>
-                                <input type="radio" name="radio1" id="stradio1" value="0" checked ng-model='searchParams.orderBy' ng-click='alert(1)'>
-                                Rating
-                            </label>
-                        </li>
-                        <li>
-                            <label>
-                                <input type="radio" name="radio1" id="stradio2" value="1" ng-model='searchParams.orderBy'>
-                                Most played
-                            </label>
-                        </li>
-                        <li>
-                            <label>
-                                <input type="radio" name="radio1" id="stradio3" value="2" ng-model='searchParams.orderBy'>
-                                Last saved
-                            </label>
-                        </li>
-                        <li>
-                            <label>
-                                <input type="radio" name="radio1" id="stradio4" value="3" ng-model='searchParams.orderBy'>
-                                Created
-                            </label>
-                        </li>
-                    </ul>
-                </fieldset>
-            </div>
-        </form>
-    </script>
-
-    <div id='searchOptionsTemplate' style='display: none'>
-        <div style='height:250px;min-width:250px'>
-        </div>
-    </div>
     <div class='toolbar form-inline'>
         <button class='btn btn-sm btn-default'
                 id='refreshButton'
@@ -78,17 +14,17 @@
                     type='text'
                     class='input-sm form-control'
                     placeholder='Search'
-                    ng-model='searchParams.text'
+                    ng-model='options.text'
                     maxlength='32' />
             <span class="input-group-btn">
-                <button class="btn btn-sm btn-default" type="button" ng-click='searchParams.text = ""'><i class='fa fa-close'></i></button>
+                <button class="btn btn-sm btn-default" type="button" ng-click='options.text = ""'><i class='fa fa-close'></i></button>
                 <button type="button"
                         data-html='true'
                         data-placement='right'
                         class="btn btn-sm btn-default"
                         data-prefix-class='searchOptionPopover'
                         title="Options"
-                        data-content-template="search-popover-template.html"
+                        data-content-template="/static/html/searchOptionsPopover.html"
                         data-auto-close="1"
                         bs-popover>
                     <i class='fa fa-ellipsis-h'></i>
@@ -97,7 +33,7 @@
         </div>
         <div class='btn-group pull-right'>
             <ul class='pagination pagination-sm pull-right'>
-                <li ng-repeat='p in pages' ng-class='["linkNoHref", { active: p.value === currentPage }, { disabled: pageDisabled($index) }]' >
+                <li ng-repeat='p in pages' ng-class='["linkNoHref", { active: p.value === currentPage }, { disabled: pageDisabled(p) }]' >
                     <a ng-click='choosePage(p)'>
                         <span class='{{p.class}}'>{{p.text}}</span>
                     </a>
@@ -111,25 +47,25 @@
     <div id='gameslist' class="cloakable">
         <div class='flex-container'>
             <div ng-repeat='g in games'
-                    class='dropshadow gameLink' ng-class="'flex-item ' + viewStyle"
+                    class='dropshadow gameLink' ng-class="'flex-item ' + options.viewStyle"
                     ng-click='playIt($event, g.game_id)'
                     ng-mousedown='clicked($index)'
                     ng-mouseleave='unclicked($index)'
                     ng-mouseup='unclicked($index)'
                     id='game_{{$index}}'>
-                <div ng-class="'game-title ' + viewStyle">{{g.game_title}}</div>
-                <div ng-class="'game-username ' + viewStyle">by {{g.user_username}}</div>
-                <div ng-class="'game-instructions ' + viewStyle">{{g.game_instructions}}</div>
-                <div ng-class="'game-rating ' + viewStyle">
+                <div ng-class="'game-title ' + options.viewStyle">{{g.game_title}}</div>
+                <div ng-class="'game-username ' + options.viewStyle">by {{g.user_username}}</div>
+                <div ng-class="'game-instructions ' + options.viewStyle">{{g.game_instructions}}</div>
+                <div ng-class="'game-rating ' + options.viewStyle">
                     <i ng-repeat='i in [1,2,3,4,5]' class='{{star(i, g)}}star fa fa-star'></i>
                 </div>
-                <div ng-class="'game-screenshot ' + viewStyle">
+                <div ng-class="'game-screenshot ' + options.viewStyle">
                     <img id="screen_{{g.game_id}}"
                             ng-src='{{screenshot(g)}}'
                             width='64'
                             height='64' />
                     </div>
-                <div ng-class="'game-buttons ' + viewStyle">
+                <div ng-class="'game-buttons ' + options.viewStyle">
                     <a class='btn btn-default' ng-click='editIt($event, g.game_id)'>
                         <i class='fa fa-pencil'></i>
                     </a>

@@ -848,11 +848,39 @@ fieldset.searchOrders ul li label {
 }
 
 .searchOptionPopover-popover {
-    min-width: 300px;
+    min-width: 370px;
+}
+
+td .searchOptionsRow {
+}
+
+.searchOptionsLabel {
+    padding: 10px;
 }
 
 #viewStyles {
     position: absolute;
     top: 40px;
     right: 10px;
+}
+
+.popover-close {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    padding: 9px;
+    color:#666;
+}
+
+.popover-close:hover {
+    color:#000;
+    cursor:pointer;
+}
+
+.reversed {
+    -webkit-transform: scale(-1, 1);
+    -moz-transform: scale(-1, 1);
+    -ms-transform: scale(-1, 1);
+    -o-transform: scale(-1, 1);
+    transform: scale(-1, 1);
 }

@@ -124,9 +124,7 @@
             $scope.options.theme = $scope.themes[t];
         };
 
-        $scope.$watch(function(scope) {
-            return scope.options;
-        }, function(newValue, oldValue) {
+        $scope.$watch('options', function(newValue, oldValue) {
             $rootScope.$broadcast('options', newValue);
         }, true);
 

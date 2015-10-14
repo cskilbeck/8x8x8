@@ -8,81 +8,71 @@
         'game_rating desc'      // TODO (chs) implement game_playcount
     ];
 
-    var newSearchParams;
-
-    mainApp.controller('PopoverCtrl', ['$scope', '$rootScope',
-    function($scope, $rootScope) {
-        $scope.searchParams = newSearchParams;
-    }]);
-
     mainApp.controller('GameListController', ['$scope', '$routeParams', 'dialog', 'user', 'ajax', 'gamelist', '$rootScope', 'game', '$location', '$timeout', 'util', '$templateCache',
     function ($scope, $routeParams, dialog, user, ajax, gamelist, $rootScope, game, $location, $timeout, util, $templateCache) {
 
         var timer,
-            pagesWindowSize = 5, // needs to be odd
+            pagesWindowSize = 3,
+            pageBase = 1,
             totalPages = 1,
             oldParams = {};
-
-        // for the options popover
-        $templateCache.put('search-popover-template.html', $('#mytemplate').html());
 
         $scope.$parent.pane = 'Games';
         $scope.games = [];
         $scope.user_id = user.id();
-        $scope.viewStyle = mainApp.isMobile ? 'list' : (util.load('viewStyle') || 'box');
         $scope.pages = [];
         $scope.currentPage = 1;
         $scope.results = '';
 
-        $scope.searchParams = angular.extend(util.load('searchParams') || {}, {
+        var t = util.load('options') || {};
+        $scope.options = angular.extend({
             text: '',
             orderBy: 0,
             justMyGames: 0,
-            pageSize: 10
-        });
+            pageSize: 10,
+            viewStyle:mainApp.isMobile ? 'list' : 'box'
+        }, t);
 
-        console.log($scope.searchParams);
-
-        newSearchParams = $scope.searchParams;
-
-        $scope.view = function(v) {
-            $scope.viewStyle = v;
+        $scope.$watch('options.viewStyle', function(n, o) {
             $('.cloakable').hide();     // hide gamelist while $digests are in progress
             $timeout(function() {
-                $('.cloakable').show(); // to avoid ugly style flickering
+                $('.cloakable').show(); // to avoid ugly flexbox layout flickering
             }, 100);
-        };
+        });
 
-        $scope.$watchGroup(['searchParams.text', 'searchParams.orderBy', 'searchParams.justMyGames', 'searchParams.pageSize', 'currentPage'], function() {
-            console.log($scope.searchParams);
-            var sc = $scope.searchParams.text != oldParams.text;
-            if(timer) {
-                $timeout.cancel(timer);
+        function refreshList() {
+            if(!angular.equals($scope.options, oldParams)) {
+                $scope.currentPage = 1;
             }
-            timer = $timeout(function() {
-                if(!angular.equals($scope.searchParams, oldParams)) {
-                    util.save('searchParams', $scope.searchParams);
-                    $scope.currentPage = 1;
-                }
-                getGames(true)
-                .then(function() {
-                    angular.copy($scope.searchParams, oldParams);
-                });
-                timer = null;
-            }, sc ? 500 : 0);
+            util.save('options', $scope.options);
+            getGames(true)
+            .then(function() {
+                angular.copy($scope.options, oldParams);
+            });
+            timer = null;
+        }
+
+        $scope.$watchGroup(['options.text', 'options.orderBy', 'options.justMyGames', 'options.pageSize', 'currentPage'], function() {
+            var sc = $scope.options.text != oldParams.text;
+            if(!sc) {
+                refreshList();
+            }
+            else {
+                $timeout.cancel(timer);
+                timer = $timeout(refreshList, 500);
+            }
         });
 
         $scope.pageDisabled = function(p) {
-            return ((p.offset < 0 && $scope.currentPage === 1) ||
-                    (p.offset > 0 && $scope.currentPage === totalPages));
+            return (($scope.currentPage === 1 &&  p.offset < 1) || ($scope.currentPage === totalPages && p.offset > 0));
         };
 
         $scope.choosePage = function(p) {
-            var np;
+            var newPageBase, newPage, topPage = totalPages - (pagesWindowSize - 1);
             if(!$scope.pageDisabled(p)) {
                 if(p.offset) {
-                    np = $scope.currentPage + p.offset;
-                    $scope.currentPage = Math.max(1, Math.min(totalPages, np));
+                    $scope.currentPage = Math.max(1, Math.min(totalPages, $scope.currentPage + p.offset));
+                    pageBase = Math.max($scope.currentPage - pagesWindowSize + 1, Math.min($scope.currentPage, pageBase));
                 }
                 else if(p.value) {
                     $scope.currentPage = p.value;
@@ -97,28 +87,26 @@
         $scope.$emit('pane:loaded', 'games');
 
         function getGames(force) {
-            var i, l, h, pc, q = Q.defer();
-            gamelist.getlist(force, $scope.searchParams.text, $scope.currentPage - 1, $scope.searchParams.pageSize, orders[$scope.searchParams.orderBy], $scope.searchParams.justMyGames)
+            var i, h, pc, q = Q.defer();
+            gamelist.getlist(force, $scope.options.text, $scope.currentPage - 1, $scope.options.pageSize, orders[$scope.options.orderBy], $scope.options.justMyGames)
             .then(function(gameList) {
-                $scope.results = ($scope.searchParams.text.length ? 'Found ' : '') + gameList.total + ' game' + (gameList.total !== 1 ? 's' : '');
-
-                // total page count, we'll show N at most
-                totalPages = (gameList.total + $scope.searchParams.pageSize - 1) / $scope.searchParams.pageSize | 0;
+                $scope.results = ($scope.options.text.length ? 'Found ' : '') + gameList.total + ' game' + (gameList.total !== 1 ? 's' : '');
+                totalPages = (gameList.total + $scope.options.pageSize - 1) / $scope.options.pageSize | 0;
                 $scope.pages = [];
                 if(totalPages > 1) {
-                    if(totalPages > pagesWindowSize) {
-                        $scope.pages.push({ class:'fa fa-fast-backward', text:'', offset: -totalPages });
-                        $scope.pages.push({ class:'fa fa-backward', text:'', offset: -pagesWindowSize });
+                    if(totalPages >= pagesWindowSize) {
+                        $scope.pages.push({ class:'fa fa-fast-backward', text:'', offset: -totalPages + 1 });
+                        $scope.pages.push({ class:'fa fa-forward reversed', text:'', offset: -pagesWindowSize });
+                        $scope.pages.push({ class:'fa fa-play reversed', text:'', offset: -1 });
                     }
-                    l = Math.max(1, $scope.currentPage - (pagesWindowSize / 2 | 0)) ;
-                    h = Math.min(l + pagesWindowSize - 1, totalPages);
-                    l = Math.max(1, h - pagesWindowSize + 1);
-                    for(i = l; i <= h; ++i) {
+                    h = Math.min(pageBase + pagesWindowSize - 1, totalPages);
+                    for(i = pageBase; i <= h; ++i) {
                         $scope.pages.push({class:'', text:i, value: i});
                     }
-                    if(totalPages > pagesWindowSize) {
-                        $scope.pages.push({ class:'fa fa-forward', text:'', offset: pagesWindowSize});
-                        $scope.pages.push({ class:'fa fa-fast-forward', text:'', offset: totalPages });
+                    if(totalPages >= pagesWindowSize) {
+                        $scope.pages.push({ class:'fa fa-play', text:'', offset: 1 });
+                        $scope.pages.push({ class:'fa fa-forward', text:'', offset: pagesWindowSize });
+                        $scope.pages.push({ class:'fa fa-fast-forward', text:'', offset: totalPages - 1 });
                     }
                 }
                 $scope.games = gameList.games;
@@ -159,11 +147,13 @@
 
         $scope.$on('user:updated', function(msg, details) {
             $scope.user_id = user.id();
-//          getGames(true);
+            if($scope.options.justMyGames) {
+                getGames(true);
+            }
         });
 
         $scope.$on('$destroy', function() {
-            util.save('viewStyle', $scope.viewStyle);
+            util.save('options', $scope.options);
         });
 
         $scope.refreshGameList = function() {
@@ -222,23 +212,23 @@
         };
 
         $scope.showGames = function(x) {
-            $scope.searchParams.justMyGames = x;
+            $scope.options.justMyGames = x;
         };
 
         $scope.topGames = function() {
-            $scope.searchParams.orderBy = 0;
+            $scope.options.orderBy = 0;
         };
 
         $scope.recentlyModified = function() {
-            $scope.searchParams.orderBy = 1;
+            $scope.options.orderBy = 1;
         };
 
         $scope.newGames = function() {
-            $scope.searchParams.orderBy = 2;
+            $scope.options.orderBy = 2;
         };
 
         $scope.mostPlayed = function() {
-            $scope.searchParams.orderBy = 3;
+            $scope.options.orderBy = 3;
         };
 
         $scope.toShow = function(x) {
@@ -246,7 +236,7 @@
         };
 
         $scope.setJMG = function(x) {
-            $scope.searchParams.justMyGames = x;
+            $scope.options.justMyGames = x;
             console.log(x);
         };
 

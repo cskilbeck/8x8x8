@@ -41,6 +41,9 @@
                 if(msg) {
                     status(msg);
                 }
+                if(url.indexOf('searchOptionsPopover.html') != -1) {
+                    console.log("!");
+                }
                 // console.log(fn, url, "PARAMS", params, "DATA", data);
                 $http({ method: fn,
                         url: '//256pixels.net/api/' + url,
