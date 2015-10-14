@@ -1,9 +1,8 @@
-
-/* */
-
-.checkbox {
-  padding-left: 20px;
+/****************************************************************************************************/
+.checkbox.inset {
+  margin-left: 40px;
 }
+
 .checkbox label {
   display: inline-block;
   vertical-align: middle;
@@ -45,7 +44,6 @@
 }
 .checkbox input[type="checkbox"]:focus + label::before,
 .checkbox input[type="radio"]:focus + label::before {
-  outline: thin dotted;
   outline: 5px auto -webkit-focus-ring-color;
   outline-offset: -2px;
 }
@@ -239,8 +237,8 @@
   background-color: #5cb85c;
 }
 
-input[type="checkbox"].styled:checked + label::after,
-input[type="radio"].styled:checked + label::after {
+input[type="checkbox"].styled:checked + label:after,
+input[type="radio"].styled:checked + label:after {
   font-family: 'FontAwesome';
   content: "\f00c";
 }
@@ -253,14 +251,16 @@ input[type="radio"] .styled:checked + label::after {
   color: #fff;
 }
 
+/****************************************************************************************************/
 
- {
+html {
     margin: 0;
     min-width: 768px;
     overflow: hidden;
 }
 
 body {
+    min-width: 768px;
     margin: 0;
     padding: 0;
     height: 100%;
@@ -285,7 +285,7 @@ body {
 }
 
 .modal-dialog {
-    min-width: 250px !important;
+    min-width: 300px !important;
 }
 
 .modal-dialog.modal-x-small {
@@ -566,7 +566,7 @@ div#homecontainer {
     overflow-y: auto;
 }
 
-@media screen and (max-width: 767px) {
+@media screen and (max-width: 900px) {
     div#mainsidebar {
         display: none;
     }
@@ -716,7 +716,7 @@ pre.helpcode {
     white-space: nowrap;
 }
 
-@media screen and (max-width: 767px) {
+@media screen and (max-width: 900px) {
     .game-buttons {
         display: none;
     }
@@ -852,7 +852,7 @@ a.share-twitter {
 
 #gamesTotal {
     padding-top: 5px;
-    margin-right: 20px;
+    margin-right: 10px;
 }
 
 .popover #searchOptionsTemplate {
@@ -862,6 +862,16 @@ a.share-twitter {
 
 fieldset.searchOrders {
     padding 5px;
+}
+
+#pagesSection {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+#searchBar {
+  z-index: 10;
 }
 
 fieldset.searchOrders legend {
@@ -920,5 +930,25 @@ td .searchOptionsRow {
 }
 
 .fa-clear-x:before {
-  content: '\00d7';
+  content: '\2a2f';
+}
+
+@media (min-width:768px)
+{
+  .navbar {
+    border-radius:0;
+    border: none;
+    border-bottom: 1px solid #CCC;
+  }
+}
+
+.navbar-brand>img {
+  border-radius: 3px;
+}
+
+.navbar-brand {
+  margin: 0px;
+  padding: 1px;
+  width: 48px;
+  height: 48px;
 }

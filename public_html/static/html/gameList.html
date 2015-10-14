@@ -1,15 +1,15 @@
 <div class='maincontainer'>
 
-    <div ng-class="['toolbar', 'form-inline', {'expanded': tb_expanded}]">
-        <div class='input-group'>
+    <div ng-class="['toolbar', 'form-inline', {'expanded': options.expanded}]">
+        <div class='input-group' id='searchBar'>
             <div class='input-group-btn'>
-                <button class='btn btn-sm btn-default' ng-click='tb_expanded = !tb_expanded' title='Options'>
+                <button class='btn btn-sm btn-default' ng-click='options.expanded = !options.expanded' title='Options'>
                     <i class='fa fa-bars'></i>
                 </button>
                 <button class='btn btn-sm btn-default' ng-click='newGame()' title='New Game'>
-                    <i class='fa fa-file-o'></i>
+                    <i class='fa fa-plus-circle'></i>
                 </button>
-                <button class='btn btn-sm btn-default' ng-click='options.text=""' title='New Game'>
+                <button class='btn btn-sm btn-default' ng-click='options.text=""' title='Clear search'>
                     <i class='fa fa-clear-x fa-15'></i>
                 </button>
             </div>
@@ -20,19 +20,19 @@
                     ng-model='options.text'
                     maxlength='32' />
         </div>
-        <div class='btn-group pull-right'>
-            <ul class='pagination pagination-sm pull-right'>
-                <li ng-repeat='p in pages' ng-class='["linkNoHref", { active: p.value === currentPage }, { disabled: pageDisabled(p) }]' >
-                    <a ng-click='choosePage(p)'>
+        <div id='pagesSection'>
+            <div class='btn-group'>
+                <span id='gamesTotal'>
+                    {{results}}
+                </span>
+                <ul class='pagination pagination-sm pull-right'>
+                    <li ng-repeat='p in pages' ng-class='["linkNoHref", { active: p.value === currentPage }, { disabled: pageDisabled(p) }]' ng-click='choosePage(p)'>
                         <span class='{{p.class}}'>{{p.text}}</span>
-                    </a>
-                </li>
-            </ul>
+                    </li>
+                </ul>
+            </div>
         </div>
-        <div class='pull-right' id='gamesTotal'>
-            {{results}}
-        </div>
-        <div ng-class="['toolbar2', {'expanded': tb_expanded}]">
+        <div ng-class="['toolbar2', {'expanded': options.expanded}]">
             <div class='btn-group'>
                 <button type='button' class='btn btn-default btn-sm btn-info' ng-model='options.viewStyle' btn-radio="'box'"><i class='fa fa-lg fa-th'></i></button>
                 <button type='button' class='btn btn-default btn-sm btn-info' ng-model='options.viewStyle' btn-radio="'list'"><i class='fa fa-lg fa-th-list'></i></button>
@@ -54,7 +54,7 @@
             </div>
         </div>
     </div>
-    <div id='gameslist' ng-class="['cloakable', {'expanded': tb_expanded}]">
+    <div id='gameslist' ng-class="['cloakable', {'expanded': options.expanded}]">
         <div class='flex-container'>
             <div ng-repeat='g in games'
                     class='dropshadow gameLink' ng-class="'flex-item ' + options.viewStyle"

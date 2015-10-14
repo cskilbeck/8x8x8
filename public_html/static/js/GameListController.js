@@ -23,7 +23,6 @@
         $scope.pages = [];
         $scope.currentPage = 1;
         $scope.results = '';
-        $scope.tb_expanded = false;
 
         var t = util.load('options') || {};
         $scope.options = angular.extend({
@@ -31,6 +30,7 @@
             orderBy: 0,
             justMyGames: 0,
             pageSize: 10,
+            expanded: 0,
             viewStyle:mainApp.isMobile ? 'list' : 'box'
         }, t);
 

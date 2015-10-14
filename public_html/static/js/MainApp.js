@@ -9,6 +9,7 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap',
 mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 //////////////////////////////////////////////////////////////////////
+// - play game full screen when viewport with < XXX?
 // - Browser support
 // - responsive toolbar height/wrap
 // - editor focus nightmare, & send all non-editor keypresses to the player
@@ -127,3 +128,7 @@ mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 // +- unicode
 //      +- proper session security [JWT]
 // +! angular-strap and angular-ui $modal clash...
+// +! fix navbar collapse
+// +! fix checkboxes on editor options dialog
+// +- expando toolbar for search options
+// +- fixed pagination location
