@@ -725,6 +725,7 @@ pre.helpcode {
 /* BOX */
 
 .game-title.box {
+    margin-top: 5px;
     text-align: center;
 }
 

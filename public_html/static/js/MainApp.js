@@ -9,6 +9,7 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap',
 mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 //////////////////////////////////////////////////////////////////////
+// - gamelist.js = model, gamelistcontroller.js = controller, gamelist.html = view - make it so (effed up right now)
 // ! infinite loop error reporting broken
 // - play game full screen when viewport width < XXX?
 // - Browser support

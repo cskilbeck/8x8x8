@@ -273,7 +273,6 @@
             this.code = wrapCode(this.map.code, runTemplate, '', ';\n__sys.updateFunction = (typeof update === "function") ? update : null;');
         }
         catch(e) {
-            console.log("ERROR:", e);
             this.errors.push({
                 message: e.description,
                 line: e.lineNumber,
@@ -285,14 +284,14 @@
         }
     };
 
-    mainApp.sandbox.searchMap = function(needle) {
+    mainApp.sandbox.prototype.searchMap = function(needle) {
         // binary search
         var lo = 0;
-        var hi = this.map.length;
+        var hi = this.map.map.length;
         var mid, here;
         while (true) {
             mid = lo + ((hi - lo) >> 1);
-            here = this.map[mid];
+            here = this.map.map[mid];
             if (mid === lo || here[0] === needle) {
                 return here[1];
             } else if (here[0] > needle) {

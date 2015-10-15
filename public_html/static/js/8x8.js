@@ -84,11 +84,22 @@ Object.defineProperty(Error.prototype, 'toJSON', {
         },
         rectangle: function(x, y, w, h, color) {
             var v;
-            x |= 0;
-            y |= 0;
+            x = Math.floor(x);
+            y = Math.floor(y);
             color = getColor(color);
-            x = Math.max(0, x);
-            y = Math.max(0, y);
+            if(x < 0) {
+                w += x;
+                x = 0;
+            }
+            if(y < 0) {
+                h += y;
+                y = 0;
+            }
+            if(w <= 0 || h <= 0) {
+                return;
+            }
+            x = Math.min(15, x);
+            y = Math.min(15, y);
             w = Math.min(16, x + w);
             h = Math.min(16, y + h);
             for(; y < h; ++y) {
