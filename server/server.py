@@ -26,13 +26,13 @@ import MySQLdb.cursors
 import png, StringIO
 from PIL import Image, ImageDraw
 import dbase_nogit as DB
-import sendemail
+import mail
 import JWT
 import traceback
 
 JWT = reload(JWT)
 DB = reload(DB)
-sendemail = reload(sendemail)
+mail = reload(mail)
 
 #----------------------------------------------------------------------
 # globals
@@ -42,6 +42,7 @@ render = web.template.render('/usr/local/www/256pixels.net/public_html/templates
 
 print "Using database at", DB.Vars.host, "(" + DB.Vars.message + ")"
 print "Current dir is", os.getcwd()
+print "PATH:", sys.path
 
 urls = (
     '/public/login', 'login',               # user logging in
@@ -52,7 +53,6 @@ urls = (
     '/userdetails', 'userdetails',          # get user details to prepare for password reset
     '/create', 'create',                    # C creating a new game
     '/source', 'source',                    # R get source, name, instructions of a game
-    '/details', 'details',                  # R get details of a game (name, instructions, screenshot)
     '/count', 'count',                      # R search for # of games matching a search term
     '/list', 'list',                        # R get paginated list of games
     '/gameid', 'gameid',                    # R get a gameid
@@ -65,7 +65,6 @@ urls = (
     '/delete', 'delete',                    # D delete a game
     '/play/(.*)', 'play',                   # get details for play page
     '/screen/(.*)', 'screen',               # get screenshot
-    '/favicon.ico', 'favicon',              # get the favicon
     '/(.*)', 'index'                        # serve up a templated page
     )
 
@@ -109,6 +108,50 @@ def getRandomInt():
         i = struct.unpack("<L", os.urandom(4))[0]
         if i != 0:
             return i
+
+#----------------------------------------------------------------------
+# email admin
+
+welcome_email_template = {
+    'sender_name'   : '256 Pixels',
+    'sender_address': 'admin@256pixels.net',
+    'subject'       : '%(username)s, welcome to 256 Pixels',
+    'html'          : '''Hello %(username)s,<br>
+<p>Congratulations, you've registered your account at <a href='https://256pixels.net'>256 Pixels</a>.</p>
+<p>Thanks,<br>
+The 256 Pixels team.</p>''',
+}
+
+details_changed_template = {
+    'sender_name'   : '256 Pixels',
+    'sender_address': 'admin@256pixels.net',
+    'subject'       : '%(username)s details updated at 256 Pixels',
+    'html'          : '''Hello %(username)s,<br>
+<p>Your details at 256 Pixels have been updated.</p>
+<p>Thanks,<br>
+The 256 Pixels team.</p>'''
+}
+
+password_reset_template = {
+    'sender_name'   : '256 Pixels',
+    'sender_address': 'admin@256pixels.net',
+    'subject'       : 'Password reset for %(username)s at 256 Pixels',
+    'html'          : '''Hello %(username)s,<br>
+<p>PASSWORD RESET REQUEST</p>
+<p>Someone has requested a password reset for an account on 256 Pixels with this email address.<br>
+If this wasn't you, please ignore this email.<br>
+Otherwise, you can visit this link to reset your password: <a href=%(link)s>%(link)s</a></p>
+<p>Thanks<br>
+The 256 Pixels team.</p>'''
+}
+
+def email(name, address, template, params):
+    mail.send(template['sender_name'],
+                    template['sender_address'],
+                    name,
+                    address,
+                    template['subject'] % params,
+                    template['html'] % params)
 
 #----------------------------------------------------------------------
 # persistent session in debug mode
@@ -183,7 +226,7 @@ class Handler:
         except KeyError as e:
             traceback.print_exc()
             print e.message
-            error('404 ' + e)
+            error('404 ' + e.message)
 
         except mdb.Error as e:
             traceback.print_exc()
@@ -320,7 +363,7 @@ class data(object):
                     if val is None:
                         error('401 Missing parameter %s' % (name,))
                     try:
-                        val = param(val)  # chs: handle unicode?
+                        val = param(val)
                     except TypeError:
                         raise ValueError('%s cannot be cast to %s' % (name, param.__name__))
 
@@ -725,9 +768,10 @@ class details(Handler):
                             user_password = %(hashed)s,
                             user_username = %(username)s
                         WHERE user_id = %(user_id)s''', data)
-        if self.rowcount() != 1:
-            error("401 Can't update account")
+        if self.rowcount() == 1:
+            email(data['username'], data['email'], details_changed_template, data);
         return JSON({
+                'changed': self.rowcount() == 1,
                 'token': create_token({ 'user_id': data['user_id'] }),
                 'user_id': data['user_id'],
                 'user_username': data['username'],
@@ -769,9 +813,7 @@ class register(Handler):
         result['user_id'] = self.lastrowid()
         result['user_username'] = data['username']
         result['token'] = create_token({ 'user_id': result['user_id'] })
-        text = 'Hello %(username)s,\n\nThanks for registering your account at 256 Pixels!\n\nThe 256 Pixels team.' % data
-        html = '''Hello %(username)s,<br><p>Thanks for registering your account at 256 Pixels!</p><p>The 256 Pixels team.</p>''' % data
-        sendemail.now('256 Pixels', 'admin@256pixels.net', data['username'], data['email'], 'Welcome to 256 Pixels', text, html)
+        email(data['username'], data['email'], welcome_email_template, data);
         return JSON(result)
 
 #----------------------------------------------------------------------
@@ -793,6 +835,7 @@ class userdetails(Handler):
         row = self.fetchone()
         if row is None:
             error('404 Email not found or bad code')
+        # could give them a session token at this point, but let's make them choose a new password first
         return JSON(row)
 
 #----------------------------------------------------------------------
@@ -800,18 +843,7 @@ class userdetails(Handler):
 
 class resetpw(Handler):
 
-    template = """Hello %(username)s,%(br)s
-%(br)s
-PASSWORD RESET REQUEST%(br)s
-%(br)s
-%(br)s
-Someone has requested a password reset for an account on 256 Pixels with this email address. If this wasn't you, please ignore this email. Otherwise, you can visit this link to reset your password: %(link)s%(br)s
-%(br)s
-The 256 Pixels team.%(br)s
-"""
-
-    @staticmethod
-    def code():
+    def resetcode(self):
         return ("%06X" % (getRandomInt() & 0xFFFFFF,)).replace('0', 'X').replace('1', 'Y').replace('2', 'T').replace('8', 'H').replace('B', 'K') # XYT34567H9AKCDEF
 
     @data({
@@ -820,7 +852,7 @@ The 256 Pixels team.%(br)s
             }
         })
     def Get(self, data):
-        code = resetpw.code()
+        code = self.resetcode()
         data['resetcode'] = code
         self.execute('''UPDATE users
                         SET user_resetpasswordcode = %(resetcode)s,
@@ -831,11 +863,9 @@ The 256 Pixels team.%(br)s
         self.execute('SELECT user_username FROM users WHERE user_email = %(email)s', data)
         row = self.fetchone()
         if row is not None:
-            link = "https://256pixels.net?resetpassword={0}&email={1}".format(code, urllib.quote(data['email']))
-            user = { 'username': row['user_username'] }
-            text = resetpw.template % dict(user, br = '', link = link)
-            html = resetpw.template % dict(user, br = '<br>', link = "<a href = '{0}'>{0}</a>".format(link))
-            sendemail.now('256 Pixels', 'admin@256pixels.net', row['user_username'], data['email'], 'Password reset request at 256 Pixels', text, html)
+            data['link'] = "https://256pixels.net?resetpassword={0}&email={1}".format(code, urllib.quote(data['email']))
+            data['username'] = row['user_username']
+            email(row['user_username'], data['email'], password_reset_template, data)
             return JSON({ 'email_sent': True })
 
 #----------------------------------------------------------------------
@@ -878,13 +908,6 @@ class login(Handler):
         row['token'] = create_token({ 'user_id': row['user_id'] })
         row.pop('user_password')
         return JSON(row)
-
-#----------------------------------------------------------------------
-# favicon.ico
-
-class favicon:
-    def GET(self):
-        return ICON(open('favicon.ico', 'rb').read())
 
 #----------------------------------------------------------------------
 # getscreenshot

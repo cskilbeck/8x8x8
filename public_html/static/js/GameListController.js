@@ -2,11 +2,12 @@
     "use strict";
 
     var orders = [
-        'game_rating desc',
-        'game_lastsaved desc',
-        'game_created desc',
-        'game_rating desc'      // TODO (chs) implement game_playcount
-    ];
+            'game_rating desc',
+            'game_lastsaved desc',
+            'game_created desc',
+            'game_rating desc'      // TODO (chs) implement game_playcount
+        ],
+        oldParams = {};
 
     mainApp.controller('GameListController', ['$scope', '$routeParams', 'dialog', 'user', 'ajax', 'gamelist', '$rootScope', 'game', '$location', '$timeout', 'util', '$templateCache',
     function ($scope, $routeParams, dialog, user, ajax, gamelist, $rootScope, game, $location, $timeout, util, $templateCache) {
@@ -15,17 +16,14 @@
             pagesWindowSize = 3,
             cp = $location.search(),
             pageBase = 1,
-            totalPages = 1,
-            oldParams = {};
+            totalPages = 1;
 
         $scope.$parent.pane = 'Games';
         $scope.games = [];
         $scope.user_id = user.id();
         $scope.pages = [];
-        $scope.currentPage = 1;
+        $scope.currentPage = parseInt(cp.page, 10) || 1;
         $scope.results = '';
-
-        console.log(cp.page);
 
         var t = util.load('options') || {};
         $scope.options = angular.extend({
@@ -41,11 +39,12 @@
             $('.cloakable').hide();     // hide gamelist while $digests are in progress
             $timeout(function() {
                 $('.cloakable').show(); // to avoid ugly flexbox layout flickering
-            }, 100);
+            }, 200);                    // EDGE needs 200 to avoid flickers, others can get by with 100
         });
 
         function refreshList() {
             if(!angular.equals($scope.options, oldParams)) {
+                console.log("Options changed, resetting page to 1");
                 $scope.currentPage = 1;
             }
             util.save('options', $scope.options);
@@ -57,7 +56,7 @@
             timer = null;
         }
 
-        $scope.$watchGroup(['options.text', 'options.orderBy', 'options.justMyGames', 'options.pageSize', 'currentPage'], function() {
+        $scope.$watchGroup(['options.text', 'options.orderBy', 'options.justMyGames', 'options.pageSize', 'currentPage'], function(args) {
             var sc = $scope.options.text != oldParams.text;
             if(!sc) {
                 refreshList();
@@ -110,6 +109,7 @@
                         $scope.pages.push({ class:'fa fa-fast-forward', text:'', offset: totalPages - 1 });
                     }
                 }
+                $scope.currentPage = Math.max(1, Math.min(totalPages, $scope.currentPage));
                 $scope.games = gameList.games;
                 $scope.$applyAsync();
                 q.resolve(gameList);
@@ -252,7 +252,7 @@
         $("[data-toggle = popover]").popover();
         /* <div class="popover" role="tooltip"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div> */
 
-        getGames(true);
+//        getGames(true);
 
     }]);
 

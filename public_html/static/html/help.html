@@ -2,49 +2,77 @@
     <div class='container-fluid' id='helpcontainer'>
         <div class='row'>
             <div class='col-md-8'>
-                <span><h2>Documentation</h2></span>
-            </div>
-            <div class='col-md-4'>
-                 
+                <h2>Documentation</h2>
             </div>
         </div>
         <div class='row'>
             <div class='container-fluid'>
                 <div class='col-md10'>
-                    256 Pixel Games are played on an 16x16 grid of pixels and can display 16 colors.
+                    <p>256 Pixel games are written in Javascript, so if you don't already know how to write Javascript
+                    programs, head over to <a href='https://www.codecademy.com/tracks/javascript'>CodeAdcademy</a> and
+                    learn. Once you've done that, come back and write some games!</p>
+                    <p>256 Pixel Games are played on an 16x16 grid of pixels and can display 16 colors.
                     The coordinates start at (0,0) in the top left and go to (15,15) in the bottom right.
                     The keys which can be used are: 'up', 'down', 'left', 'right' and 'space'.
-                    The colors available are:<p>
-                    <div class='row'><div class='col-xs-1 col-xs-offset-1' style='height: 1.25em;  width: 1em; background: #000000; border: 1px solid black;'></div><div class='col-xs-9'>0 - black</div></div>
-                    <div class='row'><div class='col-xs-1 col-xs-offset-1' style='height: 1.25em;  width: 1em; background: #008000; border: 1px solid black;'></div><div class='col-xs-9'>1 - darkgreen</div></div>
-                    <div class='row'><div class='col-xs-1 col-xs-offset-1' style='height: 1.25em;  width: 1em; background: #00FF00; border: 1px solid black;'></div><div class='col-xs-9'>2 - green</div></div>
-                    <div class='row'><div class='col-xs-1 col-xs-offset-1' style='height: 1.25em;  width: 1em; background: #80FF80; border: 1px solid black;'></div><div class='col-xs-9'>3 - lightgreen</div></div>
-                    <div class='row'><div class='col-xs-1 col-xs-offset-1' style='height: 1.25em;  width: 1em; background: #800000; border: 1px solid black;'></div><div class='col-xs-9'>4 - darkred</div></div>
-                    <div class='row'><div class='col-xs-1 col-xs-offset-1' style='height: 1.25em;  width: 1em; background: #FF0000; border: 1px solid black;'></div><div class='col-xs-9'>5 - red</div></div>
-                    <div class='row'><div class='col-xs-1 col-xs-offset-1' style='height: 1.25em;  width: 1em; background: #FF8080; border: 1px solid black;'></div><div class='col-xs-9'>6 - lightred</div></div>
-                    <div class='row'><div class='col-xs-1 col-xs-offset-1' style='height: 1.25em;  width: 1em; background: #000080; border: 1px solid black;'></div><div class='col-xs-9'>7 - darkblue</div></div>
-                    <div class='row'><div class='col-xs-1 col-xs-offset-1' style='height: 1.25em;  width: 1em; background: #0000FF; border: 1px solid black;'></div><div class='col-xs-9'>8 - blue</div></div>
-                    <div class='row'><div class='col-xs-1 col-xs-offset-1' style='height: 1.25em;  width: 1em; background: #00FFFF; border: 1px solid black;'></div><div class='col-xs-9'>9 - lightblue</div></div>
-                    <div class='row'><div class='col-xs-1 col-xs-offset-1' style='height: 1.25em;  width: 1em; background: #800080; border: 1px solid black;'></div><div class='col-xs-9'>10- purple</div></div>
-                    <div class='row'><div class='col-xs-1 col-xs-offset-1' style='height: 1.25em;  width: 1em; background: #FF00F0; border: 1px solid black;'></div><div class='col-xs-9'>11- magenta</div></div>
-                    <div class='row'><div class='col-xs-1 col-xs-offset-1' style='height: 1.25em;  width: 1em; background: #FF80F0; border: 1px solid black;'></div><div class='col-xs-9'>12- pink</div></div>
-                    <div class='row'><div class='col-xs-1 col-xs-offset-1' style='height: 1.25em;  width: 1em; background: #FF8000; border: 1px solid black;'></div><div class='col-xs-9'>13- orange</div></div>
-                    <div class='row'><div class='col-xs-1 col-xs-offset-1' style='height: 1.25em;  width: 1em; background: #FFFF00; border: 1px solid black;'></div><div class='col-xs-9'>15- yellow</div></div>
-                    <div class='row'><div class='col-xs-1 col-xs-offset-1' style='height: 1.25em;  width: 1em; background: #FFFFFF; border: 1px solid black;'></div><div class='col-xs-9'>16- white</div></div>                </div>
+                    The colors available are:</p>
+                </div>
+            </div>
+        </div>
+        <div class='row' style='white-space: nowrap; overflow: hidden'>
+            <div class='col-md-10 col-md-offset-1'>
+                <div class='row'>
+                    <div class='col-xs-1 colorBox' style='background: #000000'></div><div class='col-xs-1 colorName'>&nbsp;0 black</div>
+                    <div class='col-xs-1 colorBox' style='background: #800000'></div><div class='col-xs-1 colorName'>&nbsp;4 darkred</div>
+                    <div class='col-xs-1 colorBox' style='background: #0000FF'></div><div class='col-xs-1 colorName'>&nbsp;8 blue</div>
+                    <div class='col-xs-1 colorBox' style='background: #FF80F0'></div><div class='col-xs-1 colorName'>12 pink</div>
+                </div>
+                <div class='row'>
+                    <div class='col-xs-1 colorBox' style='background: #008000'></div><div class='col-xs-1 colorName'>&nbsp;1 darkgreen</div>
+                    <div class='col-xs-1 colorBox' style='background: #FF0000'></div><div class='col-xs-1 colorName'>&nbsp;5 red</div>
+                    <div class='col-xs-1 colorBox' style='background: #00FFFF'></div><div class='col-xs-1 colorName'>&nbsp;9 lightblue</div>
+                    <div class='col-xs-1 colorBox' style='background: #FF8000'></div><div class='col-xs-1 colorName'>13 orange</div>
+                </div>
+                <div class='row'>
+                    <div class='col-xs-1 colorBox' style='background: #00FF00'></div><div class='col-xs-1 colorName'>&nbsp;2 green</div>
+                    <div class='col-xs-1 colorBox' style='background: #FF8080'></div><div class='col-xs-1 colorName'>&nbsp;6 lightred</div>
+                    <div class='col-xs-1 colorBox' style='background: #800080'></div><div class='col-xs-1 colorName'>10 purple</div>
+                    <div class='col-xs-1 colorBox' style='background: #FFFF00'></div><div class='col-xs-1 colorName'>14 yellow</div>
+                </div>
+                <div class='row'>
+                    <div class='col-xs-1 colorBox' style='background: #80FF80'></div><div class='col-xs-1 colorName'>&nbsp;3 lightgreen</div>
+                    <div class='col-xs-1 colorBox' style='background: #000080'></div><div class='col-xs-1 colorName'>&nbsp;7 darkblue</div>
+                    <div class='col-xs-1 colorBox' style='background: #FF00F0'></div><div class='col-xs-1 colorName'>11 magenta</div>
+                    <div class='col-xs-1 colorBox' style='background: #FFFFFF'></div><div class='col-xs-1 colorName'>15 white</div>
+                </div>
             </div>
         </div>
         <div class='row'>
             <br>
         </div>
-        <div class='row'>
+        <div class='row func'>
             <div class='col-md-8'>
-                <strong>Functions:</strong>
+                <h3>Functions:</h3>
+                <ul>
+                    <li><a href="#setpixel">setpixel</a></li>
+                    <li><a href="#rectangle">rectangle</a></li>
+                    <li><a href="#box">box</a></li>
+                    <li><a href="#getpixel">getpixel</a></li>
+                    <li><a href="#getpixeli">getpixeli</a></li>
+                    <li><a href="#clear">clear</a></li>
+                    <li><a href="#keypress">keypress</a></li>
+                    <li><a href="#keyrelease">keyrelease</a></li>
+                    <li><a href="#keyheld">keyheld</a></li>
+                    <li><a href="#reset">reset</a></li>
+                    <li><a href="#update">update</a></li>
+                </ul>
             </div>
         </div>
-        <div class='well'>
-            <div class='row'>
-                <div class='col-md-2'><strong><pre>setpixel(x, y, color)</pre></strong></div>
-                <div class='col-md-9'>
+        <div class='well func col-md-9'>
+            <div class='row' id='setpixel'>
+                <div class='col-md-11'><strong><pre class='funcname'>setpixel(x, y, color)</pre></strong></div>
+            </div>
+            <div class="row">
+                <div class='col-md-11'>
                     Set the pixel at x,y to color. You can pass in a name (eg. 'red') or number (from 0 to 15) for the color.<br><br>
                     <i>This will set the top left pixel to the color blue and the bottom right pixel to red</i><br>
                     <pre class='helpcode'>setpixel(0, 0, 'blue');
@@ -52,10 +80,12 @@ setpixel(15, 15, 5);</pre></p>
                 </div>
             </div>
         </div>
-        <div class='well'>
-            <div class='row'>
-                <div class='col-md-2'><strong><pre>rectangle(x, y, w, h, color)</pre></strong></div>
-                <div class='col-md-9'>
+        <div class='well func col-md-9'>
+            <div class='row' id='rectangle'>
+                <div class='col-md-11'><strong><pre class='funcname'>rectangle(x, y, w, h, color)</pre></strong></div>
+            </div>
+            <div class="row">
+                <div class='col-md-11'>
                     Sets all the pixels in a rectangle starting at at x,y extending to x + w, y + h (inclusive) to color. As with setpixel, you can pass in a name or number for the color.<br><br>
                     <i>This will set 9 pixels in the top left corner to the color yellow and all the pixels on the bottom row to purple</i><br>
                     <pre class='helpcode'>rectangle(1, 1, 3, 3, 'yellow');
@@ -63,10 +93,25 @@ rectangle(0, 15, 16, 1, 10);</pre></p>
                 </div>
             </div>
         </div>
-        <div class='well'>
-            <div class='row'>
-                <div class='col-md-2'><strong><pre>getpixel(x, y)</pre></strong></div>
-                <div class='col-md-9'>
+        <div class='well func col-md-9'>
+            <div class='row' id='box'>
+                <div class='col-md-11'><strong><pre class='funcname'>box(x, y, w, h, color)</pre></strong></div>
+            </div>
+            <div class="row">
+                <div class='col-md-11'>
+                    Draws a box starting at at x,y extending to x + w, y + h (inclusive). As with setpixel, you can pass in a name or number for the color.<br><br>
+                    <i>This will draw an orange box 6 pixels wide and 8 pixels high at (5,4) in yellow </i><br>
+                    <pre class='helpcode'>box(5, 4, 6, 8, 'orange');
+rectangle(0, 15, 16, 1, 10);</pre></p>
+                </div>
+            </div>
+        </div>
+        <div class='well func col-md-9'>
+            <div class='row' id='getpixel'>
+                <div class='col-md-11'><strong><pre class='funcname'>getpixel(x, y)</pre></strong></div>
+            </div>
+            <div class="row">
+                <div class='col-md-11'>
                     Get the color of the pixel at x,y.<br><br>
                     <i>This will check if the color of the pixel at (4,5) is yellow</i><br>
                     <pre class='helpcode'>if(getpixel(4, 5) === 'yellow') {
@@ -75,10 +120,12 @@ rectangle(0, 15, 16, 1, 10);</pre></p>
                 </div>
             </div>
         </div>
-        <div class='well'>
-            <div class='row'>
-                <div class='col-md-2'><strong><pre>getpixeli(x, y)</pre></strong></div>
-                <div class='col-md-9'>
+        <div class='well func col-md-9'>
+            <div class='row' id='getpixeli'>
+                <div class='col-md-11'><strong><pre class='funcname'>getpixeli(x, y)</pre></strong></div>
+            </div>
+            <div class="row">
+                <div class='col-md-11'>
                     Get the index of the color of the pixel at x,y.<br><br>
                     <i>This will check if the color of the pixel at (4,5) is green</i><br>
                     <pre class='helpcode'>if(getpixeli(4, 5) === 2) {
@@ -87,19 +134,23 @@ rectangle(0, 15, 16, 1, 10);</pre></p>
                 </div>
             </div>
         </div>
-        <div class='well'>
-            <div class='row'>
-                <div class='col-md-2'><strong><pre>clear(color)</pre></strong></div>
-                <div class='col-md-9'>Set all the pixels to a single color.<br><br>
+        <div class='well func col-md-9'>
+            <div class='row' id='clear'>
+                <div class='col-md-11'><strong><pre class='funcname'>clear(color)</pre></strong></div>
+            </div>
+            <div class="row">
+                <div class='col-md-11'>Set all the pixels to a single color.<br><br>
                     <i>This will clear all the pixels to black</i><br>
                     <pre class='helpcode'>clear('black');</pre></p>
                 </div>
             </div>
         </div>
-        <div class='well'>
-            <div class='row'>
-                <div class='col-md-2'><strong><pre>keypress()</pre></strong></div>
-                <div class='col-md-9'>Get the last key that was pressed.<br><br>
+        <div class='well func col-md-9'>
+            <div class='row' id='keypress'>
+                <div class='col-md-11'><strong><pre class='funcname'>keypress()</pre></strong></div>
+            </div>
+            <div class="row">
+                <div class='col-md-11'>Get the last key that was pressed.<br><br>
                     <i>This will check if the space bar was just pressed</i><br>
                     <pre class='helpcode'>if(keypress() === 'space') {
     // ...
@@ -107,10 +158,12 @@ rectangle(0, 15, 16, 1, 10);</pre></p>
                 </div>
             </div>
         </div>
-        <div class='well'>
-            <div class='row'>
-                <div class='col-md-2'><strong><pre>keyrelease(key)</pre></strong></div>
-                <div class='col-md-9'>Check if key was just released.<br><br>
+        <div class='well func col-md-9'>
+            <div class='row' id='keyrelease'>
+                <div class='col-md-11'><strong><pre class='funcname'>keyrelease(key)</pre></strong></div>
+            </div>
+            <div class="row">
+                <div class='col-md-11'>Check if key was just released.<br><br>
                     <i>This will check if the left key was just released</i><br>
                     <pre class='helpcode'>if(keyrelease() === 'left') {
     // ...
@@ -118,10 +171,12 @@ rectangle(0, 15, 16, 1, 10);</pre></p>
                 </div>
             </div>
         </div>
-        <div class='well'>
-            <div class='row'>
-                <div class='col-md-2'><strong><pre>keyheld(key)</pre></strong></div>
-                <div class='col-md-9'>Check if key is held down.<br><br>
+        <div class='well func col-md-9'>
+            <div class='row' id='keyheld'>
+                <div class='col-md-11'><strong><pre class='funcname'>keyheld(key)</pre></strong></div>
+            </div>
+            <div class="row">
+                <div class='col-md-11'>Check if key is held down.<br><br>
                     <i>This will check if the up key is currently being pressed</i><br>
                     <pre class='helpcode'>if(keyheld('up')) {
     // ...
@@ -129,10 +184,12 @@ rectangle(0, 15, 16, 1, 10);</pre></p>
                 </div>
             </div>
         </div>
-        <div class='well'>
-            <div class='row'>
-                <div class='col-md-2'><strong><pre>reset()</pre></strong></div>
-                <div class='col-md-9'>Restarts the game, as if the user had clicked the 'Run' button<br><br>
+        <div class='well func col-md-9'>
+            <div class='row' id='reset'>
+                <div class='col-md-11'><strong><pre class='funcname'>reset()</pre></strong></div>
+            </div>
+            <div class="row">
+                <div class='col-md-11'>Restarts the game, as if the user had clicked the 'Run' button<br><br>
                     <i>This will restart the game if lives is 0</i><br>
                     <pre class='helpcode'>if(lives === 0) {
     reset();
@@ -140,10 +197,12 @@ rectangle(0, 15, 16, 1, 10);</pre></p>
                 </div>
             </div>
         </div>
-        <div class='well'>
-            <div class='row'>
-                <div class='col-md-2'><strong><pre>update(frame)</pre></strong></div>
-                <div class='col-md-9'>You provide this function. It will be called repeatedly at a rate specified by the 'speed' setting.<br>
+        <div class='well func col-md-9'>
+            <div class='row' id='update'>
+                <div class='col-md-11'><strong><pre class='funcname'>update(frame)</pre></strong></div>
+            </div>
+            <div class="row">
+                <div class='col-md-11'>You provide this function. It will be called repeatedly at a rate specified by the 'speed' setting.<br>
                 The parameter 'frame' is increased by 1 each time the function is called.<br><br>
                     <i>This is a very simple game</i><br>
                     <pre class='helpcode'>var x, y, c;

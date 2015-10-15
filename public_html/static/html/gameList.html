@@ -18,16 +18,16 @@
                     maxlength='32' />
         </div>
         <div id='pagesSection'>
-            <div class='btn-group'>
-                <span id='gamesTotal'>
-                    {{results}}
-                </span>
-                <ul class='pagination pagination-sm pull-right'>
+            <span id='gamesTotal'>
+                {{results}}
+            </span>
+            <span>
+                <ul class='pagination pagination-sm'>
                     <li ng-repeat='p in pages' ng-class='["linkNoHref", { active: p.value === currentPage }, { disabled: pageDisabled(p) }]' ng-click='choosePage(p)'>
                         <span class='{{p.class}}'>{{p.text}}</span>
                     </li>
                 </ul>
-            </div>
+            </span>
         </div>
         <div ng-class="['toolbar2', {'expanded': options.expanded}]">
             <div class='btn-group'>
@@ -55,7 +55,8 @@
         <div class='flex-container'>
             <div ng-repeat='g in games'
                     class='dropshadow gameLink' ng-class="'flex-item ' + options.viewStyle"
-                    ng-click='playIt($event, g.game_id)'
+                    ng-click='editIt($event, g.game_id)'
+                    ng-attr-id='game-{{g.game_id}}'
                     ng-mousedown='clicked($index)'
                     ng-mouseleave='unclicked($index)'
                     ng-mouseup='unclicked($index)'
@@ -66,16 +67,11 @@
                 <div ng-class="'game-rating ' + options.viewStyle">
                     <i ng-repeat='i in [1,2,3,4,5]' class='{{star(i, g)}}star fa fa-star'></i>
                 </div>
-                <div ng-class="'game-screenshot ' + options.viewStyle">
+                <div class='gameLink game-screenshot' ng-class="options.viewStyle" ng-click='playIt($event, g.game_id)'>
                     <img id="screen_{{g.game_id}}"
                             ng-src='{{screenshot(g)}}'
                             width='64'
                             height='64' />
-                    </div>
-                <div ng-class="'game-buttons ' + options.viewStyle">
-                    <a class='btn btn-default' ng-click='editIt($event, g.game_id)'>
-                        <i class='fa fa-pencil'></i>
-                    </a>
                 </div>
             </div>
         </div>

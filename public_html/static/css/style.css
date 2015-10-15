@@ -340,7 +340,7 @@ body {
     overflow: hidden;
 }
 
-.toolbar.expanded>.toolbar2 {
+.toolbar2 {
     height: 50px;
     transition: height 0.35s;
 }
@@ -551,8 +551,8 @@ div#editorContainer {
 div#helpcontainer {
     position: absolute;
     top: 0;
-    left: 0;
-    right: 0;
+    left: 20;
+    right: 30;
     bottom: 0;
     overflow-y: auto;
 }
@@ -739,9 +739,10 @@ pre.helpcode {
 }
 
 .game-screenshot.box {
-    position: absolute;
-    right: 15px;
-    bottom: 15px;
+    width: 64px;
+    margin-top: 10px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .game-buttons.box {
@@ -850,11 +851,6 @@ a.share-twitter {
     cursor: pointer;
 }
 
-#gamesTotal {
-    line-height: 30px;
-    margin-right: 10px;
-}
-
 .popover #searchOptionsTemplate {
     width: 700px;
     height: 500px;
@@ -865,9 +861,16 @@ fieldset.searchOrders {
 }
 
 #pagesSection {
+    display: inline-block;
     position: absolute;
     top: 10px;
     right: 10px;
+}
+
+#gamesTotal {
+    line-height: 30px;
+    margin-right: 10px;
+    vertical-align: top; /* for Firefox */
 }
 
 #searchBar {
@@ -955,4 +958,27 @@ td .searchOptionsRow {
 
 @media (min-width: 768px) {
 
+}
+
+.colorName {
+    padding-top: 4px;
+}
+
+.colorBox {
+    height: 2.2em;
+    width: 1em;
+    border: 1px solid black;
+    margin-bottom: 12px;
+}
+
+.funcname {
+    font-size: 20px;
+    margin-left: 0px;
+    padding-left: 0px;
+    border: none;
+}
+
+.func {
+    padding-top: 20px;
+    margin-bottom: 140px;
 }

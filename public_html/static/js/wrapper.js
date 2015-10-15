@@ -69,6 +69,7 @@
         var clear = __sys.clear,
             setpixel = __sys.setpixel,
             rectangle = __sys.rectangle,
+            box = __sys.box,
             getpixel = __sys.getpixel,
             getpixeli = __sys.getpixeli,
             keypress = __sys.keypress,

@@ -17,7 +17,6 @@ function ($rootScope, $modal, ajax, status, dialog) {
 
         save_token = function(token) {
             localStorage.setItem('token', token);
-            console.log("Token:", token);
         },
 
         delete_token = function() {
@@ -34,6 +33,7 @@ function ($rootScope, $modal, ajax, status, dialog) {
                 case 'registration-required':
                     loginDetails.dialogTitle = 'Register';
                     loginDetails.editingProfile = false;
+                    loginDetails.changePassword = true;
                     loginDetails.update = false;
                     $modal.open({
                         animation: true,
@@ -164,6 +164,7 @@ function ($rootScope, $modal, ajax, status, dialog) {
                         }
                     }
                 }).result.then(function(result) {
+                    console.log(result);
                     user.update(result, 'profile');
                     q.resolve(result);
                 }, function(reason) {

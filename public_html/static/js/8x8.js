@@ -97,6 +97,16 @@ Object.defineProperty(Error.prototype, 'toJSON', {
                 }
             }
         },
+        box: function(x, y, w, h, color) {
+            color = getColor(color);
+            window.eng.rectangle(x, y, w, 1, color);
+            window.eng.rectangle(x, y + h - 1, w, 1, color);
+            if(h > 2) {
+                window.eng.rectangle(x, y + 1, 1, h - 2, color);
+                window.eng.rectangle(x + w - 1, y + 1, 1, h - 2, color);
+            }
+
+        },
         getpixel: function(x, y) {
             return colorNames[eng.getpixeli(x, y) || 0];
         },
