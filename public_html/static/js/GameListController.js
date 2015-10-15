@@ -13,6 +13,7 @@
 
         var timer,
             pagesWindowSize = 3,
+            cp = $location.search(),
             pageBase = 1,
             totalPages = 1,
             oldParams = {};
@@ -23,6 +24,8 @@
         $scope.pages = [];
         $scope.currentPage = 1;
         $scope.results = '';
+
+        console.log(cp.page);
 
         var t = util.load('options') || {};
         $scope.options = angular.extend({
@@ -50,6 +53,7 @@
             .then(function() {
                 angular.copy($scope.options, oldParams);
             });
+            $location.search('page', $scope.currentPage);
             timer = null;
         }
 
@@ -79,11 +83,6 @@
                     $scope.currentPage = p.value;
                 }
             }
-        };
-
-        $scope.newGame = function() {
-            game.reset();
-            $location.path('/edit/new');
         };
 
         $scope.$emit('pane:loaded', 'games');
@@ -201,6 +200,7 @@
         };
 
         $scope.editIt = function(event, id) {
+            $location.search('page', null);
             $location.path('/edit/' + id);
             event.preventDefault();
         };

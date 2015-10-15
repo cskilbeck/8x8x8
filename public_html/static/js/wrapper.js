@@ -68,6 +68,7 @@
     function runWrapper($userCode, __sys) {
         var clear = __sys.clear,
             setpixel = __sys.setpixel,
+            rectangle = __sys.rectangle,
             getpixel = __sys.getpixel,
             getpixeli = __sys.getpixeli,
             keypress = __sys.keypress,

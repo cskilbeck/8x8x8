@@ -4,12 +4,13 @@ if (window.location.protocol != "https:") {
     window.location.href = "https:" + window.location.href.substring(window.location.protocol.length);
 }
 
-var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap', 'ngResource', 'mgcrea.ngStrap', 'mgcrea.ngStrap.tooltip']);
+var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap', 'ngResource']);
 
 mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 //////////////////////////////////////////////////////////////////////
-// - play game full screen when viewport with < XXX?
+// ! infinite loop error reporting broken
+// - play game full screen when viewport width < XXX?
 // - Browser support
 // - responsive toolbar height/wrap
 // - editor focus nightmare, & send all non-editor keypresses to the player
@@ -132,3 +133,4 @@ mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 // +! fix checkboxes on editor options dialog
 // +- expando toolbar for search options
 // +- fixed pagination location
+// +! fixed spurious save warning on new game discard

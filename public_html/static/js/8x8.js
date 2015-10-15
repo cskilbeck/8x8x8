@@ -66,15 +66,35 @@ Object.defineProperty(Error.prototype, 'toJSON', {
         ],
         screen = [];
 
+    function getColor(color) {
+        if(typeof color === 'string') {
+            color = colorTable[color] || 0;
+        }
+        return (color | 0) & 15;
+    }
+
     window.eng = {
         setpixel: function(x, y, color) {
             x >>>= 0;
             y >>>= 0;
-            if(typeof color === 'string') {
-                color = colorTable[color] || 0;
-            }
+            color = getColor(color);
             if(x >= 0 && x < W && y >= 0 && y < H) {
-                screen[x + y * W] = (color|0) & 15;
+                screen[x + y * W] = color;
+            }
+        },
+        rectangle: function(x, y, w, h, color) {
+            var v;
+            x |= 0;
+            y |= 0;
+            color = getColor(color);
+            x = Math.max(0, x);
+            y = Math.max(0, y);
+            w = Math.min(16, x + w);
+            h = Math.min(16, y + h);
+            for(; y < h; ++y) {
+                for(v = x; v < w; ++v) {
+                    screen[v + y * W] = color;
+                }
             }
         },
         getpixel: function(x, y) {

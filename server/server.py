@@ -28,6 +28,7 @@ from PIL import Image, ImageDraw
 import dbase_nogit as DB
 import sendemail
 import JWT
+import traceback
 
 JWT = reload(JWT)
 DB = reload(DB)
@@ -40,6 +41,7 @@ app = None
 render = web.template.render('/usr/local/www/256pixels.net/public_html/templates/')
 
 print "Using database at", DB.Vars.host, "(" + DB.Vars.message + ")"
+print "Current dir is", os.getcwd()
 
 urls = (
     '/public/login', 'login',               # user logging in
@@ -173,23 +175,27 @@ class Handler:
                     output = self.output(handlerFunc(self, *args))
                     return output if type(output) != dict else JSON(output)
 
-        except ValueError, e:
-            pprint.pprint(e)
-            error('404 ' + str(e))
+        except ValueError as e:
+            traceback.print_exc()
+            print e.message
+            error('404 ' + e.message)
 
-        except KeyError, e:
-            pprint.pprint(e)
-            error('404 ' + str(e))
+        except KeyError as e:
+            traceback.print_exc()
+            print e.message
+            error('404 ' + e)
 
-        except mdb.Error, e:
-            pprint.pprint(e)
+        except mdb.Error as e:
+            traceback.print_exc()
+            print e.message
             error('500 Database problem')
 
-        except web.HTTPError, e:
+        except web.HTTPError as e:
             raise e
 
-        except Exception, e:
-            pprint.pprint(e)
+        except Exception as e:
+            traceback.print_exc()
+            print e.message
             error('500 Unknown error')
 
     def POST(self, *args):
@@ -300,7 +306,7 @@ class data(object):
                 try:
                     jwt = extract_token(token[7:])
                 except ValueError as v:
-                    error('401 ' + v)
+                    error('401 ' + v.message)
 
                 # should check that payload is proper here...
                 result['user_id'] = jwt['payload']['user_id']
@@ -396,7 +402,6 @@ class list(Handler):
             }
         })
     def Get(self, data):
-
         result = {}
         data['search'] = searchTerm(data['search'])
         self.execute('''SELECT COUNT(*) AS count

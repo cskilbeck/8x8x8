@@ -112,9 +112,9 @@
             reset: function() {
                 merge({
                     game_id: 0,
-                    game_title: '',
-                    game_instructions: ' ',
-                    game_framerate: 0,
+                    game_title: 'New Game',
+                    game_instructions: '',
+                    game_framerate: 2,
                     game_source: '',
                     game_screenshot: [],
                     game_rating: 0,
@@ -124,6 +124,10 @@
                 }, game);
                 game.play(game, true);
                 $rootScope.$broadcast('refreshRating');
+            },
+
+            clearChanges: function() {
+                clearChanges(game);
             },
 
             find: function(id, name) {

@@ -3,12 +3,12 @@
 
     mainApp.config(['$routeProvider', '$locationProvider',
     function($routeProvider, $locationProvider) {
-
         $routeProvider.when('/', {
             templateUrl: '/static/html/home.html',
             controller: 'HomeController'
         }).when('/list', {
             templateUrl: '/static/html/gameList.html',
+            reloadOnSearch: false,
             controller: 'GameListController'
         }).when('/edit/:game_id', {
             templateUrl: '/static/html/editor.html',

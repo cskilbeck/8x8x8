@@ -36,10 +36,6 @@
         <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-resource.js'></script>
         <script src="https://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.13.4.js"></script>
 
-        <!-- Angular-strap -->
-        <script src="/static/js/angular-strap.js"></script>
-        <script src="/static/js/angular-strap.tpl.js"></script>
-
         <!-- Ace -->
         <script src='https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/ace.js'></script>
         <script src='https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/theme-cobalt.js'></script>
@@ -195,6 +191,7 @@
                 <div class="collapse navbar-collapse" id="mainNavbarInfo">
                     <ul class="nav navbar-nav">
                         <li id='navgames'><a href="/list"><span class="fa fa-list"></span> Games</a></li>
+                        <li id='navgames'><a href='#' ng-click='newGame()'><span class="fa fa-plus-circle"></span> New Game</a></li>
                         <li id='navhelp'><a href="/help"><span class="fa fa-question"></span> Help </a></li>
                     </ul>
                     <ul class='nav navbar-nav navbar-right'>

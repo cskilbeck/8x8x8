@@ -15,6 +15,7 @@ def create(secret, payload, lifetime = None):
     return payload + '.' + encode64(hashed(secret, msg = payload, digestmod = sha256).digest())
 
 def extract(secret, token):
+
     parts = token.split('.')
 
     if len(parts) != 3:
@@ -38,7 +39,6 @@ def extract(secret, token):
 
 if __name__ == '__main__':
     token = create('secret', { 'user_id': 1, 'admin': False }, 10)
-    print "TOKEN:", token
 
     try:
         cracked = extract('secret', token)

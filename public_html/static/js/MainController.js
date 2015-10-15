@@ -1,5 +1,5 @@
-mainApp.controller('MainController', ['$scope', '$modal', 'user', 'ajax', '$rootScope', 'status', '$location',
-function($scope, $modal, user, ajax, $rootScope, status, $location) {
+mainApp.controller('MainController', ['$scope', '$modal', 'user', 'ajax', '$rootScope', 'status', '$location', 'game',
+function($scope, $modal, user, ajax, $rootScope, status, $location, game) {
     "use strict";
 
     $scope.status = status;
@@ -14,6 +14,12 @@ function($scope, $modal, user, ajax, $rootScope, status, $location) {
     function clearNavBar() {
         $('.nav.navbar-nav > li').removeClass('active');
     }
+
+    $scope.newGame = function() {
+        game.reset();
+        $location.search('page', null);
+        $location.path('/edit/new');
+    };
 
     $scope.$on('showBackdropper', function() {
         $scope.showBackdropper = true;
