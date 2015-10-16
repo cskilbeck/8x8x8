@@ -29,40 +29,16 @@ Object.defineProperty(Error.prototype, 'toJSON', {
         frame = 0, frameCounter = 0,
         keynames = ['space', 'left', 'up', 'right', 'down'],
         colorTable = {
-            black: 0,
-            darkgreen: 1,
-            green: 2,
-            lightgreen: 3,
-            darkred: 4,
-            red: 5,
-            lightred: 6,
-            darkblue: 7,
-            blue: 8,
-            lightblue: 9,
-            purple: 10,
-            magenta: 11,
-            pink: 12,
-            orange: 13,
-            yellow: 14,
-            white: 15
+            black: 0, darkgreen: 1, green: 2, lightgreen: 3,
+            darkred: 4, red: 5, lightred: 6, darkblue: 7,
+            blue: 8, lightblue: 9, purple: 10, magenta: 11,
+            pink: 12, orange: 13, yellow: 14, white: 15
         },
         colorNames = [
-            "black",
-            "darkgreen",
-            "green",
-            "lightgreen",
-            "darkred",
-            "red",
-            "lightred",
-            "darkblue",
-            "blue",
-            "lightblue",
-            "purple",
-            "magenta",
-            "pink",
-            "orange",
-            "yellow",
-            "white"
+            "black", "darkgreen", "green", "lightgreen",
+            "darkred", "red", "lightred", "darkblue",
+            "blue", "lightblue", "purple", "magenta",
+            "pink", "orange", "yellow", "white"
         ],
         screen = [];
 
@@ -73,14 +49,46 @@ Object.defineProperty(Error.prototype, 'toJSON', {
         return (color | 0) & 15;
     }
 
+    function _setpixel(x,y, color) {
+        screen[x + y * W] = color;
+    }
+
+    function _setpixel_safe(x, y, color) {
+        if(x >= 0 && x < W && y >= 0 && y < H) {
+            _setpixel(x, y, color);
+        }
+    }
+
+    function _hline(x1, x2, y, color) {
+        if(y >= 0 && y < H) {
+            x1 = Math.max(0, x1);
+            x2 = Math.min(W, x2);
+            if(x1 < W && x2 >= 0) {
+                for(; x1 < x2; ++x1) {
+                    _setpixel(x1, y, color);
+                }
+            }
+        }
+    }
+
+    function _vline(x, y1, y2, color) {
+        if(x >= 0 && x < W) {
+            y1 = Math.max(0, y1);
+            y2 = Math.min(H, y2);
+            if(y1 < H && y2 >= 0) {
+                for(; y1 < y2; ++y1) {
+                    _setpixel(x, y1, color);
+                }
+            }
+        }
+    }
+
     window.eng = {
         setpixel: function(x, y, color) {
-            x >>>= 0;
-            y >>>= 0;
+            x = Math.floor(x);
+            y = Math.floor(y);
             color = getColor(color);
-            if(x >= 0 && x < W && y >= 0 && y < H) {
-                screen[x + y * W] = color;
-            }
+            _setpixel_safe(x, y, color);
         },
         rectangle: function(x, y, w, h, color) {
             var v;
@@ -98,36 +106,67 @@ Object.defineProperty(Error.prototype, 'toJSON', {
             if(w <= 0 || h <= 0) {
                 return;
             }
-            x = Math.min(15, x);
-            y = Math.min(15, y);
-            w = Math.min(16, x + w);
-            h = Math.min(16, y + h);
+            x = Math.min(W-1, x);
+            y = Math.min(H-1, y);
+            w = Math.min(W, x + w);
+            h = Math.min(H, y + h);
             for(; y < h; ++y) {
                 for(v = x; v < w; ++v) {
-                    screen[v + y * W] = color;
+                    _setpixel(v, y, color);
                 }
             }
         },
         box: function(x, y, w, h, color) {
             color = getColor(color);
-            window.eng.rectangle(x, y, w, 1, color);
-            window.eng.rectangle(x, y + h - 1, w, 1, color);
-            if(h > 2) {
-                window.eng.rectangle(x, y + 1, 1, h - 2, color);
-                window.eng.rectangle(x + w - 1, y + 1, 1, h - 2, color);
+            _hline(x, x + w, y, color);
+            if(h > 1) {
+                _hline(x, x + w, y + h - 1, color);
             }
-
+            if(h > 2) {
+                _vline(x, y + 1, y + h - 1, color);
+                if(w > 1) {
+                    _vline(x + w - 1, y + 1, y + h - 1, color);
+                }
+            }
         },
-        getpixel: function(x, y) {
-            return colorNames[eng.getpixeli(x, y) || 0];
+        line: function(x0, y0, x1, y1, c) { // the slowest line draw in history
+            var dx, dy,
+                sx, sy,
+                err, e2;
+            c = getColor(c);
+            x0 = Math.floor(x0); x1 = Math.floor(x1);
+            y0 = Math.floor(y0); y1 = Math.floor(y1);
+            dx = Math.abs(x1 - x0);
+            dy = Math.abs(y1 - y0);
+            sx = x0 < x1 ? 1 : -1;
+            sy = y0 < y1 ? 1 : -1;
+            err = (dx > dy ? dx : -dy) / 2;
+            while(true) {
+                _setpixel_safe(x0,y0, c);
+                if (x0 === x1 && y0 === y1) {
+                    break;
+                }
+                e2 = err;
+                if (e2 > -dx) {
+                    err -= dy;
+                    x0 += sx;
+                }
+                if (e2 < dy) {
+                    err += dx;
+                    y0 += sy;
+                }
+            }
         },
         getpixeli: function(x, y) {
-            x >>>= 0;
-            y >>>= 0;
+            x = Math.floor(x);
+            y = Math.floor(y);
             if(x >= 0 && x < W && y >= 0 && y < H) {
                 return screen[x + y * W] || 0;
             }
             return 0;
+        },
+        getpixel: function(x, y) {
+            return colorNames[eng.getpixeli(x, y)];
         },
         keypress: function() {
             if(lastKeyPressed === undefined) {

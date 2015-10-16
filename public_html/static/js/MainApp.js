@@ -9,8 +9,11 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap',
 mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 //////////////////////////////////////////////////////////////////////
-// - gamelist.js = model, gamelistcontroller.js = controller, gamelist.html = view - make it so (effed up right now)
+// - not setting path correctly when new game saved
+// - track play count of games
 // ! infinite loop error reporting broken
+// ! all error reporting broken
+// ! source map broken
 // - play game full screen when viewport width < XXX?
 // - Browser support
 // - responsive toolbar height/wrap
@@ -26,17 +29,16 @@ mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 // - telemetry/analytics - ga(...) everywhere
 // - mobile player mouse/touch support (swipe UDLR & tap)
 // - player in mobile browsers
+// - editor keybindings (F3/Shift-F3/Ctrl-F3 especially!)
 // - user
-//      - user permission bits
+//      - user permission bits in the JWT
 //      - delete/deactivate user accounts and username recycling (delete games and ratings? and then re-rate all the games they rated!? hmph...)
-// - tutorials
+// - tutorials/help
+//      - proper examples which point at games
 //      - tetris tutorial
 //      / sprites & collision tutorials
 // - game list
-//      - view 10/20/50/100 per page
 //      - quick search buttons: my games, top ranked, most played, recently added, recently changed
-//      - top games: clear search, order by ranking desc
-//      - order by: name, created, modified, creator, rank, playcount
 // / fix the get/set pixel/color APIs for numbers/strings
 //////////////////////////////////////////////////////////////////////
 // \ forking
@@ -129,9 +131,13 @@ mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 //      +- paging in game list
 // +- unicode
 //      +- proper session security [JWT]
-// +! angular-strap and angular-ui $modal clash...
+// +! angular-strap and angular-ui $uibModal clash...
 // +! fix navbar collapse
 // +! fix checkboxes on editor options dialog
 // +- expando toolbar for search options
 // +- fixed pagination location
 // +! fixed spurious save warning on new game discard
+// +- gamelist.js = model, gamelist.html = view, gamelistcontroller.js = controller - make it so (effed up right now)
+//      +- view 10/20/50/100 per page
+//      +- top games: clear search, order by ranking desc
+//      +- order by: name, created, modified, creator, rank, playcount

@@ -1,5 +1,15 @@
 <div class='maincontainer'>
 
+    <script id="template/pagination/pagination.html" type="text/ng-template">
+        <ul class="pagination">
+                <li ng-if="boundaryLinks && totalPages > 5" ng-class="{disabled: noPrevious()}"><a href ng-click="selectPage(1)" title="First Page"> <span class="fa fa-backward"></span></a></li>
+                <li ng-if="directionLinks && totalPages > 1" ng-class="{disabled: noPrevious()}"><a href ng-click="selectPage(page - 1)" title="Previous Page"><span class="fa fa-step-backward"></span></a></li>
+                <li ng-if="totalPages > 1" ng-repeat="page in pages track by $index" ng-class="{active: page.active}"><a href ng-click="selectPage(page.number)">{{page.text}}</a></li>
+                <li ng-if="directionLinks && totalPages > 1" ng-class="{disabled: noNext()}"><a href ng-click="selectPage(page + 1)" title="Next Page"><span class="fa fa-step-forward"></span></a></li>
+                <li ng-if="boundaryLinks && totalPages > 5" ng-class="{disabled: noNext()}"><a href ng-click="selectPage(totalPages)" title="Last Page"><span class="fa fa-forward"></span> </a></li>
+        </ul>
+    </script>
+
     <div ng-class="['toolbar', 'form-inline', {'expanded': options.expanded}]">
         <div class='input-group' id='searchBar'>
             <div class='input-group-btn'>
@@ -22,56 +32,49 @@
                 {{results}}
             </span>
             <span>
-                <ul class='pagination pagination-sm'>
-                    <li ng-repeat='p in pages' ng-class='["linkNoHref", { active: p.value === currentPage }, { disabled: pageDisabled(p) }]' ng-click='choosePage(p)'>
-                        <span class='{{p.class}}'>{{p.text}}</span>
-                    </li>
-                </ul>
+                <uib-pagination total-items='totalGames' 
+                                ng-model='currentPage'
+                                items-per-page='options.pageSize'
+                                max-size='5'
+                                class='pagination-sm'
+                                boundary-links='true'>
+                </uib-pagination>
             </span>
         </div>
         <div ng-class="['toolbar2', {'expanded': options.expanded}]">
             <div class='btn-group'>
-                <button type='button' class='btn btn-default btn-sm btn-info' ng-model='options.viewStyle' btn-radio="'box'"><i class='fa fa-lg fa-th'></i></button>
-                <button type='button' class='btn btn-default btn-sm btn-info' ng-model='options.viewStyle' btn-radio="'list'"><i class='fa fa-lg fa-th-list'></i></button>
+                <button type='button' class='btn btn-default btn-sm btn-info' ng-model='options.viewStyle' uib-btn-radio="'box'"><i class='fa fa-lg fa-th'></i></button>
+                <button type='button' class='btn btn-default btn-sm btn-info' ng-model='options.viewStyle' uib-btn-radio="'list'"><i class='fa fa-lg fa-th-list'></i></button>
             </div>
             <div class='btn-group'>
-                <button class='btn btn-default btn-sm btn-primary' ng-model='options.pageSize' btn-radio='10'>10</button>
-                <button class='btn btn-default btn-sm btn-primary' ng-model='options.pageSize' btn-radio='50'>50</button>
-                <button class='btn btn-default btn-sm btn-primary' ng-model='options.pageSize' btn-radio='100'>100</button>
+                <button class='btn btn-default btn-sm btn-primary' ng-model='options.pageSize' ng-repeat='p in [10, 20, 50]' uib-btn-radio='{{p}}'>{{p}}</button>
             </div>
             <div class="btn-group">
-                <button type='button' class="btn btn-default btn-sm btn-success" ng-model="options.justMyGames" btn-radio="1">Mine</label>
-                <button type='button' class="btn btn-default btn-sm btn-success" ng-model="options.justMyGames" btn-radio="0">All</label>
+                <button type='button' class="btn btn-default btn-sm btn-success" ng-model="options.justMyGames" uib-btn-radio="1">Mine</label>
+                <button type='button' class="btn btn-default btn-sm btn-success" ng-model="options.justMyGames" uib-btn-radio="0">All</label>
             </div>
             <div class="btn-group">
-                <button type='button' class="btn btn-default btn-sm btn-warning" ng-model="options.orderBy" btn-radio="0">Rating</label>
-                <button type='button' class="btn btn-default btn-sm btn-warning" ng-model="options.orderBy" btn-radio="1">Played</label>
-                <button type='button' class="btn btn-default btn-sm btn-warning" ng-model="options.orderBy" btn-radio="2">Saved</label>
-                <button type='button' class="btn btn-default btn-sm btn-warning" ng-model="options.orderBy" btn-radio="3">Created</label>
+                <button type='button' class="btn btn-default btn-sm btn-warning" ng-model="options.orderBy" ng-repeat='o in orders' uib-btn-radio="$index">{{o.text}}</label>
             </div>
         </div>
     </div>
     <div id='gameslist' ng-class="['cloakable', {'expanded': options.expanded}]">
         <div class='flex-container'>
             <div ng-repeat='g in games'
-                    class='dropshadow gameLink' ng-class="'flex-item ' + options.viewStyle"
+                    class='dropshadow gameLink' ng-class="['flex-item', options.viewStyle]"
                     ng-click='editIt($event, g.game_id)'
                     ng-attr-id='game-{{g.game_id}}'
-                    ng-mousedown='clicked($index)'
-                    ng-mouseleave='unclicked($index)'
                     ng-mouseup='unclicked($index)'
                     id='game_{{$index}}'>
-                <div ng-class="'game-title ' + options.viewStyle">{{g.game_title}}</div>
-                <div ng-class="'game-username ' + options.viewStyle">by {{g.user_username}}</div>
-                <div ng-class="'game-instructions ' + options.viewStyle">{{g.game_instructions}}</div>
-                <div ng-class="'game-rating ' + options.viewStyle">
+                <div class="game-title">{{g.game_title}}</div>
+                <div class="game-username">by {{g.user_username}}</div>
+                <div class="game-instructions">{{g.game_instructions}}</div>
+                <div class="game-rating">
                     <i ng-repeat='i in [1,2,3,4,5]' class='{{star(i, g)}}star fa fa-star'></i>
                 </div>
-                <div class='gameLink game-screenshot' ng-class="options.viewStyle" ng-click='playIt($event, g.game_id)'>
-                    <img id="screen_{{g.game_id}}"
-                            ng-src='{{screenshot(g)}}'
-                            width='64'
-                            height='64' />
+                <div class="game-saved">{{timer(g.game_lastsaved)}}</div>
+                <div class="gameLink game-screenshot" ng-click='playIt($event, g.game_id)'>
+                    <img id="screen_{{g.game_id}}" ng-src='{{screenshot(g)}}' width='64' height='64' />
                 </div>
             </div>
         </div>

@@ -1,12 +1,12 @@
-mainApp.factory('dialog', ['$rootScope', '$modal',
-function($rootScope, $modal) {
+mainApp.factory('dialog', ['$rootScope', '$uibModal',
+function($rootScope, $uibModal) {
     "use strict";
 
     function showModal(options, size) {
         var q = Q.defer(),
             s = size || 'medium';
 
-        $modal.open({
+        $uibModal.open({
             animation: true,
             templateUrl: '/static/html/dialogModal.html',
             controller: 'DialogModalInstanceController',

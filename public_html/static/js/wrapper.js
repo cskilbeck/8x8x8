@@ -70,6 +70,7 @@
             setpixel = __sys.setpixel,
             rectangle = __sys.rectangle,
             box = __sys.box,
+            line = __sys.line,
             getpixel = __sys.getpixel,
             getpixeli = __sys.getpixeli,
             keypress = __sys.keypress,

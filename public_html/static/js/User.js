@@ -1,5 +1,5 @@
-mainApp.factory('user', [ '$rootScope', '$modal', 'ajax', 'status', 'dialog',
-function ($rootScope, $modal, ajax, status, dialog) {
+mainApp.factory('user', [ '$rootScope', '$uibModal', 'ajax', 'status', 'dialog',
+function ($rootScope, $uibModal, ajax, status, dialog) {
     "use strict";
 
     var details = {
@@ -35,7 +35,7 @@ function ($rootScope, $modal, ajax, status, dialog) {
                     loginDetails.editingProfile = false;
                     loginDetails.changePassword = true;
                     loginDetails.update = false;
-                    $modal.open({
+                    $uibModal.open({
                         animation: true,
                         size: 'x-small',
                         templateUrl: '/static/html/registerModal.html',
@@ -108,7 +108,7 @@ function ($rootScope, $modal, ajax, status, dialog) {
 
                 var q = Q.defer();
                 if(details.user_id === 0) {
-                    $modal.open({
+                    $uibModal.open({
                         animation: true,
                         size: 'x-small',
                         templateUrl: '/static/html/loginModal.html',
@@ -153,7 +153,7 @@ function ($rootScope, $modal, ajax, status, dialog) {
                                 dialogTitle: "Edit profile"
                             };
 
-                $modal.open({
+                $uibModal.open({
                     animation: true,
                     size: 'x-small',
                     templateUrl: '/static/html/registerModal.html',
@@ -201,7 +201,7 @@ function ($rootScope, $modal, ajax, status, dialog) {
                         email: query.email
                     })
                     .then(function(response) {
-                        $modal.open({
+                        $uibModal.open({
                             animation: true,
                             size: 'x-small',
                             templateUrl: '/static/html/registerModal.html',

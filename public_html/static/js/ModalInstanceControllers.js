@@ -1,8 +1,8 @@
 (function() {
     "use strict";
 
-    mainApp.controller('LoginModalInstanceController', ['$scope', '$modal', '$modalInstance', 'details', 'ajax', 'user', 'status', '$timeout',
-    function ($scope, $modal, $modalInstance, details, ajax, user, status, $timeout) {
+    mainApp.controller('LoginModalInstanceController', ['$scope', '$uibModal', '$modalInstance', 'details', 'ajax', 'user', 'status', '$timeout',
+    function ($scope, $uibModal, $modalInstance, details, ajax, user, status, $timeout) {
 
         $scope.details = details;
         $scope.details.failed = false;
@@ -47,8 +47,8 @@
 
     }]);
 
-    mainApp.controller('RegisterModalInstanceController', ['$scope', '$modal', '$modalInstance', 'details', 'ajax', 'user', '$timeout', 'status',
-    function ($scope, $modal, $modalInstance, details, ajax, user, $timeout, status) {
+    mainApp.controller('RegisterModalInstanceController', ['$scope', '$uibModal', '$modalInstance', 'details', 'ajax', 'user', '$timeout', 'status',
+    function ($scope, $uibModal, $modalInstance, details, ajax, user, $timeout, status) {
 
         $scope.details = details;
         $scope.message = 'Fill in required fields...';
@@ -107,8 +107,8 @@
         };
     }]);
 
-    mainApp.controller('EditorOptionsModalInstanceController', ['$scope', '$modal', '$modalInstance', 'options', '$rootScope',
-    function ($scope, $modal, $modalInstance, options, $rootScope) {
+    mainApp.controller('EditorOptionsModalInstanceController', ['$scope', '$uibModal', '$modalInstance', 'options', '$rootScope',
+    function ($scope, $uibModal, $modalInstance, options, $rootScope) {
 
         $scope.options = options;
 
@@ -138,12 +138,12 @@
 
     }]);
 
-    mainApp.controller('DialogModalInstanceController', ['$scope', '$modal', '$modalInstance', 'options', '$timeout',
-    function ($scope, $modal, $modalInstance, options, $timeout) {
+    mainApp.controller('DialogModalInstanceController', ['$scope', '$uibModal', '$modalInstance', 'options', '$timeout',
+    function ($scope, $uibModal, $modalInstance, options, $timeout) {
 
         $scope.options = options;
 
-        // DONE (chs): make input field focus on dialog show work!? [$modal was focusing element 0 in a requestAnimationFrame after the animation]
+        // DONE (chs): make input field focus on dialog show work!? [$uibModal was focusing element 0 in a requestAnimationFrame after the animation]
         // $modalInstance.opened.then(function() {
         //     $timeout(function() {
         //         status.focus($('#input'));
@@ -160,8 +160,8 @@
 
     }]);
 
-    mainApp.controller('GameSettingsModalInstanceController', ['$scope', '$modal', '$modalInstance', 'settings', '$timeout', '$rootScope',
-    function($scope, $modal, $modalInstance, settings, $timeout, $rootScope) {
+    mainApp.controller('GameSettingsModalInstanceController', ['$scope', '$uibModal', '$modalInstance', 'settings', '$timeout', '$rootScope',
+    function($scope, $uibModal, $modalInstance, settings, $timeout, $rootScope) {
 
         $scope.frameratenames = [
             '60 - fastest',

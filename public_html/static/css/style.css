@@ -724,42 +724,46 @@ pre.helpcode {
 
 /* BOX */
 
-.game-title.box {
+.box .game-title {
     margin-top: 5px;
     text-align: center;
 }
 
-.game-username.box {
+.box .game-username {
     text-align: center;
     display: block;
     width: 100%;
 }
 
-.game-instructions.box {
+.box .game-instructions {
     display: none;
 }
 
-.game-screenshot.box {
+.box .game-screenshot {
     width: 64px;
     margin-top: 10px;
     margin-left: auto;
     margin-right: auto;
 }
 
-.game-buttons.box {
+.box .game-buttons {
     position: absolute;
     left: 15px;
     bottom: 15px;
 }
 
-.game-rating.box {
+.box .game-rating {
     margin-top: 4px;
     text-align: center;
 }
 
+.box .game-saved {
+    display: none;
+}
+
 /* LIST */
 
-.game-title.list {
+.list .game-title {
     position: absolute;
     left: 90px;
     width: 230px;
@@ -768,7 +772,7 @@ pre.helpcode {
     overflow: hidden;
 }
 
-.game-username.list {
+.list .game-username {
     position: absolute;
     left: 90px;
     width: 230px;
@@ -776,7 +780,7 @@ pre.helpcode {
     overflow: hidden;
 }
 
-.game-instructions.list {
+.list .game-instructions {
     position: absolute;
     left: 325px;
     right: 10px;
@@ -788,30 +792,32 @@ pre.helpcode {
     text-align: left;
 }
 
-.game-screenshot.list {
+.list .game-screenshot {
     position: absolute;
     left: 20px;
     top: 7px;
 }
 
-.game-buttons.list {
+.list .game-buttons {
     position: absolute;
     right: 10px;
     bottom: 10px;
 }
 
-.game-rating.list {
+.list .game-rating {
     position: absolute;
     left: 90px;
     bottom: 10px;
 }
 
-.gameLink:hover {
-    cursor: pointer;
+.list .game-saved {
+    position: absolute;
+    left: 190px;
+    bottom: 10px;
 }
 
-#editorOptionsForm > .list {
-    margin-left: 40px;
+.gameLink:hover {
+    cursor: pointer;
 }
 
 a.share {
