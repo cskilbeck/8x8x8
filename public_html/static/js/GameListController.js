@@ -13,14 +13,12 @@
     function ($scope, $routeParams, dialog, user, ajax, gamelist, $rootScope, game, $location, $timeout, util, $templateCache) {
 
         var timer, cp = $location.search();
-
         $scope.$parent.pane = 'Games';
         $scope.games = [];
         $scope.user_id = user.id();
         $scope.pages = [];
         $scope.currentPage = parseInt(cp.page, 10) || 1;
         $scope.results = '';
-        $scope.totalGames = 0;
         $scope.orders = orders;
 
         $scope.options = angular.extend({
@@ -31,6 +29,8 @@
             expanded: 0,
             viewStyle:mainApp.isMobile ? 'list' : 'box'
         }, util.load('options') || {});
+
+        $scope.totalGames = $scope.currentPage * $scope.options.pageSize - 1;   // TODO (chs) fix this grotty hack to stop the paginator resetting the page to 1
 
         $scope.$watch('options.viewStyle', function(n, o) {
             $('.cloakable').hide();     // hide gamelist while $digests are in progress
@@ -138,14 +138,9 @@
         };
 
         $scope.editIt = function(event, id) {
-            $location.search('page', null);
             $location.path('/edit/' + id);
             event.preventDefault();
         };
-
-        $('#searchOptions').popover({
-            content: function() { return $("#searchOptionsTemplate").html(); },
-        });
 
     }]);
 
