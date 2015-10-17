@@ -1,5 +1,5 @@
-mainApp.controller('MainController', ['$scope', '$modal', 'user', 'ajax', '$rootScope', 'status', '$location', 'game',
-function($scope, $modal, user, ajax, $rootScope, status, $location, game) {
+mainApp.controller('MainController', ['$scope', '$uibModal', 'user', 'ajax', '$rootScope', 'status', '$location', 'game',
+function($scope, $uibModal, user, ajax, $rootScope, status, $location, game) {
     "use strict";
 
     $scope.status = status;

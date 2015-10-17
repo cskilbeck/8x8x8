@@ -9,11 +9,7 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap',
 mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 //////////////////////////////////////////////////////////////////////
-// - not setting path correctly when new game saved
 // - track play count of games
-// ! infinite loop error reporting broken
-// ! all error reporting broken
-// ! source map broken
 // - play game full screen when viewport width < XXX?
 // - Browser support
 // - responsive toolbar height/wrap
@@ -141,3 +137,5 @@ mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 //      +- view 10/20/50/100 per page
 //      +- top games: clear search, order by ranking desc
 //      +- order by: name, created, modified, creator, rank, playcount
+// +- not setting path correctly when new game saved
+// +! infinite loop error reporting broken / ! all error reporting broken / ! source map broken

@@ -132,7 +132,8 @@
 
             find: function(id, name) {
                 var q = Q.defer();
-                ajax.get('gameid', { game_title: name })
+                console.log(name);
+                ajax.get('gameid', { name: name })
                 .then(function(response) {
                     ga('send', {
                         hitType: 'event',
@@ -201,9 +202,7 @@
                     game.game_framerate = newgame.game_framerate;
                     game.user_id = user.id();   // owns it now...
                     game.user_username = user.name();
-                    playGame(game, true);
-                    refreshRating();
-                    clearChanges(game);
+                    $rootScope.$broadcast('refreshRating');
                     ga('send', {
                         hitType: 'event',
                         eventCategory: 'game',

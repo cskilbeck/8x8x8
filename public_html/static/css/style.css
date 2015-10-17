@@ -953,14 +953,15 @@ td .searchOptionsRow {
 }
 
 .navbar-brand>img {
-    border-radius: 3px;
+    border-radius: 0px;
 }
 
 .navbar-brand {
     margin: 0px;
-    padding: 1px;
-    width: 48px;
-    height: 48px;
+    padding: 0px;
+    width: 50px;
+    height: 50px;
+    border-radius: 0px;
 }
 
 @media (min-width: 768px) {

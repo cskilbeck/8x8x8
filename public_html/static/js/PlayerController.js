@@ -25,8 +25,8 @@
 
     //////////////////////////////////////////////////////////////////////
 
-    mainApp.controller('PlayerController', ['$scope', '$modal', '$routeParams', 'user', 'ajax', '$rootScope', 'gamelist', 'dialog', '$location', '$timeout', 'game', 'status',
-    function($scope, $modal, $routeParams, user, ajax, $rootScope, gamelist, dialog, $location, $timeout, game, status) {
+    mainApp.controller('PlayerController', ['$scope', '$uibModal', '$routeParams', 'user', 'ajax', '$rootScope', 'gamelist', 'dialog', '$location', '$timeout', 'game', 'status',
+    function($scope, $uibModal, $routeParams, user, ajax, $rootScope, gamelist, dialog, $location, $timeout, game, status) {
 
         $scope.game = game;
         $scope.canEditInstructions = false;

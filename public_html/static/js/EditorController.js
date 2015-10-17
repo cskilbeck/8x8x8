@@ -28,8 +28,8 @@
             }
         };
 
-    mainApp.controller('EditorController', ['$scope', '$modal', '$routeParams', 'user', 'ajax', '$rootScope', 'gamelist', 'dialog', '$location', 'game', 'status', '$timeout', 'util',
-    function ($scope, $modal, $routeParams, user, ajax, $rootScope, gamelist, dialog, $location, game, status, $timeout, util) {
+    mainApp.controller('EditorController', ['$scope', '$uibModal', '$routeParams', 'user', 'ajax', '$rootScope', 'gamelist', 'dialog', '$location', 'game', 'status', '$timeout', 'util',
+    function ($scope, $uibModal, $routeParams, user, ajax, $rootScope, gamelist, dialog, $location, game, status, $timeout, util) {
 
         var newGameID = $routeParams.game_id;
 
@@ -57,10 +57,14 @@
             var parts = printStackTrace({ e: e })[0].match(/.*@.*\:(\d+):(\d+)/),
                 line = parseInt(parts[1]),
                 column = parseInt(parts[2]);
+            console.log(parts);
             if(game.wrapper) {
-                line = game.wrapper.searchMap(line);
+                line = game.wrapper.searchMap(line + 1);
+                gotoError(e.message, line + 1, 0);
             }
-            gotoError(e.message, parseInt(parts[1]), parseInt(parts[2]));
+            else {
+                gotoError(e.message, parseInt(parts[1]), parseInt(parts[2]));
+            }
         });
 
         // NOTE (chs): the dodgy line offsets are due to 0-based and 1-based differences and the preScript taking 1 line
@@ -190,10 +194,11 @@
                                     "Yes, overwrite it permanently",
                                     "No, do nothing")
                                 .then(function() {
-                                    game.find(user.id(), game.get_title())
+                                    game.find(user.id(), game.game_title)
                                     .then(function(result) {
-                                        // TODO (chs): update the location bar to reflect the new game id
-                                        game_id = result.game_id;
+                                        // DONE (chs): update the location bar to reflect the new game id
+                                        game_id = result.data.game_id;
+                                        game.game_id = game_id;
                                         save()
                                         .then(function() {
                                             $location.path('/edit/' + game_id);
@@ -235,7 +240,7 @@
 
         $scope.showOptions = function() {
             var oldOptions = angular.copy(editorOptions);
-            $modal.open({
+            $uibModal.open({
                 animation: true,
                 templateUrl: '/static/html/editorOptionsModal.html',
                 controller: 'EditorOptionsModalInstanceController',
@@ -283,7 +288,7 @@
         $scope.showSettings = function() {
             gameSettings.game_title = $scope.gameName;
             var settings = angular.copy(gameSettings);
-            $modal.open({
+            $uibModal.open({
                 animation: true,
                 templateUrl: '/static/html/gameSettingsModal.html',
                 controller: 'GameSettingsModalInstanceController',
@@ -371,7 +376,6 @@
             }
         };
 
-        console.log("ID:", $routeParams.game_id);
         if($routeParams.game_id) {
             game_id = $routeParams.game_id;
             if(game_id === 'new') {

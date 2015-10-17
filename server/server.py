@@ -15,8 +15,6 @@
 
 # When they login or register, create
 
-print "====================================================\nServer restart\n====================================================\n\n"
-
 import sys, types, os, time, datetime, struct, re, random
 import web, pprint, json, iso8601, unicodedata, urlparse, urllib
 import bcrypt
@@ -40,9 +38,12 @@ mail = reload(mail)
 app = None
 render = web.template.render('/usr/local/www/256pixels.net/public_html/templates/')
 
-print "Using database at", DB.Vars.host, "(" + DB.Vars.message + ")"
+print "\n===================================================="
+print "Server restart"
+print "Using database at", DB.Vars.host, "Vars are (" + DB.Vars.message + ")"
 print "Current dir is", os.getcwd()
-print "PATH:", sys.path
+print "PATH 0:", sys.path[0]
+print "====================================================\n"
 
 urls = (
     '/public/login', 'login',               # user logging in
@@ -527,8 +528,8 @@ class source(Handler):
 
 class gameid(Handler):
     @data({
+        'validate': True,
         'params': {
-            'user_id': int,
             'name': data.game_title
             }
         })
