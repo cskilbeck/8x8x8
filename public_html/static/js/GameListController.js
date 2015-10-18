@@ -53,8 +53,7 @@
         }
 
         $scope.$watchGroup(['options.text', 'options.orderBy', 'options.justMyGames', 'options.pageSize', 'currentPage' ], function(args) {
-            var sc = $scope.options.text != oldOptions.text;
-            if(!sc) {
+            if($scope.options.text === oldOptions.text || $scope.options.text.length === 0) {
                 refreshList();
             }
             else {
@@ -138,6 +137,7 @@
         };
 
         $scope.editIt = function(event, id) {
+            $location.search('page', null);
             $location.path('/edit/' + id);
             event.preventDefault();
         };

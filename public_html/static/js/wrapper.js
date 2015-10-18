@@ -100,7 +100,8 @@
         }));
     }
 
-    var injectStatement = esprima.parse("if (++__sys.ctr >= __sys.maxctr) { __sys.cont = false; throw new Error('Script ran for too long'); }").body[0];
+    var injectStatement = esprima.parse("if (++__sys.ctr >= __sys.maxctr) throw new Error('Script halted - infinite loop?');").body[0];
+    var injectElseStatement = esprima.parse("if (++__sys.ctr >= __sys.maxctr) throw new Error('Script halted - infinite loop?'); else ;").body[0];
 
     function CallExpression(callee, args) {
         this.callee = callee;
@@ -224,14 +225,21 @@
 
                 if(node.body.body === undefined) {
                     // they have used a non-block statement as the body of a function or loop construct
-                    // i.e. they haven't used { and }
-                    // return an error!
-                    errors.push({
-                        message: "Missing {",
-                        line: node.loc.start.line,
-                        column: node.loc.start.column
-                    });
-                    // push an error onto the list
+
+                    // not allowed for function declarations - should never get here
+                    if(node.type === Syntax.FunctionDeclaration) {
+                        errors.push({
+                            message: "Missing {",
+                            line: node.loc.start.line,
+                            column: node.loc.start.column
+                        });
+                    }
+                    else {
+                        // otherwise insert the test
+                        var newBody = angular.copy(injectElseStatement);
+                        newBody.alternate = node.body;
+                        node.body = newBody;
+                    }
                     return estraverse.SKIP;
                 }
 
@@ -241,7 +249,7 @@
                     // __catchErrors(node)
                     node.id = wrapId(node, peekLastIdentifier());
                     return new CallExpression(
-                        new Identifier("__catchErrors"), [node]);
+                        new Identifier("__sys.catchErrors"), [node]);
                 }
                 if (node.type === Syntax.FunctionDeclaration) {
                     popIdentifierStack();

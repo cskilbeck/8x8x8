@@ -9,6 +9,7 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap',
 mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 //////////////////////////////////////////////////////////////////////
+// - make code errors stay in status bar until...?
 // - track play count of games
 // - play game full screen when viewport width < XXX?
 // - Browser support
@@ -139,3 +140,4 @@ mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 //      +- order by: name, created, modified, creator, rank, playcount
 // +- not setting path correctly when new game saved
 // +! infinite loop error reporting broken / ! all error reporting broken / ! source map broken
+// +! fix pagination resetting page to 1
