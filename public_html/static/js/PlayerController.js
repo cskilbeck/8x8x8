@@ -25,8 +25,8 @@
 
     //////////////////////////////////////////////////////////////////////
 
-    mainApp.controller('PlayerController', ['$scope', '$uibModal', '$routeParams', 'user', 'ajax', '$rootScope', 'gamelist', 'dialog', '$location', '$timeout', 'game', 'status',
-    function($scope, $uibModal, $routeParams, user, ajax, $rootScope, gamelist, dialog, $location, $timeout, game, status) {
+    mainApp.controller('PlayerController', ['$scope', '$uibModal', '$routeParams', 'user', 'ajax', '$rootScope', 'gamelist', 'dialog', '$location', '$timeout', 'game', 'status', 'util',
+    function($scope, $uibModal, $routeParams, user, ajax, $rootScope, gamelist, dialog, $location, $timeout, game, status, util) {
 
         $scope.game = game;
         $scope.canEditInstructions = false;
@@ -81,7 +81,7 @@
                 postMessage('source', game.source);
                 postMessage('unpause');
                 postMessage('restart');
-                status.focus(frameWindow);
+                util.focus(frameWindow);
                 $scope.$applyAsync();
             }
         }

@@ -7,19 +7,20 @@ function ($rootScope, $timeout) {
     
     function status(text) {
         statusText = text;
+        isError = false;
         $timeout(function() {
             statusText = '';
             isError = false;
         }, 2000);
     }
 
-    status.error = function(text) {
+    status.error = function(text, seconds) {
         statusText = text;
         isError = true;
         $timeout(function() {
             statusText = '';
             isError = false;
-        }, 3000);
+        }, seconds * 1000);
     };
 
     status.busy = function(b) {
@@ -31,6 +32,8 @@ function ($rootScope, $timeout) {
 
     status.clear = function() {
         statusText = ' ';
+        isError = false;
+        isBusy = false;
     };
 
     status.clearError = function() {
@@ -50,16 +53,6 @@ function ($rootScope, $timeout) {
 
     status.isBusy = function() {
         return isBusy;
-    };
-
-    // TODO (chs): put status.focus somewhere more appropriate
-
-    status.focus = function(elem) {
-        if(elem) {
-            $timeout(function() {
-                elem.focus();
-            });
-        }
     };
 
     return status;

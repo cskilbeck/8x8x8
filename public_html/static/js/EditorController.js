@@ -69,7 +69,7 @@
 
         // NOTE (chs): the dodgy line offsets are due to 0-based and 1-based differences and the preScript taking 1 line
         function gotoError(msg, line, column) {
-            status.error(msg);
+            status.error(msg, 300);
             editor.gotoLine(line - 1, Math.max(0, column - 1), true);
             editor.session.setAnnotations([{
                 row: line - 2,
@@ -225,7 +225,7 @@
                 .then(function() {
                     game.game_title = "New Game";
                     $scope.$apply();
-                    status.focus($("#game_title"));
+                    util.focus($("#game_title"));
                 });
             }
         };

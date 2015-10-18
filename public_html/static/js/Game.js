@@ -166,8 +166,7 @@
                 s = new mainApp.sandbox(g.game_source);
                 if(s.errors.length > 0) {
                     // report 1st error
-                    console.log("FOUND ERROR:", s.errors[0]);
-                    status.error(s.errors[0].message);  // go to line/column
+                    status.error(s.errors[0].message, 300);  // go to line/column
                     $rootScope.$broadcast('editorGoto', s.errors[0]);
                 }
                 else {

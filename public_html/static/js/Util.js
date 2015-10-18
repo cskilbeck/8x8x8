@@ -1,6 +1,6 @@
 (function() {
 
-    mainApp.factory('util', function() {
+    mainApp.factory('util', ['$timeout', function($timeout) {
 
         var util = {
 
@@ -21,13 +21,17 @@
                 localStorage.setItem(name, JSON.stringify(obj));
             },
 
-            handy: function() {
-
+            focus: function(elem) {
+                if(elem) {
+                    $timeout(function() {
+                        elem.focus();
+                    });
+                }
             }
         };
 
         return util;
 
-    });
+    }]);
 
 })();

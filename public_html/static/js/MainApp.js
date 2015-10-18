@@ -32,7 +32,6 @@ mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 //      - delete/deactivate user accounts and username recycling (delete games and ratings? and then re-rate all the games they rated!? hmph...)
 // - tutorials/help
 //      - proper examples which point at games
-//      - tetris tutorial
 //      / sprites & collision tutorials
 // - game list
 //      - quick search buttons: my games, top ranked, most played, recently added, recently changed
@@ -141,3 +140,4 @@ mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 // +- not setting path correctly when new game saved
 // +! infinite loop error reporting broken / ! all error reporting broken / ! source map broken
 // +! fix pagination resetting page to 1
+//      +- tetris tutorial

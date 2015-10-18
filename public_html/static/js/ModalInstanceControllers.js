@@ -9,7 +9,7 @@
         $scope.loginInProgress = false;
 
         $timeout(function() {
-            status.focus($('#email').focus());
+            util.focus($('#email').focus());
         }, 350);
 
         $scope.ok = function () {
@@ -21,7 +21,7 @@
                 status(user.name() + " signed in");
             }, function(response) {
                 $scope.loginInProgress = false;
-                status.error('Login failed');
+                status.error('Login failed', 3);
                 $scope.details.failed = true;
                 $scope.$apply();
             });
@@ -59,7 +59,7 @@
         // details.changePassword - true if register or resetpassword or
 
         $timeout(function() {
-            status.focus($('#username'));
+            util.focus($('#username'));
         }, 350);
 
         $scope.resetpw = function() {
@@ -146,7 +146,7 @@
         // DONE (chs): make input field focus on dialog show work!? [$uibModal was focusing element 0 in a requestAnimationFrame after the animation]
         // $modalInstance.opened.then(function() {
         //     $timeout(function() {
-        //         status.focus($('#input'));
+        //         util.focus($('#input'));
         //     }, 350);
         // });
 

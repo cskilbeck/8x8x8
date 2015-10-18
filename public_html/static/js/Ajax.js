@@ -58,7 +58,7 @@
                     q.resolve(response);
                 }, function(response) {
                     status.busy(false);
-                    status.error('Error ' + msg + ': ' + response.statusText);
+                    status.error('Error ' + msg + ': ' + response.statusText, 5);
                     q.reject(response);
                 });
                 return q.promise;
