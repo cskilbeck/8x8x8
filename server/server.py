@@ -27,7 +27,9 @@ import dbase_nogit as DB
 import mail
 import JWT
 import traceback
+import resetcode
 
+resetcode = reload(resetcode)
 JWT = reload(JWT)
 DB = reload(DB)
 mail = reload(mail)
@@ -102,7 +104,7 @@ def date_handler(obj):
         return obj;
 
 #----------------------------------------------------------------------
-# get a 32 bit random number which is not 0
+# get a 32 bit unsigned random number which is not 0 (returns a long)
 
 def getRandomInt():
     while True:
@@ -311,8 +313,8 @@ class data(object):
     game_framerate = { 'default': 0, 'min': 0, 'max': 5 }
     game_rating = { 'type': int, 'min': 1, 'max': 5 }
     screenshot = { 'type': str, 'min': 256, 'max': 256 }
-    resetcode = { 'type': str, 'regex': re.compile('([XYT34567H9AKCDEF]{6})') }
-    optionalresetcode = { 'type': str, 'optional': True, 'regex': re.compile('([XYT34567H9AKCDEF]{6})') }
+    resetcodeparam = { 'type': str, 'regex': resetcode.regex() }
+    optionalresetcode = { 'type': str, 'optional': True, 'regex': resetcode.regex() }
 
     def __init__(self, paramSpec):
         self.paramSpec = paramSpec
@@ -745,13 +747,13 @@ class details(Handler):
             checkPassword(row['user_password'], data['oldpassword'])
 
         if data['oldpassword'] is None:
-            self.execute('''SELECT user_password
-                            FROM users
+            self.execute('''SELECT COUNT(*)
+                            FROM resetcodes
                             WHERE user_id = %(user_id)s
-                            AND user_resetpasswordcode=%(code)s
-                            AND user_resetpasswordexpire > NOW()''', data)
+                            AND code = %(code)s
+                            AND expires > NOW()''', data)
             if self.rowcount() != 1:
-                error('401 Bad reset code')
+                error('401 Reset code expired')
             row = self.fetchone()
 
         if row is None:
@@ -771,6 +773,14 @@ class details(Handler):
                         WHERE user_id = %(user_id)s''', data)
         if self.rowcount() == 1:
             email(data['username'], data['email'], details_changed_template, data);
+
+
+        self.execute('''DELETE
+                        FROM resetcodes
+                        WHERE user_id = %(user_id)s''', data)
+        if self.rowcount() != 1:
+            error("500 can't remove reset code!?")
+
         return JSON({
                 'changed': self.rowcount() == 1,
                 'token': create_token({ 'user_id': data['user_id'] }),
@@ -824,28 +834,34 @@ class userdetails(Handler):
     @data({
         'params': {
             'email': data.email,
-            'code': data.resetcode
+            'code': data.resetcodeparam
             }
         })
     def Get(self, data):
+
+        self.execute('''SELECT *
+                        FROM resetcodes
+                        WHERE code = %(code)s
+                            AND user_email = %(email)s
+                            AND expires > NOW()''', data)
+        if self.rowcount() != 1:
+            print data
+            error('404 reset code not found')
+
         self.execute('''SELECT user_username, user_id
                         FROM users
-                        WHERE user_email = %(email)s
-                            AND user_resetpasswordcode = %(code)s
-                            AND user_resetpasswordexpire > NOW()''', data)
+                        WHERE user_email = %(email)s''', data)
         row = self.fetchone()
         if row is None:
             error('404 Email not found or bad code')
         # could give them a session token at this point, but let's make them choose a new password first
         return JSON(row)
 
+
 #----------------------------------------------------------------------
 # /api/resetpw
 
 class resetpw(Handler):
-
-    def resetcode(self):
-        return ("%06X" % (getRandomInt() & 0xFFFFFF,)).replace('0', 'X').replace('1', 'Y').replace('2', 'T').replace('8', 'H').replace('B', 'K') # XYT34567H9AKCDEF
 
     @data({
         'params': {
@@ -853,21 +869,26 @@ class resetpw(Handler):
             }
         })
     def Get(self, data):
-        code = self.resetcode()
-        data['resetcode'] = code
-        self.execute('''UPDATE users
-                        SET user_resetpasswordcode = %(resetcode)s,
-                            user_resetpasswordexpire = NOW() + INTERVAL 1 HOUR
+        self.execute('''SELECT user_id, user_username
+                        FROM users
                         WHERE user_email = %(email)s''', data)
-        if self.rowcount() != 1:
+        if self.rowcount() == 0:
             error('404 Email not found')
-        self.execute('SELECT user_username FROM users WHERE user_email = %(email)s', data)
         row = self.fetchone()
-        if row is not None:
-            data['link'] = "https://256pixels.net?resetpassword={0}&email={1}".format(code, urllib.quote(data['email']))
-            data['username'] = row['user_username']
-            email(row['user_username'], data['email'], password_reset_template, data)
-            return JSON({ 'email_sent': True })
+
+        data['code'] = str(resetcode.resetcode())
+        data['user_id'] = row['user_id']
+        self.execute('''INSERT INTO resetcodes (user_id, user_email, code, expires)
+                        VALUES (%(user_id)s, %(email)s, %(code)s, NOW() + INTERVAL 1 HOUR)
+                        ON DUPLICATE KEY
+                        UPDATE code = %(code)s, expires = NOW() + INTERVAL 1 HOUR''', data)
+        if self.rowcount() < 1:
+            error("500 can't generate reset code!?")
+
+        data['link'] = "https://256pixels.net?resetpassword={0}&email={1}".format(data['code'], urllib.quote(data['email']))
+        data['username'] = row['user_username']
+        email(row['user_username'], data['email'], password_reset_template, data)
+        return JSON({ 'email_sent': True })
 
 #----------------------------------------------------------------------
 # /api/refreshSession
