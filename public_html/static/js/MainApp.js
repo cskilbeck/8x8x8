@@ -9,10 +9,10 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap',
 mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 //////////////////////////////////////////////////////////////////////
-// - make code errors stay in status bar until...?
+// ! clicking new game when already in the editor makes the editor disappear
 // - track play count of games
 // - play game full screen when viewport width < XXX?
-// - Browser support
+// /- Browser support
 // - responsive toolbar height/wrap
 // - editor focus nightmare, & send all non-editor keypresses to the player
 // - game_lastsaved and caching not working
@@ -26,7 +26,7 @@ mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 // - telemetry/analytics - ga(...) everywhere
 // - mobile player mouse/touch support (swipe UDLR & tap)
 // - player in mobile browsers
-// - editor keybindings (F3/Shift-F3/Ctrl-F3 especially!)
+// - editor keybindings (F3/Shift-F3/Ctrl-F3 especially!) (and lots more, and customizable?)
 // - user
 //      - user permission bits in the JWT
 //      - delete/deactivate user accounts and username recycling (delete games and ratings? and then re-rate all the games they rated!? hmph...)
@@ -141,3 +141,4 @@ mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 // +! infinite loop error reporting broken / ! all error reporting broken / ! source map broken
 // +! fix pagination resetting page to 1
 //      +- tetris tutorial
+// +- make code errors stay in status bar until...?

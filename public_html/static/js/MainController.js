@@ -16,7 +16,6 @@ function($scope, $uibModal, user, ajax, $rootScope, status, $location, game) {
     }
 
     $scope.newGame = function() {
-        game.reset();
         $location.search('page', null);
         $location.path('/edit/new');
     };
