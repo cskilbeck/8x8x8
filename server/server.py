@@ -752,9 +752,15 @@ class details(Handler):
                             WHERE user_id = %(user_id)s
                             AND code = %(code)s
                             AND expires > NOW()''', data)
-            if self.rowcount() != 1:
+            if self.rowcount() == 1:
+                row = self.fetchone()
+                self.execute('''DELETE
+                                FROM resetcodes
+                                WHERE user_id = %(user_id)s''', data)
+                if self.rowcount() != 1:
+                    error("500 can't remove reset code!?")
+            else:
                 error('401 Reset code expired')
-            row = self.fetchone()
 
         if row is None:
             error('401 need password or reset code!')
@@ -773,13 +779,6 @@ class details(Handler):
                         WHERE user_id = %(user_id)s''', data)
         if self.rowcount() == 1:
             email(data['username'], data['email'], details_changed_template, data);
-
-
-        self.execute('''DELETE
-                        FROM resetcodes
-                        WHERE user_id = %(user_id)s''', data)
-        if self.rowcount() != 1:
-            error("500 can't remove reset code!?")
 
         return JSON({
                 'changed': self.rowcount() == 1,
