@@ -747,6 +747,7 @@ class details(Handler):
             checkPassword(row['user_password'], data['oldpassword'])
 
         if data['oldpassword'] is None:
+            data['code'] = resetcode.fromString(data['code'])
             self.execute('''SELECT COUNT(*)
                             FROM resetcodes
                             WHERE user_id = %(user_id)s
@@ -837,7 +838,7 @@ class userdetails(Handler):
             }
         })
     def Get(self, data):
-
+        data['code'] = resetcode.fromString(data['code'])
         self.execute('''SELECT *
                         FROM resetcodes
                         WHERE code = %(code)s
@@ -875,7 +876,7 @@ class resetpw(Handler):
             error('404 Email not found')
         row = self.fetchone()
 
-        data['code'] = str(resetcode.resetcode())
+        data['code'] = resetcode.random()
         data['user_id'] = row['user_id']
         self.execute('''INSERT INTO resetcodes (user_id, user_email, code, expires)
                         VALUES (%(user_id)s, %(email)s, %(code)s, NOW() + INTERVAL 1 HOUR)
@@ -884,6 +885,7 @@ class resetpw(Handler):
         if self.rowcount() < 1:
             error("500 can't generate reset code!?")
 
+        data['code'] = resetcode.fromLong(data['code'])
         data['link'] = "https://256pixels.net?resetpassword={0}&email={1}".format(data['code'], urllib.quote(data['email']))
         data['username'] = row['user_username']
         email(row['user_username'], data['email'], password_reset_template, data)
