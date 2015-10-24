@@ -9,6 +9,8 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap',
 mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 //////////////////////////////////////////////////////////////////////
+// ! can lose changes when navigating away from page (needs an alert)
+// ! if page > results, it shows a blank list instead of going to page 1
 // ! clicking new game when already in the editor makes the editor disappear
 // - track play count of games
 // - play game full screen when viewport width < XXX?
