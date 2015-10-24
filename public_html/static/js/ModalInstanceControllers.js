@@ -1,8 +1,8 @@
 (function() {
     "use strict";
 
-    mainApp.controller('LoginModalInstanceController', ['$scope', '$uibModal', '$modalInstance', 'details', 'ajax', 'user', 'status', '$timeout',
-    function ($scope, $uibModal, $modalInstance, details, ajax, user, status, $timeout) {
+    mainApp.controller('LoginModalInstanceController', ['$scope', '$uibModal', '$modalInstance', 'details', 'ajax', 'user', 'status', '$timeout', 'util',
+    function ($scope, $uibModal, $modalInstance, details, ajax, user, status, $timeout, util) {
 
         $scope.details = details;
         $scope.details.failed = false;
@@ -47,8 +47,8 @@
 
     }]);
 
-    mainApp.controller('RegisterModalInstanceController', ['$scope', '$uibModal', '$modalInstance', 'details', 'ajax', 'user', '$timeout', 'status',
-    function ($scope, $uibModal, $modalInstance, details, ajax, user, $timeout, status) {
+    mainApp.controller('RegisterModalInstanceController', ['$scope', '$uibModal', '$modalInstance', 'details', 'ajax', 'user', '$timeout', 'status', 'util',
+    function ($scope, $uibModal, $modalInstance, details, ajax, user, $timeout, status, util) {
 
         $scope.details = details;
         $scope.message = 'Fill in required fields...';

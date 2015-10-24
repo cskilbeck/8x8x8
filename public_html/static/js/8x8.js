@@ -318,7 +318,7 @@ Object.defineProperty(Error.prototype, 'toJSON', {
 
     function postMessage(message, data) {
         if(window.self !== window.top) {
-            parent.window.postMessage(JSON.stringify({ message: message, data: data }), "https://256pixels.net");
+            parent.window.postMessage(JSON.stringify({ message: message, data: data }), window.location.origin);
         }
     }
 

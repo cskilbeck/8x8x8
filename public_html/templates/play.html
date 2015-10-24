@@ -1,4 +1,4 @@
-$def with (game)
+$def with (game, DB)
 $code
     def id():
         return game['game_id']
@@ -17,27 +17,40 @@ $code
 
     def source():
         return game['game_source']
+
+    def site():
+        return DB.Vars.site
+
+    def name():
+        return DB.Vars.name
+
+    def handle():
+        return DB.Vars.handle
+
+    def appid():
+        return DB.Vars.appid
+
 <!DOCTYPE html>
 <html lang='en'>
     <head>
         <meta name="viewport"            content="width=256" />
 
-        <meta property="og:url"          content="http://256pixels.net/play/$id()" />
+        <meta property="og:url"          content="http://$site()/play/$id()" />
         <meta property="og:title"        content="$title()">
         <meta property="og:description"  content="$description()">
-        <meta property="og:site_name"    content="256 Pixels">
-        <meta property="og:image"        content="http://256pixels.net/screen/$id()">
-        <meta property="og:image:width"  content="32">
-        <meta property="og:image:height" content="32">
-        <meta property="fb:app_id"       content="1709552502606692">
+        <meta property="og:site_name"    content="$name()">
+        <meta property="og:image"        content="http://$site()/screen/$id()">
+        <meta property="og:image:width"  content="128">
+        <meta property="og:image:height" content="128">
+        <meta property="fb:app_id"       content="$appid()">
 
         <meta name="twitter:card" content="summary">
-        <meta name="twitter:site" content="@256_Pixels">
+        <meta name="twitter:site" content="@$handle()">
         <meta name="twitter:title" content="$title()">
         <meta name="twitter:description" content="$description()">
-        <meta name="twitter:creator" content="@256_Pixels">
-        <meta name="twitter:image" content="http://256pixels/net/screen/$id()">
-        <meta name="twitter:domain" content="256pixels.net">
+        <meta name="twitter:creator" content="@$handle()">
+        <meta name="twitter:image" content="http://$site()/screen/$id()">
+        <meta name="twitter:domain" content="$site()">
 
         <title>$title()</title>
 
@@ -90,9 +103,9 @@ $code
         </div>
         <div>
         </div>
-        <script src='//256pixels.net/static/js/Draw.js'></script>
-        <script src='//256pixels.net/static/js/swipe.js'></script>
-        <script src='//256pixels.net/static/js/8x8.js'></script>
+        <script src='/static/js/Draw.js'></script>
+        <script src='/static/js/swipe.js'></script>
+        <script src='/static/js/8x8.js'></script>
         <script type='text/javascript'>
             eng.clientFunction = function(__sys) {
                 "use strict";
@@ -108,9 +121,9 @@ $code
                 var keyheld = __sys.keyheld;
                 var reset = __sys.reset;
                 __sys.userFunction = function() {
-// BEGIN USER GENERATED CODE /////////////////////////////////////////
+// BEGIN USER GENERATED CODE
 $:source()
-// END USER GENERATED CODE ///////////////////////////////////////////
+// END USER GENERATED CODE
 
                     __sys.updateFunction = typeof update === "function" ? update : null;
                 };

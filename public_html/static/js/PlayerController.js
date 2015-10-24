@@ -256,9 +256,9 @@
 
         function twitterURL(game) {
             return format("https://twitter.com/intent/tweet?{0}", $.param({
-                    text: format("{0}\nNice little game made with just 256 pixels!\n", game.game_title),
-                    url: format("http://256pixels.net/play/{0}", game.game_id),
-                    via: "256_Pixels"
+                    text: format("{0}\nNice Little Mini Game!\n", game.game_title),
+                    url: format("http://littleminigames.com/play/{0}", game.game_id),
+                    via: "LittleMiniGames"
                 }));
         }
 
@@ -270,19 +270,19 @@
             FB.ui({
                 method: 'feed',
                 name: game.game_title,
-                link: 'http://256pixels.net/play/' + game.game_id,
-                picture: 'http://256pixels.net/screen/' + game.game_id,
+                link: 'http://littleminigames.com/play/' + game.game_id,
+                picture: 'http://littleminigames.com/screen/' + game.game_id,
                 description: (game.game_instructions || '') + '\n\n\n',
-                caption: (game.user_id === user.id() ? 'I made a' : 'Check out this') + ' game which uses just 256 pixels!'
+                caption: (game.user_id === user.id() ? 'I made a' : 'Check out this') + ' nice Little Mini Game!'
             });
         };
 
         $scope.tweetText = function(game) {
-            return "Check out this nice little 256 Pixel game: " + game.game_title;
+            return "Check out this nice Little Mini Game: " + game.game_title;
         };
 
         $scope.tweetURL = function(game) {
-            return "http://256pixels.net/play/" + game.game_id;
+            return "http://littleminigames.com/play/" + game.game_id;
         };
 
         $scope.tweet = function(game) {

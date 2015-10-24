@@ -1,10 +1,15 @@
 # parameters
 # 1 - local folder
 # 2 - SCP Session name
+# 3 - site name
 
 open %2%
 lcd "%1%"
-synchronize remote public_html /usr/local/www/256pixels.net/public_html
-synchronize remote server /usr/local/www/256pixels.net/server
+option confirm off
+option batch abort
+put production\%3%_nogit.py /usr/local/www/%3%/server/dbase_nogit.py
+put production\fb_%3%.js /usr/local/www/%3%/public_html/static/fb.js
+synchronize remote public_html /usr/local/www/%3%/public_html
+synchronize remote server /usr/local/www/%3%/server
 close
 exit

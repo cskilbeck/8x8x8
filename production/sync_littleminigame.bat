@@ -1,0 +1,1 @@
+sync Azure_LMG_Web_Server littleminigames.com

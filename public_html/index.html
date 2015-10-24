@@ -5,13 +5,13 @@
         <meta http-equiv='X-UA-Compatible' content='IE=edge'>
         <meta name='viewport' content='width=device-width, initial-scale=1'>
 
-        <meta property='og:url' content='http://256pixels.net'>
+        <meta property='og:url' content='http://littleminigames.com'>
         <meta property='og:type' content='website'>
-        <meta property='og:title' content='256 Pixels'>
+        <meta property='og:title' content='Little Mini Games'>
         <meta property='og:description' content='Making games with just 256 pixels'>
-        <meta property='og:image' content='http://256pixels.net/static/img/brand.png'>
+        <meta property='og:image' content='http://littleminigames.com/static/img/brand.png'>
 
-        <title>256 Pixels</title>
+        <title>Little Mini Games</title>
 
         <link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css'>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.css">
@@ -120,7 +120,7 @@
                             highlight ng-change='checkText()'
                             ng-keydown='filterkeys($event)' />
                     <div id='byline'>&nbsp;{{by(game)}}&nbsp;</div>
-                    <iframe id='gameFrame' tabindex='1' sandbox='allow-scripts' src='//256pixels.net/static/html/frame.html'></iframe>
+                    <iframe id='gameFrame' tabindex='1' sandbox='allow-scripts' src='/static/html/frame.html'></iframe>
                     <div class='controls'>
                         <textarea ng-keydown='filterkeys($event)' ng-change='checkText()' rows='5' ng-disabled='!canEditInstructions()' ng-model='game.game_instructions' ng-class='instructionsEditorClass()' highlight name='instructions'>
                         </textarea>

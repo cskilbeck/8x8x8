@@ -46,14 +46,14 @@ def _send(fromname, fromaddr, name, address, subject, html):
     part2 = MIMEText(('<html><head></head><body>%s</body></html>' % html).encode(body_charset), 'html', body_charset)
     msg.attach(part1)
     msg.attach(part2)
-    s = smtplib.SMTP('smtp.gmail.com', 587, '256pixels.net', 20)
+    s = smtplib.SMTP('smtp.gmail.com', 587, DB.Vars.site, 20)
     s.ehlo()
     s.starttls()
     s.ehlo()
     s.login(DB.Vars.mailuser, DB.Vars.mailpwd)
     s.sendmail(fromaddr, address, msg.as_string())
     s.quit()
-    print "Sent welcome mail to", address
+    print "Sent welcome mail to", address, 'from', fromaddr
 
 def send(fromname, fromaddr, toname, toaddress, subject, htmlbody):
     threading.Thread(target = _send, args = (fromname, fromaddr, toname, toaddress, subject, htmlbody)).start()

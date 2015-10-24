@@ -37,15 +37,15 @@ mail = reload(mail)
 #----------------------------------------------------------------------
 # globals
 
-app = None
-render = web.template.render('/usr/local/www/256pixels.net/public_html/templates/')
-
 print "\n===================================================="
 print "Server restart"
 print "Using database at", DB.Vars.host, "Vars are (" + DB.Vars.message + ")"
 print "Current dir is", os.getcwd()
 print "PATH 0:", sys.path[0]
 print "====================================================\n"
+
+app = None
+render = web.template.render('/usr/local/www/%(site)s/public_html/templates/' % {'site': DB.Vars.site })
 
 urls = (
     '/public/login', 'login',               # user logging in
@@ -116,36 +116,36 @@ def getRandomInt():
 # email admin
 
 welcome_email_template = {
-    'sender_name'   : '256 Pixels',
-    'sender_address': 'admin@256pixels.net',
-    'subject'       : '%(username)s, welcome to 256 Pixels',
+    'sender_name'   : '{0}'.format(DB.Vars.name),
+    'sender_address': 'admin@{0}'.format(DB.Vars.site),
+    'subject'       : '%(username)s, welcome to {0}'.format(DB.Vars.name),
     'html'          : '''Hello %(username)s,<br>
-<p>Congratulations, you've registered your account at <a href='https://256pixels.net'>256 Pixels</a>.</p>
+<p>Congratulations, you've registered your account at <a href='{0}'>{1}</a>.</p>
 <p>Thanks,<br>
-The 256 Pixels team.</p>''',
+The %(name)s team.</p>'''.format(DB.Vars.site, DB.Vars.name)
 }
 
 details_changed_template = {
-    'sender_name'   : '256 Pixels',
-    'sender_address': 'admin@256pixels.net',
-    'subject'       : '%(username)s details updated at 256 Pixels',
+    'sender_name'   : '{0}'.format(DB.Vars.name),
+    'sender_address': 'admin@{0}'.format(DB.Vars.site),
+    'subject'       : '%(username)s details updated at {0}'.format(DB.Vars.name),
     'html'          : '''Hello %(username)s,<br>
-<p>Your details at 256 Pixels have been updated.</p>
+<p>Your details at {0} have been updated.</p>
 <p>Thanks,<br>
-The 256 Pixels team.</p>'''
+The {0} team.</p>'''.format(DB.Vars.name)
 }
 
 password_reset_template = {
-    'sender_name'   : '256 Pixels',
-    'sender_address': 'admin@256pixels.net',
-    'subject'       : 'Password reset for %(username)s at 256 Pixels',
+    'sender_name'   : '{0}'.format(DB.Vars.name),
+    'sender_address': 'admin@{0}'.format(DB.Vars.site),
+    'subject'       : 'Password reset for %(username)s at {0}'.format(DB.Vars.name),
     'html'          : '''Hello %(username)s,<br>
 <p>PASSWORD RESET REQUEST</p>
-<p>Someone has requested a password reset for an account on 256 Pixels with this email address.<br>
+<p>Someone has requested a password reset for an account on {0} with this email address.<br>
 If this wasn't you, please ignore this email.<br>
 Otherwise, you can visit this link to reset your password: <a href=%(link)s>%(link)s</a></p>
 <p>Thanks<br>
-The 256 Pixels team.</p>'''
+The {0} team.</p>'''.format(DB.Vars.name)
 }
 
 def email(name, address, template, params):
@@ -313,8 +313,8 @@ class data(object):
     game_framerate = { 'default': 0, 'min': 0, 'max': 5 }
     game_rating = { 'type': int, 'min': 1, 'max': 5 }
     screenshot = { 'type': str, 'min': 256, 'max': 256 }
-    resetcodeparam = { 'type': str, 'regex': resetcode.regex() }
-    optionalresetcode = { 'type': str, 'optional': True, 'regex': resetcode.regex() }
+    resetcodeparam = { 'type': str, 'regex': resetcode.regex }
+    optionalresetcode = { 'type': str, 'optional': True, 'regex': resetcode.regex }
 
     def __init__(self, paramSpec):
         self.paramSpec = paramSpec
@@ -747,14 +747,21 @@ class details(Handler):
             checkPassword(row['user_password'], data['oldpassword'])
 
         if data['oldpassword'] is None:
+            data['resetcode'] = resetcode.as_long(data['code'])
             self.execute('''SELECT COUNT(*)
                             FROM resetcodes
                             WHERE user_id = %(user_id)s
-                            AND code = %(code)s
+                            AND code = %(resetcode)s
                             AND expires > NOW()''', data)
             if self.rowcount() != 1:
                 error('401 Reset code expired')
             row = self.fetchone()
+
+            self.execute('''DELETE
+                            FROM resetcodes
+                            WHERE user_id = %(user_id)s''', data)
+            if self.rowcount() != 1:
+                error("500 can't remove reset code!?")
 
         if row is None:
             error('401 need password or reset code!')
@@ -773,13 +780,6 @@ class details(Handler):
                         WHERE user_id = %(user_id)s''', data)
         if self.rowcount() == 1:
             email(data['username'], data['email'], details_changed_template, data);
-
-
-        self.execute('''DELETE
-                        FROM resetcodes
-                        WHERE user_id = %(user_id)s''', data)
-        if self.rowcount() != 1:
-            error("500 can't remove reset code!?")
 
         return JSON({
                 'changed': self.rowcount() == 1,
@@ -839,9 +839,11 @@ class userdetails(Handler):
         })
     def Get(self, data):
 
+        data['resetcode'] = resetcode.as_long(data['code'])
+        print data['resetcode']
         self.execute('''SELECT *
                         FROM resetcodes
-                        WHERE code = %(code)s
+                        WHERE code = %(resetcode)s
                             AND user_email = %(email)s
                             AND expires > NOW()''', data)
         if self.rowcount() != 1:
@@ -876,7 +878,8 @@ class resetpw(Handler):
             error('404 Email not found')
         row = self.fetchone()
 
-        data['code'] = str(resetcode.resetcode())
+        data['code'] = resetcode.random()
+        print "Generated reset code", resetcode.as_str(data['code']), '(' + str(data['code']) + ')'
         data['user_id'] = row['user_id']
         self.execute('''INSERT INTO resetcodes (user_id, user_email, code, expires)
                         VALUES (%(user_id)s, %(email)s, %(code)s, NOW() + INTERVAL 1 HOUR)
@@ -885,7 +888,7 @@ class resetpw(Handler):
         if self.rowcount() < 1:
             error("500 can't generate reset code!?")
 
-        data['link'] = "https://256pixels.net?resetpassword={0}&email={1}".format(data['code'], urllib.quote(data['email']))
+        data['link'] = "http://{2}?resetpassword={0}&email={1}".format(resetcode.as_str(data['code']), urllib.quote(data['email']), DB.Vars.site)
         data['username'] = row['user_username']
         email(row['user_username'], data['email'], password_reset_template, data)
         return JSON({ 'email_sent': True })
@@ -987,7 +990,8 @@ defaultScreenshot = get_screenshot(os.urandom(128))
 
 class screen(Handler):
     def Get(self, game_id):
-        self.execute('''SELECT game_screenshot, game_lastsaved FROM games
+        self.execute('''SELECT game_screenshot, game_lastsaved
+                        FROM games
                         WHERE game_id = %(game_id)s''', locals())
         if self.rowcount() != 1:
             error('404 game not found')
@@ -1007,7 +1011,7 @@ class play(Handler):
             return HTML(render.nogame(game_id))
         row = self.fetchone()
         web.http.lastmodified(correct_date(row['game_lastsaved']))
-        return HTML(render.play(row))
+        return HTML(render.play(row, DB))
 
 #----------------------------------------------------------------------
 

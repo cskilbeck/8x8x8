@@ -125,7 +125,7 @@
 
         $scope.playIt = function(event, id) {
             if(mainApp.isMobile) {
-                location.href = 'http://256pixels.net/play/' + id;
+                location.href = '/play/' + id;
             }
             else {
                 gamelist.get(id)
