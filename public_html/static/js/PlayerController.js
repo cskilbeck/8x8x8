@@ -8,7 +8,6 @@
         frame,
         frameWindow,
         frameMessages = [],
-        running_game_id = 0,
         body,
         rating_user = 0,
         rating_game = 0,
@@ -28,6 +27,8 @@
     mainApp.controller('PlayerController', ['$scope', '$uibModal', '$routeParams', 'user', 'ajax', '$rootScope', 'gamelist', 'dialog', '$location', '$timeout', 'game', 'status', 'util',
     function($scope, $uibModal, $routeParams, user, ajax, $rootScope, gamelist, dialog, $location, $timeout, game, status, util) {
 
+        var running_game_id = 0;
+
         $scope.game = game;
         $scope.canEditInstructions = false;
         $scope.frameratenames = [
@@ -38,6 +39,15 @@
             '12 - slower',
             '10 - slowest'
         ];
+
+        console.log("Player is here...");
+
+        $scope.$on('$destroy', function() {
+            if($scope.frameStarter) {
+                console.log("DESTROY!");
+                $scope.frameStarter();
+            }
+        });
 
         function format(fmt) {
             var args = Array.prototype.slice.call(arguments, 1);
@@ -60,19 +70,31 @@
         function postMessage(text, data) {
             var payload = JSON.stringify({ message: text, data: data });
             if(frameWindow) {
+                console.log("posting", text);
                 frameWindow.postMessage(payload, "*");
             }
             else {
+                console.log("queuing", text);
                 frameMessages.push(payload);
             }
         }
+
+        $scope.frameStarter = $scope.$on('frame:frame-loaded', function(m, data) {
+            console.log("Frame loaded!");
+            console.log(frameMessages.length, 'to be flushed');
+            while(frameMessages.length > 0) {
+                postMessage(frameMessages.shift());
+            }
+        });
 
         //////////////////////////////////////////////////////////////////////
 
         // game_id, game_framerate, source
 
         function playGame(game, force) {
+            console.log("PlayGame", force);
             if(force || game.game_id !== running_game_id) {
+                console.log("Playing it");
                 $('#mainsidebar').show();
                 running_game_id = game.game_id;
                 status.clearError();
@@ -83,6 +105,9 @@
                 postMessage('restart');
                 util.focus(frameWindow);
                 $scope.$applyAsync();
+            }
+            else {
+                console.log("NOT playing...");
             }
         }
 
@@ -204,16 +229,10 @@
             postMessage('step');
         };
 
-        $scope.$on('play', function(e, dt) {
+        var listener = $scope.$on('play', function(e, dt) {
             if(dt.game) {
                 playGame(dt.game, dt.force);
                 refreshRating();
-            }
-        });
-
-        $scope.$on('frame:frame-loaded', function(m, data) {
-            while(frameMessages.length > 0) {
-                postMessage(frameMessages.shift());
             }
         });
 

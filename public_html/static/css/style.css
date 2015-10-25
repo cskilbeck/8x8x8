@@ -280,12 +280,20 @@ body {
     padding: 0;
 }
 
+.modal-header.player {
+    border-bottom: none;
+}
+
 .centered {
     text-align: center;
 }
 
 .modal-dialog {
     min-width: 300px !important;
+}
+
+.modal-dialog.modal-size256 {
+    width: 276px;
 }
 
 .modal-dialog.modal-x-small {
@@ -411,8 +419,8 @@ body {
     text-align: center;
     display: block;
     position: relative;
-    width: 256px;
-    margin-left: 25px;
+    width: 100%;
+    margin-left: auto;
     margin-top: 5px;
     margin-bottom: 5px;
     height: 32px;
@@ -423,9 +431,9 @@ body {
     padding: 1px;
 }
 
-#byline {
-    margin-left: 25px;
-    width: 256px;
+.byline {
+    margin-left: auto;
+    width: 100%;
     margin-top: 2px;
     margin-bottom: 5px;
 }

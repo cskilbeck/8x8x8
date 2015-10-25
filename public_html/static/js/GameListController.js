@@ -9,8 +9,8 @@
         ],
         oldOptions = {};
 
-    mainApp.controller('GameListController', ['$scope', '$routeParams', 'dialog', 'user', 'ajax', 'gamelist', '$rootScope', 'game', '$location', '$timeout', 'util', '$templateCache',
-    function ($scope, $routeParams, dialog, user, ajax, gamelist, $rootScope, game, $location, $timeout, util, $templateCache) {
+    mainApp.controller('GameListController', ['$scope', '$routeParams', 'dialog', 'user', 'ajax', 'gamelist', '$rootScope', 'game', '$location', '$timeout', 'util', '$templateCache', '$uibModal',
+    function ($scope, $routeParams, dialog, user, ajax, gamelist, $rootScope, game, $location, $timeout, util, $templateCache, $uibModal) {
 
         var timer, cp = $location.search();
         $scope.$parent.pane = 'Games';
@@ -108,6 +108,22 @@
 
         $scope.screenshot = function(g) {
             return gamelist.getscreenshot(g.game_id);
+        };
+
+        $scope.popItUp = function(event, id) {
+            $uibModal.open({
+                animation: true,
+                size: 'size256',
+                templateUrl: '/static/html/playModal.html',
+                controller: 'PlayerController'
+            }).opened.then(function() {
+                game.load(id)
+                .then(function(gameData) {
+                    game.play(gameData, true);
+                }, function(response) {
+                    // couldn't load game...
+                });
+            });
         };
 
         $scope.editIt = function(event, id) {

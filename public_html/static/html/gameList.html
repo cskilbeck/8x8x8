@@ -62,7 +62,7 @@
         <div class='flex-container'>
             <div ng-repeat='g in games'
                     class='dropshadow gameLink' ng-class="['flex-item', options.viewStyle]"
-                    ng-click='editIt($event, g.game_id)'
+                    ng-click='popItUp($event, g.game_id)'
                     ng-attr-id='game-{{g.game_id}}'
                     ng-mouseup='unclicked($index)'
                     id='game_{{$index}}'>

@@ -119,7 +119,7 @@
                             ng-class='titleEditorClass()'
                             highlight ng-change='checkText()'
                             ng-keydown='filterkeys($event)' />
-                    <div id='byline'>&nbsp;{{by(game)}}&nbsp;</div>
+                    <div class='byline'>&nbsp;{{by(game)}}&nbsp;</div>
                     <iframe id='gameFrame' tabindex='1' sandbox='allow-scripts' src='/static/html/frame.html'></iframe>
                     <div class='controls'>
                         <textarea ng-keydown='filterkeys($event)' ng-change='checkText()' rows='5' ng-disabled='!canEditInstructions()' ng-model='game.game_instructions' ng-class='instructionsEditorClass()' highlight name='instructions'>

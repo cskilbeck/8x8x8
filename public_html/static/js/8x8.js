@@ -397,6 +397,7 @@ Object.defineProperty(Error.prototype, 'toJSON', {
     };
 
     window.onload = function() {
+        console.log("Frame loaded (frame)");
         postMessage('frame-loaded');
     };
 

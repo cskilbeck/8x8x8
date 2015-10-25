@@ -1,0 +1,35 @@
+<div class="modal-header centered player">
+    <input name='title'
+            id='game_title'
+            ng-model='game.game_title'
+            class='gametitle'
+            disabled='true' />
+    <div class='byline'>&nbsp;{{by(game)}}&nbsp;</div>
+    <iframe id='gameFrame' tabindex='1' sandbox='allow-scripts' src='/static/html/frame.html'></iframe>
+    <div class='controls'>
+        <textarea rows='5' disabled='true' ng-model='game.game_instructions' class='instructionsTextarea'>
+        </textarea>
+        <div class='shareblock'>
+            <div id='ratingBlock'>
+                <span ng-mouseleave='resetHover(game)' class='linky'>
+                    <i ng-repeat='i in [1,2,3,4,5]' ng-mouseover='rateHover(i, game)' ng-click='rateClick(i, game)' class='{{rating(i, game)}}'></i>
+                </span>
+            </div>
+            <div>
+                <a href='' ng-click='shareIt(game)' class='share share-facebook'><i>!</i></a>
+                <a href='' ng-click='shareTwitter(game)' class='share share-twitter'><i>!</i></a>
+            </div>
+        </div>
+        <div class='btn-group' role='group'>
+            <button type='button' class='btn btn-default' id='restartButton' ng-click='restart()'><i class='fa fa-lg fa-fast-backward'></i></button>
+            <button type='button' class='btn btn-default' id='pauseButton' ng-click='pause()'><i id='play' class='fa fa-lg fa-pause'></i></button>
+            <button type='button' class='btn btn-default' id='stepButton' ng-click='step()'><i class='fa fa-lg fa-step-forward'></i></button>
+        </div>
+    </div>
+    <div class='row'>
+        <div>
+            &nbsp;
+        </div>
+    </div>
+</div>
+P
