@@ -1,16 +1,21 @@
 //////////////////////////////////////////////////////////////////////
 
-// if (window.location.protocol != "https:") {
-//     window.location.href = "https:" + window.location.href.substring(window.location.protocol.length);
-// }
+if (window.location.protocol != "https:") {
+    window.location.href = "https:" + window.location.href.substring(window.location.protocol.length);
+}
 
 var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap', 'ngResource']);
 
 mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 //////////////////////////////////////////////////////////////////////
+// - get off Digital Ocean
+// - debug/staging/live environments on Azure (using branches on GitHub)
+// - use grunt/bower etc for deployment
+// ! getting source twice when you click on a game
+// ! apache rewrite to force HTTPS
 // ! can lose changes when navigating away from page (needs an alert)
-// ! if page > results, it shows a blank list instead of going to page 1
+// ! if page > results, it sometimes shows a blank list instead of going to page 1
 // ! clicking new game when already in the editor makes the editor disappear
 // - track play count of games
 // - play game full screen when viewport width < XXX?
