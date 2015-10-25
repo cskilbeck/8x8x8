@@ -1,22 +1,16 @@
 //////////////////////////////////////////////////////////////////////
 
-if (window.location.protocol != "https:") {
-    window.location.href = "https:" + window.location.href.substring(window.location.protocol.length);
-}
-
 var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap', 'ngResource']);
 
 mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 //////////////////////////////////////////////////////////////////////
+// - get rid of all $window.location.reload / editor refresh hacks
 // - get off Digital Ocean
 // - debug/staging/live environments on Azure (using branches on GitHub)
-// - use grunt/bower etc for deployment
-// ! getting source twice when you click on a game
-// ! apache rewrite to force HTTPS
+// - use grunt/bower etc for deployment - get use of require() fixed up
 // ! can lose changes when navigating away from page (needs an alert)
 // ! if page > results, it sometimes shows a blank list instead of going to page 1
-// ! clicking new game when already in the editor makes the editor disappear
 // - track play count of games
 // - play game full screen when viewport width < XXX?
 // /- Browser support
@@ -149,3 +143,7 @@ mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 // +! fix pagination resetting page to 1
 //      +- tetris tutorial
 // +- make code errors stay in status bar until...?
+// +! getting source twice when you click on a game [playIt() was called for screenshot click]
+// +- remove old rename function [handled by general save now]
+// +! apache rewrite to force HTTPS [CloudFlare supplied 301 using a page rule]
+// +! clicking new game when already in the editor makes the editor disappear [hack for now]

@@ -1,5 +1,5 @@
-mainApp.controller('MainController', ['$scope', '$uibModal', 'user', 'ajax', '$rootScope', 'status', '$location', 'game',
-function($scope, $uibModal, user, ajax, $rootScope, status, $location, game) {
+mainApp.controller('MainController', ['$scope', '$uibModal', 'user', 'ajax', '$rootScope', 'status', '$location', 'game', '$route', '$window',
+function($scope, $uibModal, user, ajax, $rootScope, status, $location, game, $route, $window) {
     "use strict";
 
     $scope.status = status;
@@ -16,8 +16,13 @@ function($scope, $uibModal, user, ajax, $rootScope, status, $location, game) {
     }
 
     $scope.newGame = function() {
+        var reloadit = $location.path().indexOf('/edit') >= 0;
         $location.search('page', null);
         $location.path('/edit/new');
+        if(reloadit) {
+            // TODO (chs): fix hack for editor not reinitializing when newgame clicked and already editing
+            $window.location.reload();
+        }
     };
 
     $scope.$on('showBackdropper', function() {

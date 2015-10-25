@@ -62,7 +62,6 @@ urls = (
     '/rating', 'rating',                    # R get what rating a user gave a game
     '/save', 'save',                        # U saving a game (name and source code)
     '/rate', 'rate',                        # U set a rating per user
-    '/rename', 'rename',                    # U renaming a game (name)
     '/settings', 'settings',                # U update settings for a game
     '/screenshot', 'screenshot',            # U upload screenshot of a game
     '/delete', 'delete',                    # D delete a game
@@ -584,24 +583,6 @@ class settings(Handler):
                         WHERE game_id = %(game_id)s
                             AND user_id = %(user_id)s''', data)
         return JSON({'settings_saved': self.rowcount() })
-
-#----------------------------------------------------------------------
-# /api/rename
-
-class rename(Handler):
-    @data({
-        'validate': True,
-        'params': {
-            'game_id': int,
-            'name': data.game_title
-            }
-        })
-    def Post(self, data):
-        self.execute('''UPDATE games
-                        SET game_lastsaved = NOW(), game_title = %(name)s
-                        WHERE game_id = %(game_id)s
-                            AND user_id = %(user_id)s''' , data)
-        return JSON({ 'renamed': self.rowcount() })
 
 #----------------------------------------------------------------------
 # /api/rate

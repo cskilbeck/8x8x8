@@ -28,8 +28,8 @@
             }
         };
 
-    mainApp.controller('EditorController', ['$scope', '$uibModal', '$routeParams', 'user', 'ajax', '$rootScope', 'gamelist', 'dialog', '$location', 'game', 'status', '$timeout', 'util',
-    function ($scope, $uibModal, $routeParams, user, ajax, $rootScope, gamelist, dialog, $location, game, status, $timeout, util) {
+    mainApp.controller('EditorController', ['$scope', '$uibModal', '$routeParams', 'user', 'ajax', '$rootScope', 'gamelist', 'dialog', '$location', 'game', 'status', '$timeout', 'util', '$window',
+    function ($scope, $uibModal, $routeParams, user, ajax, $rootScope, gamelist, dialog, $location, game, status, $timeout, util, $window) {
 
          function focusEditor() {
             $timeout(function() {
@@ -174,10 +174,7 @@
 
         function save() {
             game.game_source = editor.getValue();
-            return game.save()
-            .then(function() {
-                codeChanges = 0;
-            });
+            return game.save();
         }
 
         function enableEditor(enable) {
@@ -244,8 +241,8 @@
                             codeChanges = 0;
                             game_id = result.game_id;
                             $location.path('/edit/' + game_id);
-                            activateEditor();
                             $scope.$apply();
+                            $window.location.reload();
                         }, function(xhr) {
                             if(xhr.status === 409) {
                                 dialog.medium.choose('Game name already used',
@@ -257,12 +254,14 @@
                                     .then(function(result) {
                                         // DONE (chs): update the location bar to reflect the new game id
                                         game_id = result.data.game_id;
+                                        game.user_id = user.id();
                                         game.game_id = game_id;
                                         save()
                                         .then(function() {
+                                            codeChanges = 0;
                                             $location.path('/edit/' + game_id);
                                             $scope.$apply();
-                                            activateEditor();
+                                            $window.location.reload();
                                         });
                                     });
                                 });
@@ -272,7 +271,7 @@
                     else {
                         save()
                         .then(function() {
-                            // Game has been saved...
+                            codeChanges = 0;// Game has been saved...
                         });
                     }
                     gamelist.reset();

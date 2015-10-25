@@ -102,38 +102,12 @@
             return getGames(true);
         };
 
-        $scope.rename = function(game_id, game_name) {
-            dialog.getText("Rename " + game_name, '', 'New Name', 'New name', game_name)
-            .then(function(text) {
-                if(text !== game_name) {
-                    // TODO (chs): move this into the gamelist service (and don't refresh gamelist)
-                    ajax.post('rename', {
-                        game_id: game_id,
-                        name: text }, 'Renaming ' + game_name + ' to ' + text)
-                    .then($scope.refreshGameList);
-                }
-            });
-        };
-
         $scope.$on('gamerated', function() {
             $scope.$apply();
         });
 
         $scope.screenshot = function(g) {
             return gamelist.getscreenshot(g.game_id);
-        };
-
-        $scope.playIt = function(event, id) {
-            if(mainApp.isMobile) {
-                location.href = '/play/' + id;
-            }
-            else {
-                gamelist.get(id)
-                .then(function(result) {
-                    result.editing = false;
-                    game.play(result, true);
-                });
-            }
         };
 
         $scope.editIt = function(event, id) {

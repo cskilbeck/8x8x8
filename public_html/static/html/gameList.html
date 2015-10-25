@@ -73,7 +73,7 @@
                     <i ng-repeat='i in [1,2,3,4,5]' class='{{star(i, g)}}star fa fa-star'></i>
                 </div>
                 <div class="game-saved">{{timer(g.game_lastsaved)}}</div>
-                <div class="gameLink game-screenshot" ng-click='playIt($event, g.game_id)'>
+                <div class="gameLink game-screenshot">
                     <img id="screen_{{g.game_id}}" ng-src='{{screenshot(g)}}' width='64' height='64' />
                 </div>
             </div>
