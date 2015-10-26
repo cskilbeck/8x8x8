@@ -111,6 +111,12 @@
         };
 
         $scope.popItUp = function(event, id) {
+            $location.search('page', null);
+            $location.path('/edit/' + id);
+            event.preventDefault();
+        };
+
+        $scope.editIt = function(event, id) {
             $uibModal.open({
                 animation: true,
                 size: 'size256',
@@ -124,12 +130,6 @@
                     // couldn't load game...
                 });
             });
-        };
-
-        $scope.editIt = function(event, id) {
-            $location.search('page', null);
-            $location.path('/edit/' + id);
-            event.preventDefault();
         };
 
     }]);

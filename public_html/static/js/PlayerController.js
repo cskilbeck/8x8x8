@@ -70,17 +70,14 @@
         function postMessage(text, data) {
             var payload = JSON.stringify({ message: text, data: data });
             if(frameWindow) {
-                console.log("posting", text);
                 frameWindow.postMessage(payload, "*");
             }
             else {
-                console.log("queuing", text);
                 frameMessages.push(payload);
             }
         }
 
         $scope.frameStarter = $scope.$on('frame:frame-loaded', function(m, data) {
-            console.log("Frame loaded!");
             console.log(frameMessages.length, 'to be flushed');
             while(frameMessages.length > 0) {
                 postMessage(frameMessages.shift());

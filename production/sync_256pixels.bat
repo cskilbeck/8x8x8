@@ -1,1 +1,1 @@
-sync DigitalOcean_Web_Server 256pixels.net
+sync "256Pixels Web Server" 256pixels.net

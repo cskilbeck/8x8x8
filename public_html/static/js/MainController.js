@@ -20,8 +20,7 @@ function($scope, $uibModal, user, ajax, $rootScope, status, $location, game, $ro
         $location.search('page', null);
         $location.path('/edit/new');
         if(reloadit) {
-            // TODO (chs): fix hack for editor not reinitializing when newgame clicked and already editing
-            $window.location.reload();
+            $route.reload();
         }
     };
 

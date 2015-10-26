@@ -5,7 +5,6 @@
     "use strict";
 
     var editor,
-        session,
         source,
         modulesLoaded = false,
         name,
@@ -45,7 +44,7 @@
         function gotoError(msg, line, column) {
             status.error(msg, 300);
             editor.gotoLine(line - 1, Math.max(0, column - 1), true);
-            editor.session.setAnnotations([{
+            editor.getSession().setAnnotations([{
                 row: line - 2,
                 column: column - 1,
                 text: msg,
@@ -56,8 +55,6 @@
 
         // TODO (chs): persist the editor object and its loaded modules for when we come back to this View
         function startEditor() {
-            editor = ace.edit("editor");
-
             if(!modulesLoaded) {
                 ace.config.set('basePath', 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/');
                 ace.config.set("modePath", "https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/");
@@ -72,6 +69,7 @@
             else {
                 console.log("editor modules already loaded");
             }
+            editor = ace.edit("editor");
             editor.getSession().setMode('ace/mode/javascript');
             setOptions(editorOptions);
             editor.$blockScrolling = Infinity;
@@ -85,7 +83,7 @@
 
         function resetUndo() {
             codeChanges = 0;
-            editor.session.setUndoManager(new ace.UndoManager());
+            editor.getSession().setUndoManager(new ace.UndoManager());
         }
 
         function noGame() {
@@ -97,7 +95,6 @@
                 focusEditor();
                 enableEditor(true);
             }, function() {
-                session = null;
                 $location.path('/list');
             });
         }
@@ -209,13 +206,13 @@
         });
 
         $scope.isWorkUnsaved = function() {
-            return !(editor && editor.session && editor.session.getUndoManager().isClean());
+            return !(editor && editor.getSession() && editor.getSession().getUndoManager().isClean());
         };
 
         $scope.saveState = function() {
             source = editor.getValue();
-            session = editor.getSession();
             util.save('source', source);
+            console.log("Saving state");
             // TODO (chs): roaming options: save it to the database
             return true;
         };
@@ -241,8 +238,8 @@
                             codeChanges = 0;
                             game_id = result.game_id;
                             $location.path('/edit/' + game_id);
+                            $route.reload();
                             $scope.$apply();
-                            $window.location.reload();
                         }, function(xhr) {
                             if(xhr.status === 409) {
                                 dialog.medium.choose('Game name already used',
@@ -260,8 +257,8 @@
                                         .then(function() {
                                             codeChanges = 0;
                                             $location.path('/edit/' + game_id);
+                                            $route.reload();
                                             $scope.$apply();
-                                            $window.location.reload();
                                         });
                                     });
                                 });
@@ -394,9 +391,15 @@
         $scope.$on("$destroy", function(e) {
             game.editing = false;
             $rootScope.$applyAsync();
+            source = '// New game!\n//Put your source code here...\n\n\n//OK?';
+            editor.getSession().setValue(source);
+            editor.getSession().$stopWorker();
+            editor.destroy();
+            editor = null;
+            console.log("Destroyed editor!");
             // // OK: true
             // // Cancel: false
-            // if(!(editor.session.getUndoManager().isClean() || confirm("Changes are not saved, really close the editor?"))) {
+            // if(!(editor.getSession().getUndoManager().isClean() || confirm("Changes are not saved, really close the editor?"))) {
             //     e.preventDefault(); // this doesn't work for $destroy because it's a broadcast message
             // }
         });
@@ -428,9 +431,9 @@
         if($routeParams.game_id) {
             game_id = $routeParams.game_id;
             if(game_id === 'new') {
-                source = '';
+                source = '// New game!\n//Put your source code here...\n\n\n//OK?';
                 game.reset();
-                editor.setValue(source, -1);
+                editor.getSession().setValue(source, -1);
                 game.game_id = game_id;
                 codeChanges = 0;
                 game.clearChanges();
