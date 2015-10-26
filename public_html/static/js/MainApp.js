@@ -5,9 +5,9 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap',
 mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 //////////////////////////////////////////////////////////////////////
-// - get rid of all $window.location.reload / editor refresh hacks
-// - get off Digital Ocean
-// - debug/staging/live environments on Azure (using branches on GitHub)
+// ! clicking new game when already in the editor makes the editor disappear [because #editor not inflating into #editorContainer]
+// /- get off Digital Ocean
+// /- debug/staging/live environments on Azure (using branches on GitHub)
 // - use grunt/bower etc for deployment - get use of require() fixed up
 // ! can lose changes when navigating away from page (needs an alert)
 // ! if page > results, it sometimes shows a blank list instead of going to page 1
@@ -35,7 +35,7 @@ mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 //      - proper examples which point at games
 //      / sprites & collision tutorials
 // - game list
-//      - quick search buttons: my games, top ranked, most played, recently added, recently changed
+//      /- quick search buttons: my games, top ranked, most played, recently added, recently changed
 // / fix the get/set pixel/color APIs for numbers/strings
 //////////////////////////////////////////////////////////////////////
 // \ forking
@@ -146,4 +146,4 @@ mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 // +! getting source twice when you click on a game [playIt() was called for screenshot click]
 // +- remove old rename function [handled by general save now]
 // +! apache rewrite to force HTTPS [CloudFlare supplied 301 using a page rule]
-// +! clicking new game when already in the editor makes the editor disappear [hack for now]
+// +- get rid of all $window.location.reload / editor refresh hacks [bug remains]
