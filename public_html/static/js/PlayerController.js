@@ -40,8 +40,6 @@
             '10 - slowest'
         ];
 
-        console.log("Player is here...");
-
         $scope.$on('$destroy', function() {
             if($scope.frameStarter) {
                 console.log("DESTROY!");
@@ -78,7 +76,6 @@
         }
 
         $scope.frameStarter = $scope.$on('frame:frame-loaded', function(m, data) {
-            console.log(frameMessages.length, 'to be flushed');
             while(frameMessages.length > 0) {
                 postMessage(frameMessages.shift());
             }
@@ -89,9 +86,7 @@
         // game_id, game_framerate, source
 
         function playGame(game, force) {
-            console.log("PlayGame", force);
             if(force || game.game_id !== running_game_id) {
-                console.log("Playing it");
                 $('#mainsidebar').show();
                 running_game_id = game.game_id;
                 status.clearError();

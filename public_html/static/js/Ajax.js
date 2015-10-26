@@ -34,27 +34,6 @@
 
         var ajax = {
 
-            random: function() {
-
-                $http({ method: 'GET',
-                        url: 'https://www.random.org/integers',
-                        params: {
-                            num:32,
-                            min:0,
-                            max:255,
-                            col:32,
-                            base:16,
-                            format:'plain',
-                            rnd:'new'}
-                        }).
-                then(function(response) {
-                    console.log(response.data);
-                }, function(response) {
-                    console.log(response.statusText);
-                });
-
-            },
-
             submit: function(fn, url, params, data, msg) {
                 var token, q = Q.defer();
                 status.busy(true);

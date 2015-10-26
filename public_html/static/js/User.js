@@ -164,7 +164,6 @@ function ($rootScope, $uibModal, ajax, status, dialog) {
                         }
                     }
                 }).result.then(function(result) {
-                    console.log(result);
                     user.update(result, 'profile');
                     q.resolve(result);
                 }, function(reason) {

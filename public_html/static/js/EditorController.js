@@ -61,13 +61,11 @@
                 ace.config.set("workerPath", "https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/");
                 ace.config.set("themePath", "https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/");
                 ace.config.loadModule('ace/ext/language_tools', function(m) {
-                    console.log("loaded editor modules");
                     ace.require(['ace/ext/language_tools']);
                     modulesLoaded = true;
                 });
             }
             else {
-                console.log("editor modules already loaded");
             }
             editor = ace.edit("editor");
             editor.getSession().setMode('ace/mode/javascript');
@@ -117,11 +115,9 @@
                 height = (editorRect.bottom - editorRect.top) - tbh;
                 $('#editorContainer').height(height - 1).width(width - 1); // -1 for the border
                 $('#editor').height(height - 1).width(width - 1); // -1 for the border
-                console.log('Resize editor to', width - 1, 'x',height - 1);
                 editor.resize(true);
             }
             else {
-                console.log("?no toolbar height?");
             }
         }
 
@@ -212,7 +208,6 @@
         $scope.saveState = function() {
             source = editor.getValue();
             util.save('source', source);
-            console.log("Saving state");
             // TODO (chs): roaming options: save it to the database
             return true;
         };
@@ -396,7 +391,6 @@
             editor.getSession().$stopWorker();
             editor.destroy();
             editor = null;
-            console.log("Destroyed editor!");
             // // OK: true
             // // Cancel: false
             // if(!(editor.getSession().getUndoManager().isClean() || confirm("Changes are not saved, really close the editor?"))) {
@@ -417,8 +411,6 @@
         $scope.game = game;
 
         $scope.$emit('pane:loaded', 'editor');
-
-        console.log('EditorController', newGameID);
 
         discardChanges = false;
 

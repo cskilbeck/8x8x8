@@ -132,7 +132,6 @@
 
             find: function(id, name) {
                 var q = Q.defer();
-                console.log(name);
                 ajax.get('gameid', { name: name })
                 .then(function(response) {
                     ga('send', {

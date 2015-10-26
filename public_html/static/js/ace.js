@@ -15315,7 +15315,6 @@ var VirtualRenderer = function(container, theme) {
             this.onResize();
     };
     this.onResize = function(force, gutterWidth, width, height) {
-        console.log("ONRESIZE!");
         if (this.resizing > 2)
             return;
         else if (this.resizing > 0)
@@ -15344,8 +15343,6 @@ var VirtualRenderer = function(container, theme) {
         if (this.resizing)
             this.resizing = 0;
         this.scrollBarV.scrollLeft = this.scrollBarV.scrollTop = null;
-        console.log("Resized to", width, "x", height)
-        console.log($('#editor').height());
     };
 
     this.$updateCachedSize = function(force, gutterWidth, width, height) {
@@ -15627,17 +15624,13 @@ var VirtualRenderer = function(container, theme) {
             changes |= this.$changes;
             this.$changes = 0;
         }
+
         if ((!this.session || !this.container.offsetWidth || this.$frozen) || (!changes && !force)) {
-            console.log("renderchanges skipped");
-            console.log("SESSION:", this.session);
-            console.log("this.container.offsetWidth:",this.container.offsetWidth);
-            console.log("this.frozed:", this.$frozen);
             this.$changes |= changes;
             return;
         }
         if (this.$size.$dirty) {
             this.$changes |= changes;
-            console.log("renderchanges onresizing because dirty");
             return this.onResize(true);
         }
         if (!this.lineHeight) {
@@ -18609,7 +18602,6 @@ exports.edit = function(el) {
     }
 
     if (el && el.env && el.env.editor instanceof Editor) {
-        console.log("Already got editor");
         return el.env.editor;
     }
 
@@ -18627,7 +18619,6 @@ exports.edit = function(el) {
     var doc = exports.createEditSession(value);
 
     var editor = new Editor(new Renderer(el));
-    console.log("Created new editor");
     editor.setSession(doc);
 
     var env = {
