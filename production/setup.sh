@@ -25,7 +25,7 @@ if writeable '/root'; then
     sed "s/\%1/$1/" site.conf >/etc/apache2/sites-available/$1.conf
 
     # and enable it
-    a2ensite $1
+    a2ensite $1.conf
 
     # enable some apache2 modules
     a2enmod expires headers rewrite
