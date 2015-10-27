@@ -11,7 +11,7 @@ function writeable() {
 }
 
 # only root can run it
-if writeable '/etc/apache2'; then
+if writeable '/root'; then
 
     # install some packages
     apt-get install apache2 apache2.2-common apache2-mpm-prefork apache2-utils libexpat1 ssl-cert
