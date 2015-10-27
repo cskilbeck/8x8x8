@@ -12,8 +12,17 @@
 # DONE (chs): bcrypt password
 # DONE (chs): make it unicode
 #----------------------------------------------------------------------
-
-# When they login or register, create
+# webserver
+# $ sudo apt-get install python-pip python-dev build-essential
+# $ sudo apt-get install zlib1g
+# $ sudo apt-get install zlib1g-dev
+# $ pip install py-bcrypt
+# $ pip install iso8601
+# $ pip install MySQL-python
+# $ pip install pypng
+# $ pip install Pillow
+# database
+# $# sudo apt-get install mysql-server
 
 import sys, types, os, time, datetime, struct, re, random
 import web, pprint, json, iso8601, unicodedata, urlparse, urllib

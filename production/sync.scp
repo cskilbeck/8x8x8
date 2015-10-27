@@ -8,7 +8,7 @@ lcd "%1%"
 option confirm off
 option batch abort
 put production\db_%3%_nogit.py /usr/local/www/%3%/server/dbase_nogit.py
-put production\fb_%3%.js /usr/local/www/%3%/public_html/static/fb.js
+put production\fb_%3%.js /usr/local/www/%3%/public_html/static/js/fb.js
 synchronize remote public_html /usr/local/www/%3%/public_html
 synchronize remote server /usr/local/www/%3%/server
 close

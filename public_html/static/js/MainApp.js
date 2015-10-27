@@ -5,6 +5,10 @@ var mainApp = angular.module('mainApp', ['ngRoute', 'ngAnimate', 'ui.bootstrap',
 mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 //////////////////////////////////////////////////////////////////////
+// - server\list: orderBy should be an index into an array of fixed strings
+// - play multiple games at once using multiple iframes...
+// ! EditProfile modal dialog flickering height when it appears
+// - detect accesses to window, document, globals etc with estraverse/esprima and flag them as errors (http://tobyho.com/2013/12/02/fun-with-esprima/)
 // ! clicking new game when already in the editor makes the editor disappear [because #editor not inflating into #editorContainer]
 // /- get off Digital Ocean
 // /- debug/staging/live environments on Azure (using branches on GitHub)

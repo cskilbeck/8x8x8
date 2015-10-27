@@ -285,7 +285,7 @@
             this.errors.push({
                 message: e.description,
                 line: e.lineNumber,
-                column: e.column 
+                column: e.column
             });
         }
         if(this.code) {

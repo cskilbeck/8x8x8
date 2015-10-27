@@ -9,8 +9,8 @@
         ],
         oldOptions = {};
 
-    mainApp.controller('GameListController', ['$scope', '$routeParams', 'dialog', 'user', 'ajax', 'gamelist', '$rootScope', 'game', '$location', '$timeout', 'util', '$templateCache', '$uibModal',
-    function ($scope, $routeParams, dialog, user, ajax, gamelist, $rootScope, game, $location, $timeout, util, $templateCache, $uibModal) {
+    mainApp.controller('GameListController', ['$scope', '$routeParams', 'dialog', 'user', 'ajax', 'gamelist', '$rootScope', 'game', '$location', '$timeout', 'util', '$templateCache', '$uibModal', 'player',
+    function ($scope, $routeParams, dialog, user, ajax, gamelist, $rootScope, game, $location, $timeout, util, $templateCache, $uibModal, player) {
 
         var timer, cp = $location.search();
         $scope.$parent.pane = 'Games';

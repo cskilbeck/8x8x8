@@ -21,33 +21,62 @@
         <div class='row' style='white-space: nowrap; overflow: hidden'>
             <div class='col-md-10 col-md-offset-1'>
                 <div class='row'>
-                    <div class='col-xs-1 colorBox' style='background: #000000'></div><div class='col-xs-1 colorName'>&nbsp;0 black</div>
-                    <div class='col-xs-1 colorBox' style='background: #800000'></div><div class='col-xs-1 colorName'>&nbsp;4 darkred</div>
-                    <div class='col-xs-1 colorBox' style='background: #0000FF'></div><div class='col-xs-1 colorName'>&nbsp;8 blue</div>
-                    <div class='col-xs-1 colorBox' style='background: #FF80F0'></div><div class='col-xs-1 colorName'>12 pink</div>
+                    <div class='col-xs-1 colorBox cb2' style='background: #000000'></div>
+                    <div class='col-xs-1 colorBox cb2' style='background: #008000'></div>
+                    <div class='col-xs-1 colorBox cb2' style='background: #00FF00'></div>
+                    <div class='col-xs-1 colorBox cb2' style='background: #80FF80'></div>
                 </div>
                 <div class='row'>
-                    <div class='col-xs-1 colorBox' style='background: #008000'></div><div class='col-xs-1 colorName'>&nbsp;1 darkgreen</div>
-                    <div class='col-xs-1 colorBox' style='background: #FF0000'></div><div class='col-xs-1 colorName'>&nbsp;5 red</div>
-                    <div class='col-xs-1 colorBox' style='background: #00FFFF'></div><div class='col-xs-1 colorName'>&nbsp;9 lightblue</div>
-                    <div class='col-xs-1 colorBox' style='background: #FF8000'></div><div class='col-xs-1 colorName'>13 orange</div>
+                    <div class='col-xs-1 colorBox cb2' style='background: #800000'></div>
+                    <div class='col-xs-1 colorBox cb2' style='background: #FF0000'></div>
+                    <div class='col-xs-1 colorBox cb2' style='background: #FF8080'></div>
+                    <div class='col-xs-1 colorBox cb2' style='background: #000080'></div>
                 </div>
                 <div class='row'>
-                    <div class='col-xs-1 colorBox' style='background: #00FF00'></div><div class='col-xs-1 colorName'>&nbsp;2 green</div>
-                    <div class='col-xs-1 colorBox' style='background: #FF8080'></div><div class='col-xs-1 colorName'>&nbsp;6 lightred</div>
-                    <div class='col-xs-1 colorBox' style='background: #800080'></div><div class='col-xs-1 colorName'>10 purple</div>
-                    <div class='col-xs-1 colorBox' style='background: #FFFF00'></div><div class='col-xs-1 colorName'>14 yellow</div>
+                    <div class='col-xs-1 colorBox cb2' style='background: #0000FF'></div>
+                    <div class='col-xs-1 colorBox cb2' style='background: #00FFFF'></div>
+                    <div class='col-xs-1 colorBox cb2' style='background: #800080'></div>
+                    <div class='col-xs-1 colorBox cb2' style='background: #FF00FF'></div>
+
                 </div>
                 <div class='row'>
-                    <div class='col-xs-1 colorBox' style='background: #80FF80'></div><div class='col-xs-1 colorName'>&nbsp;3 lightgreen</div>
-                    <div class='col-xs-1 colorBox' style='background: #000080'></div><div class='col-xs-1 colorName'>&nbsp;7 darkblue</div>
-                    <div class='col-xs-1 colorBox' style='background: #FF00F0'></div><div class='col-xs-1 colorName'>11 magenta</div>
-                    <div class='col-xs-1 colorBox' style='background: #FFFFFF'></div><div class='col-xs-1 colorName'>15 white</div>
+                    <div class='col-xs-1 colorBox cb2' style='background: #FF80F0'></div>
+                    <div class='col-xs-1 colorBox cb2' style='background: #FF8000'></div>
+                    <div class='col-xs-1 colorBox cb2' style='background: #FFFF00'></div>
+                    <div class='col-xs-1 colorBox cb2' style='background: #FFFFFF'></div>
                 </div>
             </div>
         </div>
         <div class='row'>
             <br>
+        </div>
+        <div class='row' style='white-space: nowrap; overflow: hidden'>
+            <div class='col-md-10 col-md-offset-1'>
+                <div class='row'>
+                    <div class='col-xs-1 colorName'>0 black</div>
+                    <div class='col-xs-1 colorName'>1 darkgreen</div>
+                    <div class='col-xs-1 colorName'>2 green</div>
+                    <div class='col-xs-1 colorName'>3 lightgreen</div>
+                </div>
+                <div class='row'>
+                    <div class='col-xs-1 colorName'>4 darkred</div>
+                    <div class='col-xs-1 colorName'>5 red</div>
+                    <div class='col-xs-1 colorName'>6 lightred</div>
+                    <div class='col-xs-1 colorName'>7 darkblue</div>
+                </div>
+                <div class='row'>
+                    <div class='col-xs-1 colorName'>8 blue</div>
+                    <div class='col-xs-1 colorName'>9 lightblue</div>
+                    <div class='col-xs-1 colorName'>10 purple</div>
+                    <div class='col-xs-1 colorName'>11 magenta</div>
+                </div>
+                <div class='row'>
+                    <div class='col-xs-1 colorName'>12 pink</div>
+                    <div class='col-xs-1 colorName'>13 orange</div>
+                    <div class='col-xs-1 colorName'>14 yellow</div>
+                    <div class='col-xs-1 colorName'>15 white</div>
+                </div>
+            </div>
         </div>
         <div class='row func'>
             <div class='col-md-8'>
@@ -101,8 +130,7 @@ rectangle(0, 15, 16, 1, 10);</pre></p>
                 <div class='col-md-11'>
                     Draws a box starting at at x,y extending to x + w, y + h (inclusive). As with setpixel, you can pass in a name or number for the color.<br><br>
                     <i>This will draw an orange box 6 pixels wide and 8 pixels high at (5,4) in yellow </i><br>
-                    <pre class='helpcode'>box(5, 4, 6, 8, 'orange');
-rectangle(0, 15, 16, 1, 10);</pre></p>
+                    <pre class='helpcode'>box(5, 4, 6, 8, 'orange');</pre>
                 </div>
             </div>
         </div>

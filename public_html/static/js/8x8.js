@@ -318,6 +318,9 @@ Object.defineProperty(Error.prototype, 'toJSON', {
 
     function postMessage(message, data) {
         if(window.self !== window.top) {
+            if (!window.location.origin) {
+              window.location.origin = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port: '');
+            }
             parent.window.postMessage(JSON.stringify({ message: message, data: data }), window.location.origin);
         }
     }

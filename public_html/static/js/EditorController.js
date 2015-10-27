@@ -27,8 +27,8 @@
             }
         };
 
-    mainApp.controller('EditorController', ['$scope', '$uibModal', '$routeParams', 'user', 'ajax', '$rootScope', 'gamelist', 'dialog', '$location', 'game', 'status', '$timeout', 'util', '$window',
-    function ($scope, $uibModal, $routeParams, user, ajax, $rootScope, gamelist, dialog, $location, game, status, $timeout, util, $window) {
+    mainApp.controller('EditorController', ['$scope', '$uibModal', '$routeParams', 'user', 'ajax', '$rootScope', 'gamelist', 'dialog', '$location', 'game', 'status', '$timeout', 'util', '$window', 'player',
+    function ($scope, $uibModal, $routeParams, user, ajax, $rootScope, gamelist, dialog, $location, game, status, $timeout, util, $window, player) {
 
          function focusEditor() {
             $timeout(function() {

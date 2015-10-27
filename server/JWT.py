@@ -21,9 +21,6 @@ def extract(secret, token):
     if len(parts) != 3:
         raise ValueError('Invalid JWT format')
 
-    if hashed(secret, msg = parts[0] + '.' + parts[1], digestmod = sha256).digest() != decode64(parts[2]):
-        raise ValueError('Invalid JWT hash')
-
     header = loads(decode64(parts[0]))
 
     if not 'typ' in header or header['typ'] != 'JWT':
@@ -34,6 +31,9 @@ def extract(secret, token):
 
     if 'exp' in header and time() > header['exp']:
         raise ValueError('JWT expired')
+
+    if hashed(secret, msg = parts[0] + '.' + parts[1], digestmod = sha256).digest() != decode64(parts[2]):
+        raise ValueError('Invalid JWT hash')
 
     return { 'header': header, 'payload': loads(decode64(parts[1])) }
 

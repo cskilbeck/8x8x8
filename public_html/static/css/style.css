@@ -275,9 +275,23 @@ body {
     overflow: hidden;
 }
 
+#gameFrameModal {
+    border: none;
+    width: 256px;
+    height: 256px;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
 #editor {
     margin: 0;
     padding: 0;
+    position: absolute;
+    top:0px;
+    left:0px;
+    right:0px;
+    bottom:0px;
 }
 
 .modal-header.player {
@@ -711,6 +725,10 @@ pre.helpcode {
     visibility: hidden;
 }
 
+[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+  display: none !important;
+}
+
 .game-title {
     font-weight: bolder;
     font-size: 14px;
@@ -977,7 +995,12 @@ td .searchOptionsRow {
 }
 
 .colorName {
-    padding-top: 4px;
+    padding-left: 4px;
+    margin-left: 0px;
+    border: 1px solid white;
+    background: #ddd;
+    overflow: hidden;
+    min-width: 7em;
 }
 
 .colorBox {
@@ -985,6 +1008,11 @@ td .searchOptionsRow {
     width: 1em;
     border: 1px solid black;
     margin-bottom: 12px;
+}
+
+.colorBox.cb2 {
+    border: none;
+    margin-bottom: 0px;
 }
 
 .funcname {
