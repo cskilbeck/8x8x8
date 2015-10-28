@@ -16,12 +16,8 @@ function($scope, $uibModal, user, ajax, $rootScope, status, $location, game, $ro
     }
 
     $scope.newGame = function() {
-        var reloadit = $location.path().indexOf('/edit') >= 0;
         $location.search('page', null);
         $location.path('/edit/new');
-        if(reloadit) {
-            $route.reload();
-        }
     };
 
     $scope.$on('showBackdropper', function() {

@@ -67,7 +67,7 @@
             }
             else {
             }
-            editor = ace.edit("editor");
+            editor = ace.edit($("#editorContainer")[0]);
             editor.getSession().setMode('ace/mode/javascript');
             setOptions(editorOptions);
             editor.$blockScrolling = Infinity;
@@ -114,8 +114,8 @@
                 width = editorRect.right - editorRect.left;
                 height = (editorRect.bottom - editorRect.top) - tbh;
                 $('#editorContainer').height(height - 1).width(width - 1); // -1 for the border
-                $('#editor').height(height - 1).width(width - 1); // -1 for the border
                 editor.resize(true);
+                editor.renderer.updateFull(true);
             }
             else {
             }
@@ -174,6 +174,17 @@
             editor.setReadOnly(!enable);
         }
 
+        function newGame() {
+            source = '// New game!\n//Put your source code here...\n\n\n//OK?';
+            game.reset();
+            editor.getSession().setValue(source, -1);
+            game.game_id = game_id;
+            codeChanges = 0;
+            game.clearChanges();
+            activateEditor();
+            enableEditor(true);
+        }
+
         $scope.$on('frame:focus-editor', function() {
             focusEditor();
         });
@@ -182,7 +193,6 @@
             var parts = printStackTrace({ e: e })[0].match(/.*@.*\:(\d+):(\d+)/),
                 line = parseInt(parts[1]),
                 column = parseInt(parts[2]);
-            console.log(parts);
             if(game.wrapper) {
                 line = game.wrapper.searchMap(line + 1);
                 gotoError(e.message, line + 1, 0);
@@ -199,6 +209,10 @@
 
         $scope.$on('editorGoto', function(m, o) {
             gotoError(o.message, o.line + 1, o.column + 1);
+        });
+
+        $scope.$on('newgame', function() {
+            newGame();
         });
 
         $scope.isWorkUnsaved = function() {
@@ -233,8 +247,6 @@
                             codeChanges = 0;
                             game_id = result.game_id;
                             $location.path('/edit/' + game_id);
-                            $route.reload();
-                            $scope.$apply();
                         }, function(xhr) {
                             if(xhr.status === 409) {
                                 dialog.medium.choose('Game name already used',
@@ -252,8 +264,6 @@
                                         .then(function() {
                                             codeChanges = 0;
                                             $location.path('/edit/' + game_id);
-                                            $route.reload();
-                                            $scope.$apply();
                                         });
                                     });
                                 });
@@ -272,8 +282,9 @@
             else {
                 dialog.inform('A game needs a name', "Your game has no name - once you've set the name, you can save it")
                 .then(function() {
-                    game.game_title = "New Game";
-                    $scope.$apply();
+                    $scope.$apply(function() {
+                        game.game_title = "New Game";
+                    });
                     util.focus($("#game_title"));
                 });
             }
@@ -402,10 +413,6 @@
             setOptions(options);
         });
 
-        $(window).resize(function(e) {
-            inflateEditor();
-        });
-
         var newGameID = $routeParams.game_id;
 
         $scope.game = game;
@@ -418,60 +425,62 @@
 
         editorOptions = util.load('editorOptions') || editorOptions;
 
-        startEditor();
-
-        if($routeParams.game_id) {
-            game_id = $routeParams.game_id;
-            if(game_id === 'new') {
-                source = '// New game!\n//Put your source code here...\n\n\n//OK?';
-                game.reset();
-                editor.getSession().setValue(source, -1);
-                game.game_id = game_id;
-                codeChanges = 0;
-                game.clearChanges();
-                activateEditor();
-                enableEditor(true);
-            }
-            else {
-                try {
+        function loadSource() {
+            if($routeParams.game_id) {
+                game_id = $routeParams.game_id;
+                if(game_id === 'new') {
+                    newGame();
+                }
+                else {
                     try {
-                        newGameID = parseInt(game_id);
+                        try {
+                            newGameID = parseInt(game_id);
+                        }
+                        catch(e) {
+                            newGameID = 0;
+                        }
+                        if(newGameID) {
+                            enableEditor(false);
+                            game.user_id = 0;
+                            game.load(newGameID)
+                            .then(function(result) {
+                                editor.setValue(result.game_source, -1);
+                                resetUndo();
+                                game.clearChanges();
+                                $scope.runIt(false);
+                                $scope.$apply();
+                                enableEditor(true);
+                            }, function(xhr) {
+                                noGame();
+                            });
+                        }
+                        else {
+                            noGame();
+                        }
                     }
                     catch(e) {
-                        newGameID = 0;
-                    }
-                    if(newGameID) {
-                        enableEditor(false);
-                        game.user_id = 0;
-                        game.load(newGameID)
-                        .then(function(result) {
-                            editor.setValue(result.game_source, -1);
-                            resetUndo();
-                            game.clearChanges();
-                            $scope.runIt(false);
-                            $scope.$apply();
-                            enableEditor(true);
-                        }, function(xhr) {
-                            noGame();
-                        });
-                    }
-                    else {
                         noGame();
                     }
                 }
-                catch(e) {
-                    noGame();
-                }
+            }
+            else {
+                source = '// Huh?';
+                editor.setValue(source, -1);
+                resetUndo();
+                enableEditor(true);
             }
         }
-        else {
-            source = '// Huh?';
-            editor.setValue(source, -1);
-            resetUndo();
-            enableEditor(true);
-        }
 
-        activateEditor();
+        $timeout(function() {
+            startEditor();
+            activateEditor();
+            inflateEditor();
+            loadSource();
+
+            $(window).on('resize', function() {
+                inflateEditor();
+            });
+        });
 
     }]);
 })();
