@@ -1,38 +1,23 @@
 #!/bin/bash
-# set up the web server
-echo "Setting up the web server..."
 
-function writeable() {
-  if [[ -w $1 ]]; then
-    return 1
-  else
-    return 0
-  fi
-}
+if [[ $# -lt 1 ]]; then
+    echo "Need site name"
+    exit 1
+fi
 
-# only root can run it
-if writeable '/etc/apache2'; then
+if [[ ! -w '/root' ]]; then
+    echo "Permission denied - use sudo?"
+    exit 1
+fi
 
-    # install some packages
-    apt-get install apache2 apache2.2-common apache2-mpm-prefork apache2-utils libexpat1 ssl-cert
-    apt-get install python-pip python-dev build-essential libapache2-mod-wsgi
-    apt-get install zlib1g zlib1g-dev
-
-    # install some python libs
-    pip --no-cache-dir install web.py py-bcrypt iso8601 MySQL-python pypng Pillow
-
-    # make the site conf file
-    sed "s/\%1/$1/" site.conf >/etc/apache2/sites-available/$1.conf
-
-    # and enable it
-    a2ensite $1
-
-    # enable some apache2 modules
-    a2enmod expires headers rewrite
-
-    # restart apache2
-    service apache2 restart
-
-else
-    echo "Can't write to /etc/apache2 folder - need sudo"
-
+echo "Setting up $1"
+apt-get -y install apache2 apache2-mpm-prefork apache2-utils libexpat1 ssl-cert
+apt-get -y install python-pip python-dev build-essential libapache2-mod-wsgi
+apt-get -y install zlib1g zlib1g-dev
+pip --no-cache-dir install web.py py-bcrypt iso8601 MySQL-python pypng Pillow
+sed "s/\%1/$1/" site.conf >/etc/apache2/sites-available/$1.conf
+service apache2 stop
+a2ensite $1.conf
+a2enmod expires headers rewrite
+a2dismod autoindex
+service apache2 start
