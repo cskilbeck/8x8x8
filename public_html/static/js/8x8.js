@@ -103,16 +103,13 @@ Object.defineProperty(Error.prototype, 'toJSON', {
                 h += y;
                 y = 0;
             }
-            if(w <= 0 || h <= 0) {
-                return;
-            }
-            x = Math.min(W-1, x);
-            y = Math.min(H-1, y);
-            w = Math.min(W, x + w);
-            h = Math.min(H, y + h);
-            for(; y < h; ++y) {
-                for(v = x; v < w; ++v) {
-                    _setpixel(v, y, color);
+            if(w > 0 && h > 0 && x < W && y < H) {
+                w = Math.min(W, x + w);
+                h = Math.min(H, y + h);
+                for(; y < h; ++y) {
+                    for(v = x; v < w; ++v) {
+                        _setpixel(v, y, color);
+                    }
                 }
             }
         },

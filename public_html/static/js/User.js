@@ -142,7 +142,7 @@ function ($rootScope, $uibModal, ajax, status, dialog) {
                                 user_id: user.id(),
                                 email: user.email(),
                                 editingProfile: true,
-                                update: true,
+                                update: false,
                                 changePassword: false,
                                 newPasswordTitle: "New ",
                                 oldpassword: '',
@@ -208,7 +208,7 @@ function ($rootScope, $uibModal, ajax, status, dialog) {
                             resolve: {
                                 details: function() {
                                     details.update = true;
-                                    details.editingProfile = false;
+                                    details.editingProfile = true;
                                     details.username = response.data.user_username;
                                     details.user_id = response.data.user_id;
                                     return details;

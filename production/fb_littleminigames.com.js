@@ -14,4 +14,6 @@ $(window).load(function() {
         js.src = "//connect.facebook.net/en_US/sdk.js";
         fjs.parentNode.insertBefore(js, fjs);
     }
+    document.title = "Little Mini Games";
 });
+

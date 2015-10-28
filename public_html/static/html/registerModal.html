@@ -3,7 +3,7 @@
     <h4 class="modal-title">{{details.dialogTitle}}</h4>
 </div>
 <form name="registerForm" ng-submit='handleRegister()' novalidate>
-    <div class="modal-body">
+    <div class="modal-body" ng-cloak>
 
         <!-- username -->
         <div class='form-group' ng-class="{'has-error': registerForm.username.$invalid && !registerForm.username.$pristine }">
@@ -33,7 +33,7 @@
 
         <!-- old password -->
         <div class='form-group'
-                ng-show='details.editingProfile'
+                ng-show='details.editingProfile && !details.update'
                 ng-class="{'has-error': registerForm.oldpassword.$invalid && !registerForm.oldpassword.$pristine }">
             <label for='oldpasswordInput'>Current Password</label>
             <span ng-cloak ng-show='registerForm.oldpassword.$invalid && !registerForm.oldpassword.$pristine'
@@ -56,43 +56,43 @@
             </div>
         </div>
 
-        <div ng-cloak ng-hide='!details.editingProfile'>
-            <div class='form-group'>
-                <label><input type='checkbox' ng-model='details.changePassword' /> Change password</label>
-            </div>
-            <!-- password 1 -->
-            <div class='form-group'
-                    ng-show='!details.editingProfile || details.changePassword'
-                    ng-class="{'has-error': registerForm.password.$invalid && !registerForm.password.$pristine }">
-                <label for='passwordInput'>{{details.newPasswordTitle}}Password</label>
-                <span
-                    ng-show='registerForm.password.$invalid && !registerForm.password.$pristine'
-                    class='help-block inline'> must be at least 6 characters</span>
-                <input type='password'
-                        name='password'
-                        class='form-control'
-                        minlength='6'
-                        ng-required='details.changePassword'
-                        ng-model='details.password' />
+        <div ng-show='!details.update' class='form-group'>
+            <label><input type='checkbox' ng-model='details.changePassword' /> Change password</label>
+        </div>
+        <!-- password 1 -->
 
-            </div>
-            <!-- password 2 -->
-            <div class='form-group'
-                    ng-show='!details.editingProfile || details.changePassword'
-                    ng-class="{'has-error': (registerForm.password2.$invalid || !passmatch()) && !registerForm.password2.$pristine }">
-                <label for='password2'>Confirm {{details.newPasswordTitle}}Password</label>
-                <span
-                    ng-show='(registerForm.password2.$invalid || !passmatch()) && !registerForm.password2.$pristine'
-                    class='help-block inline'> (must match the first one)</span>
-                <input type='password'
-                        name='password2'
-                        class='form-control'
-                        minlength='6'
-                        ng-required='details.changePassword'
-                        ng-model='details.password2'/>
-            </div>
+        <div class='form-group'
+                ng-show='!details.editingProfile || details.changePassword'
+                ng-class="{'has-error': registerForm.password.$invalid && !registerForm.password.$pristine }">
+            <label for='passwordInput'>{{details.newPasswordTitle}}Password</label>
+            <span
+                ng-show='registerForm.password.$invalid && !registerForm.password.$pristine'
+                class='help-block inline'> must be at least 6 characters</span>
+            <input type='password'
+                    name='password'
+                    class='form-control'
+                    minlength='6'
+                    ng-required='details.changePassword'
+                    ng-model='details.password' />
+
+        </div>
+        <!-- password 2 -->
+        <div class='form-group'
+                ng-show='!details.editingProfile || details.changePassword'
+                ng-class="{'has-error': (registerForm.password2.$invalid || !passmatch()) && !registerForm.password2.$pristine }">
+            <label for='password2'>Confirm {{details.newPasswordTitle}}Password</label>
+            <span
+                ng-show='(registerForm.password2.$invalid || !passmatch()) && !registerForm.password2.$pristine'
+                class='help-block inline'> (must match the first one)</span>
+            <input type='password'
+                    name='password2'
+                    class='form-control'
+                    minlength='6'
+                    ng-required='details.changePassword'
+                    ng-model='details.password2'/>
         </div>
     </div>
+
     <div class="modal-footer" ng-cloak>
         <span ng-show='registrationInProgress'><i id='spinner' class='netspin pull-left fa fa-spinner fa-pulse'></i>&nbsp;</span>
         <span ng-show='registerForm.$invalid || !passmatch() || details.failed' class='pull-left'>

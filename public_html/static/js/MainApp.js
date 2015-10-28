@@ -8,6 +8,11 @@ mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 //////////////////////////////////////////////////////////////////////
 // TODO
 
+- Multiple players
+     - each iframe uniquely identifies itself when it phones home
+     - there is only one listener in the global Player
+     - it routes messages to the appropriate scope somehow
+     - a source fragment can be run without being saved in the database (then the id is null and rating/description/title/share are hidden)
 - server\list: orderBy should be an index into an array of fixed strings
 - play multiple games at once using multiple iframes...
 ! EditProfile modal dialog flickering height when it appears

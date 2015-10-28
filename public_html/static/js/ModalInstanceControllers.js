@@ -75,18 +75,14 @@
         $scope.ok = function () {
 
             $scope.registrationInProgress = true;
-
             $scope.details.failed = false;
-
             if(!$scope.details.changePassword) {
                 delete $scope.details.password;
                 delete $scope.details.password2;
             }
-
             if(!$scope.details.editingProfile) {
                 delete $scope.details.oldpassword;
             }
-
             user.register($scope.details)
             .then(function(response) {
                 $modalInstance.close(response.data);
