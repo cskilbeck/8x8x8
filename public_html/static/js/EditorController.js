@@ -185,6 +185,51 @@
             enableEditor(true);
         }
 
+        function loadSource() {
+            var newGameID = $routeParams.game_id;
+            if(newGameID) {
+                game_id = newGameID;
+                if(game_id === 'new') {
+                    newGame();
+                }
+                else {
+                    try {
+                        try {
+                            newGameID = parseInt(game_id);
+                        }
+                        catch(e) {
+                            newGameID = 0;
+                        }
+                        if(newGameID) {
+                            enableEditor(false);
+                            game.user_id = 0;
+                            game.load(newGameID)
+                            .then(function(result) {
+                                editor.setValue(result.game_source, -1);
+                                resetUndo();
+                                game.clearChanges();
+                                $scope.runIt(false);
+                                $scope.$apply();
+                                enableEditor(true);
+                            }, function(xhr) {
+                                noGame();
+                            });
+                        }
+                        else {
+                            noGame();
+                        }
+                    }
+                    catch(e) {
+                        noGame();
+                    }
+                }
+            }
+            else {
+                // routing should stop this from ever happening
+                newGame();
+            }
+        }
+
         $scope.$on('frame:focus-editor', function() {
             focusEditor();
         });
@@ -413,64 +458,13 @@
             setOptions(options);
         });
 
-        var newGameID = $routeParams.game_id;
-
         $scope.game = game;
-
         $scope.$emit('pane:loaded', 'editor');
-
         discardChanges = false;
-
         $scope.$parent.pane = 'Editor';
-
         editorOptions = util.load('editorOptions') || editorOptions;
 
-        function loadSource() {
-            if($routeParams.game_id) {
-                game_id = $routeParams.game_id;
-                if(game_id === 'new') {
-                    newGame();
-                }
-                else {
-                    try {
-                        try {
-                            newGameID = parseInt(game_id);
-                        }
-                        catch(e) {
-                            newGameID = 0;
-                        }
-                        if(newGameID) {
-                            enableEditor(false);
-                            game.user_id = 0;
-                            game.load(newGameID)
-                            .then(function(result) {
-                                editor.setValue(result.game_source, -1);
-                                resetUndo();
-                                game.clearChanges();
-                                $scope.runIt(false);
-                                $scope.$apply();
-                                enableEditor(true);
-                            }, function(xhr) {
-                                noGame();
-                            });
-                        }
-                        else {
-                            noGame();
-                        }
-                    }
-                    catch(e) {
-                        noGame();
-                    }
-                }
-            }
-            else {
-                source = '// Huh?';
-                editor.setValue(source, -1);
-                resetUndo();
-                enableEditor(true);
-            }
-        }
-
+        // DONE (chs): this is in a $timeout so the editor picks up the right element to live in (after angular has created it)
         $timeout(function() {
             startEditor();
             activateEditor();

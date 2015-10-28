@@ -160,4 +160,5 @@ mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 +! apache rewrite to force HTTPS [CloudFlare supplied 301 using a page rule]
 +- get rid of all $window.location.reload / editor refresh hacks [bug remains]
 +! clicking new game when already in the editor makes the editor disappear [because #editor not inflating into #editorContainer because editor.container changed - fixed by setting up the editor in a $timeout]
+
 */
