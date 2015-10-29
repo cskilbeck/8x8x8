@@ -1,0 +1,5 @@
+#! /bin/bash
+cd /usr/local/www/littleminigames.com/logs/
+tail -f -n 30 access.log | awk 'BEGIN { FS="] " } { print $NF; fflush() }'
+/bin/bash -l
+
