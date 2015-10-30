@@ -13,6 +13,7 @@ Object.defineProperty(Error.prototype, 'toJSON', {
     "use strict";
 
     var W = 16, H = 16,
+        id = 0,
         context, canvas,
         paused = false, step = false,
         client,
@@ -397,7 +398,7 @@ Object.defineProperty(Error.prototype, 'toJSON', {
     };
 
     window.onload = function() {
-        postMessage('frame-loaded');
+        postMessage('frame-loaded', ++id + "X" + performance.now()); // _probably_ unique
     };
 
     canvas = document.getElementById('canvas');

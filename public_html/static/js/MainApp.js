@@ -8,6 +8,7 @@ mainApp.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 //////////////////////////////////////////////////////////////////////
 // TODO
 
+- get all the drawing crap into Draw.js and out of 8x8.js (which should just be PostMessage and admin)
 - Multiple players
      - each iframe uniquely identifies itself when it phones home
      - there is only one listener in the global Player

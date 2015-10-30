@@ -28,7 +28,7 @@ mkdir logs
 git remote add origin https://github.com/cskilbeck/8x8x8.git
 git config core.sparsecheckout true
 echo "public_html/*" > .git/info/sparse-checkout
-echo "server/*" >.git/info.sparse-checkout
+echo "server/*" >> .git/info.sparse-checkout
 git pull --depth=1 origin master
 rm -r .git
 
