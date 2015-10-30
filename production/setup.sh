@@ -10,12 +10,6 @@ if [[ ! -w '/root' ]]; then
     exit 1
 fi
 
-read -p "Copied files to /usr/local/www/$1 ? (y/n) " -n 1 ; echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo "Copy the files then run setup.sh again..."
-    exit 1
-fi
-
 echo "Setting up $1"
 
 # install
