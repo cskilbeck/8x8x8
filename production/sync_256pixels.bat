@@ -1,1 +1,0 @@
-sync "256Pixels Web Server" 256pixels.net
