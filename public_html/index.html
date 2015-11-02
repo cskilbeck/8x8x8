@@ -57,12 +57,11 @@
         <!-- Q -->
         <script src='/static/js/Q.js'></script>
 
-        <!-- My stuff -->
-        <script src='/static/js/MainApp.js'></script>
-
         <!-- Facebook -->
         <script src='/static/js/fb.js'></script>
 
+        <!-- My stuff -->
+        <script src='/static/js/MainApp.js'></script>
         <script src='/static/js/Util.js'></script>
         <script src='/static/js/Draw.js'></script>
         <script src='/static/js/Status.js'></script>
@@ -95,6 +94,17 @@
           })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
           ga('create', 'UA-67259053-1', 'auto');
           ga('send', 'pageview');
+
+        $(window).load(function() {
+            var js, fjs = document.getElementsByTagName('script')[0];
+            if (!document.getElementById('facebook-jssdk')) {
+                js = document.createElement('script');
+                js.id = 'facebook-jssdk';
+                js.src = "//connect.facebook.net/en_US/sdk.js";
+                fjs.parentNode.insertBefore(js, fjs);
+            }
+            document.title = "Little Mini Games";
+        });
         </script>
 
         <base href='/'>
@@ -122,7 +132,9 @@
                             highlight ng-change='checkText()'
                             ng-keydown='filterkeys($event)' />
                     <div class='byline'>&nbsp;{{by(game)}}&nbsp;</div>
-                    <iframe id='gameFrame' tabindex='1' sandbox='allow-scripts' src='/static/html/frame.html'></iframe>
+                    <div id='playerDiv0' class='playerContainer'>
+                        <iframe class='playerFrame' id='playerFrame0' tabindex='1' sandbox='allow-scripts' src='/static/html/frame.html'></iframe>
+                    </div>
                     <div class='controls'>
                         <textarea ng-keydown='filterkeys($event)' ng-change='checkText()' rows='5' ng-disabled='!canEditInstructions()' ng-model='game.game_instructions' ng-class='instructionsEditorClass()' highlight name='instructions'>
                         </textarea>

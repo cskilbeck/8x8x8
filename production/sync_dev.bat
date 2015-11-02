@@ -1,1 +1,1 @@
-sync "Azure dev Web Server" dev.littleminigames.com
+sync "Azure Dev Web Server" dev.littleminigames.com

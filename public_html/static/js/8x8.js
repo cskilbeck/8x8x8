@@ -316,9 +316,6 @@ Object.defineProperty(Error.prototype, 'toJSON', {
 
     function postMessage(message, data) {
         if(window.self !== window.top) {
-            if (!window.location.origin) {
-              window.location.origin = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port: '');
-            }
             parent.window.postMessage(JSON.stringify({ message: message, data: data }), window.location.origin);
         }
     }
@@ -359,6 +356,37 @@ Object.defineProperty(Error.prototype, 'toJSON', {
         }
     }
 
+    function reportError(e) {
+        postMessage('error', e);
+    }
+
+    function reportErrorDirect(msg, line, column) {
+        postMessage('error-direct', {
+                    msg: msg,
+                    line: line,
+                    column: column
+                });
+    }
+
+    // Allow anyone, anywhere to send us some script which we will blindly execute!
+    // But we're running sandboxed, so network should be secure...
+
+    function setup(data) {
+        var oldScript = document.getElementById('clientscript'),
+            newScript = document.createElement('script'),
+            body = document.getElementsByTagName('body')[0];
+        if(oldScript) {
+            body.removeChild(oldScript);
+        }
+        newScript.setAttribute('id', 'clientscript');
+        newScript.innerHTML = data;
+        body.appendChild(newScript);    // it runs here!
+        eng.clientFunction(eng);
+        if(eng.userFunction) {
+            eng.restart();
+        }
+    }
+
     document.onkeydown = function(e) {
         if(e.keyCode === 27) {
             focusEditor();
@@ -380,18 +408,6 @@ Object.defineProperty(Error.prototype, 'toJSON', {
         }
     };
 
-    function reportError(e) {
-        postMessage('error', e);
-    }
-
-    function reportErrorDirect(msg, line, column) {
-        postMessage('error-direct', {
-                    msg: msg,
-                    line: line,
-                    column: column
-                });
-    }
-
     window.onerror = function(message, file, line, column) {
         reportErrorDirect(message, line, column);
         exception = true;
@@ -401,75 +417,60 @@ Object.defineProperty(Error.prototype, 'toJSON', {
         postMessage('frame-loaded', ++id + "X" + performance.now()); // _probably_ unique
     };
 
-    canvas = document.getElementById('canvas');
-    context = canvas.getContext('2d');
-
-    // Allow anyone, anywhere to send us some script which we will blindly execute!
-    // But we're running sandboxed, so network should be secure...
-
-    function setup(data) {
-        var oldScript = document.getElementById('clientscript'),
-            newScript = document.createElement('script'),
-            body = document.getElementsByTagName('body')[0];
-        if(oldScript) {
-            body.removeChild(oldScript);
-        }
-        newScript.setAttribute('id', 'clientscript');
-        newScript.innerHTML = data;
-        body.appendChild(newScript);    // it runs here!
-        eng.clientFunction(eng);
-        if(eng.userFunction) {
-            eng.restart();
-        }
-    }
-
-    touchEnable(canvas);
-
     window.addEventListener('message', function(e) {
         var payload, message, data;
-        try {
-            payload = JSON.parse(e.data);
-            message = payload.message;
-            data = payload.data;
-            switch(message) {
-                case 'set-frame-delay':
-                    eng.frameDelay = data;
-                    break;
-                case 'toggle-pause':
-                    paused = !paused;
-                    postMessage('paused', paused);
-                    break;
-                case 'unpause':
-                    paused = false;
-                    postMessage('paused', paused);
-                    break;
-                case 'restart':
-                    step = true;
-                    resetRequest = true;
-                    break;
-                case 'step':
-                    step = true;
-                    paused = true;
-                    break;
-                case 'is-paused':
-                    postMessage('paused', paused);
-                    break;
-                case 'clear-exception':
-                    //reset();
-                    break;
-                case 'screenshot':
-                    postMessage('screenshot', screen);
-                    break;
-                case 'source':
-                    setup(data);
-                    break;
+        if(e.source === window.location.origin) {
+            try {
+                payload = JSON.parse(e.data);
+                message = payload.message;
+                data = payload.data;
+                switch(message) {
+                    case 'set-frame-delay':
+                        eng.frameDelay = data;
+                        break;
+                    case 'toggle-pause':
+                        paused = !paused;
+                        postMessage('paused', paused);
+                        break;
+                    case 'unpause':
+                        paused = false;
+                        postMessage('paused', paused);
+                        break;
+                    case 'restart':
+                        step = true;
+                        resetRequest = true;
+                        break;
+                    case 'step':
+                        step = true;
+                        paused = true;
+                        break;
+                    case 'is-paused':
+                        postMessage('paused', paused);
+                        break;
+                    case 'clear-exception':
+                        //reset();
+                        break;
+                    case 'screenshot':
+                        postMessage('screenshot', screen);
+                        break;
+                    case 'source':
+                        setup(data);
+                        break;
+                }
             }
-        }
-        catch(SyntaxError) {
-            // Bad JSON in the message
+            catch(SyntaxError) {
+                // Bad JSON in the message
+            }
         }
     });
 
+    if (!window.location.origin) {
+      window.location.origin = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port: '');
+    }
+
+    canvas = document.getElementById('canvas');
+    context = canvas.getContext('2d');
     startAnim();
+    touchEnable(canvas);
 
 }());

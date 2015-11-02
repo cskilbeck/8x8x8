@@ -266,7 +266,7 @@ body {
     height: 100%;
 }
 
-#gameFrame {
+.playerFrame {
     border: none;
     width: 256px;
     height: 256px;
@@ -1029,4 +1029,16 @@ td .searchOptionsRow {
 
 .navbar.navbar-default {
     margin: 0;
+}
+
+.playerContainer {
+    margin: auto;
+    padding: 0;
+    width: 256px;
+    min-width: 256px;
+    max-width: 256px;
+    height: 256px;
+    min-height: 256px;
+    max-height: 256px;
+    background: red;
 }
